@@ -1,2 +1,4 @@
 data/test.jsonl
 data/train.jsonl
+venv
+__pycache__/
