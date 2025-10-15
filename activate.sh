@@ -2,28 +2,28 @@
 
 ENV_DIR="venv"
 
-# Crea l'ambiente virtuale se non esiste
+# Create the virtual environment if it does not exist
 if [ ! -d "$ENV_DIR" ]; then
-    echo "Ambiente virtuale non trovato. Creo '$ENV_DIR'..."
+    echo "Virtual environment not found. Creating '$ENV_DIR'..."
     python3 -m venv "$ENV_DIR"
 else
-    echo "Ambiente virtuale '$ENV_DIR' già presente."
+    echo "Virtual environment '$ENV_DIR' already exists."
 fi
 
-# Attiva l'ambiente virtuale
-echo "Attivo l'ambiente virtuale..."
+# Activate the virtual environment
+echo "Activating the virtual environment..."
 source "$ENV_DIR/bin/activate"
 
 if [[ "$VIRTUAL_ENV" != "" ]]; then
-    echo "Ambiente virtuale attivato: $VIRTUAL_ENV"
+    echo "Virtual environment activated: $VIRTUAL_ENV"
 else
-    echo "Errore: ambiente virtuale NON attivato!"
+    echo "Error: virtual environment NOT activated!"
 fi
 
-# Installa le dipendenze da requirements.txt
+# Install dependencies from requirements.txt
 if [ -f "requirements.txt" ]; then
-    echo "Installo le dipendenze da requirements.txt..."
+    echo "Installing dependencies from requirements.txt..."
     pip install -r requirements.txt
 else
-    echo "File requirements.txt non trovato. Nessuna dipendenza installata."
+    echo "requirements.txt file not found. No dependencies installed."
 fi
