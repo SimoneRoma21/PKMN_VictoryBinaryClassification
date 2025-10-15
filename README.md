@@ -21,3 +21,10 @@ This script will:
 
 Make sure you have Python 3 installed before running the script.
 
+# Dataset
+To download the dataset, you can use the provided `download_data.sh` script. **Note:** You must have both `kaggle` and `unzip` installed on your system.
+
+- To install the Kaggle CLI, follow the instructions at [https://www.kaggle.com/settings](https://www.kaggle.com/settings).
+- Make sure your Kaggle API credentials (`kaggle.json`) are set up as described on the Kaggle website.
+
+If you do not have `kaggle` or `unzip` installed, you can manually download the dataset by visiting [https://www.kaggle.com/competitions/fds-pokemon-battles-prediction-2025/data](https://www.kaggle.com/competitions/fds-pokemon-battles-prediction-2025/data) and copying the files into the `./data` directory.
