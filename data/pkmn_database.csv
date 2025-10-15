@@ -1,0 +1,21 @@
+,name,level,types,base_hp,base_atk,base_def,base_spa,base_spd,base_spe
+0,starmie,100,"['psychic', 'water']",60,75,85,100,100,115
+1,exeggutor,100,"['grass', 'psychic']",95,95,85,125,125,55
+2,chansey,100,"['normal', 'notype']",250,5,5,105,105,50
+3,snorlax,100,"['normal', 'notype']",160,110,65,65,65,30
+4,tauros,100,"['normal', 'notype']",75,100,95,70,70,110
+5,alakazam,100,"['notype', 'psychic']",55,50,45,135,135,120
+6,jynx,100,"['ice', 'psychic']",65,50,35,95,95,95
+11,slowbro,100,"['psychic', 'water']",95,75,110,80,80,30
+15,gengar,100,"['ghost', 'poison']",60,65,60,130,130,110
+16,rhydon,100,"['ground', 'rock']",105,130,120,45,45,40
+22,zapdos,100,"['electric', 'flying']",90,90,85,125,125,100
+29,cloyster,100,"['ice', 'water']",50,95,180,85,85,70
+31,golem,100,"['ground', 'rock']",80,110,130,55,55,45
+34,jolteon,100,"['electric', 'notype']",65,65,60,110,110,130
+40,articuno,100,"['flying', 'ice']",90,85,100,125,125,85
+61,persian,100,"['normal', 'notype']",65,70,60,65,65,115
+91,lapras,100,"['ice', 'water']",130,85,80,95,95,60
+257,dragonite,100,"['dragon', 'flying']",91,134,95,100,100,80
+425,charizard,100,"['fire', 'flying']",78,84,78,85,85,100
+641,victreebel,100,"['grass', 'poison']",80,105,65,100,100,70
