@@ -1,0 +1,25 @@
+feature estraibili dalle statistiche:
+- [ ] media vantaggi velocità --> vedere prima e rimasti 
+-[] velocità lead
+- media hp team per pokemon conosciuti  --> complessa
+- media hp team rimanenti ai due giocatori --> complessa 
+- numero vantaggi pokemon che hanno atk phys più alto su pokemon con difesa phys bassa --> (Vedere) --> complessa
+- numero vantaggi pokemon che hanno atk special più alto su pokemon con difesa special bassa --> (Vedere) --> complessa
+- media stat totali prima e dopo 
+
+Feature estraibile dalla composizione del team:
+- numero pokemon morti
+- numero pokemon rimanenti
+- numero pokemon con debolezze prima e rimasti
+- livello totale squadra (ma se non li abbiamo tutti?) (normalizzati)
+
+
+Feature estraibile dalle mosse:
+- numero tipi coperti dalle mosse prima e rimasti
+- numero pokemon con mosse buone sull'altro prima e rimasti
+- numero pokemon con mosse priority prima e rimasti --> complessa
+- numero pokemon con mosse field prima e rimasti --> complessa
+- numero pokemon con mosse di stato danno (infliggono danni) prima e rimasti --> complessa
+- numero pokemon con mosse di stato stun (skippano turno) prima --> complessa
+
+-[] 
