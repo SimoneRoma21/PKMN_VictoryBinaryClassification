@@ -3,6 +3,16 @@ import json
 import numpy as np
 
 
+
+
+def open_pkmn_database_csv() -> pd.DataFrame:
+    #opening pkmn database csv
+    pkmn_db=pd.read_csv("../data/pkmn_database.csv")
+    pkmn_db=pkmn_db.drop("Unnamed: 0",axis=1)
+    return pkmn_db
+
+
+
 def open_train_json() -> list:
     list = []
     with open("data/train.jsonl", "r") as f:
@@ -10,11 +20,7 @@ def open_train_json() -> list:
             list.append(json.loads(line))
     return list
 
-def open_pkmn_database_csv() -> pd.DataFrame:
-    #opening pkmn database csv
-    pkmn_db=pd.read_csv("data/pkmn_database.csv")
-    pkmn_db=pkmn_db.drop("Unnamed: 0",axis=1)
-    return pkmn_db
+
     
 def extract_all_pokemon_p1_teams(dataset) -> pd.DataFrame:
     #extracting all p1 teams
@@ -66,7 +72,7 @@ def moves_database():
     pass
 
 
-def extract_lead_spd(dataset) -> pd.DataFrame: # feature
+def lead_spd(dataset) -> pd.DataFrame: # feature
 
     #extract all pokemon leads for p1
     p1_lead=pd.DataFrame([game['p1_team_details'][0] for game in dataset])
@@ -112,8 +118,9 @@ def extract_p2_team_from_game_last(game) -> pd.Series:
     
     return pkmn_p2_last 
 
-def extract_mean_spd_start(dataset,pkmn_database) -> pd.DataFrame: #feature
-    
+def mean_spd_start(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+
     p1_mean_spd=[]
     p2_mean_spd=[]
     for game in dataset:
@@ -131,7 +138,9 @@ def extract_mean_spd_start(dataset,pkmn_database) -> pd.DataFrame: #feature
     mean_spd_start=pd.DataFrame({'p1_mean_spd_start':p1_mean_spd,'p2_mean_spd_start':p2_mean_spd})
     return mean_spd_start
 
-def extract_mean_spd_last(dataset,pkmn_database) -> pd.DataFrame: #feature
+def mean_spd_last(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+    
     p1_mean_spd=[]
     p2_mean_spd=[]
     for game in dataset:
@@ -149,25 +158,34 @@ def extract_mean_spd_last(dataset,pkmn_database) -> pd.DataFrame: #feature
     mean_spd_last=pd.DataFrame({'p1_mean_spd_last':p1_mean_spd,'p2_mean_spd_last':p2_mean_spd})
     return mean_spd_last  ##SISTEMARE CON BOOST
 
-def extract_mean_hp_start(dataset,pkmn_database) -> pd.DataFrame: #feature
-    p1_mean_hp=[]
-    p2_mean_hp=[]
-    for game in dataset:
-        p1_team=extract_p1_team_from_game_start(game)
-        p2_team=extract_p2_team_from_game_start(game)
+def p1_mean_hp_start(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
 
+    p1_mean_hp=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_start(game)    
         p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
         p1_team=p1_team[['name','base_hp']]
         p1_mean_hp.append(np.mean(p1_team['base_hp']))
-    
+
+    mean_hp_start=pd.DataFrame({'p1_mean_hp_start':p1_mean_hp})
+    return mean_hp_start
+
+def p2_mean_hp_start(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+
+    p2_mean_hp=[]
+    for game in dataset:
+        p2_team=extract_p2_team_from_game_start(game)
         p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
         p2_team=p2_team[['name','base_hp']]
         p2_mean_hp.append(np.mean(p2_team['base_hp']))
 
-    mean_hp_start=pd.DataFrame({'p1_mean_hp_start':p1_mean_hp,'p2_mean_hp_start':p2_mean_hp})
+    mean_hp_start=pd.DataFrame({'p2_mean_hp_start':p2_mean_hp})
     return mean_hp_start
 
-def extract_mean_hp_last(dataset,pkmn_database):
+def mean_hp_last(dataset):
+    pkmn_database = open_pkmn_database_csv()
     p1_mean_hp=[]
     p2_mean_hp=[]
     for game in dataset:
@@ -185,7 +203,7 @@ def extract_mean_hp_last(dataset,pkmn_database):
     mean_spd_last=pd.DataFrame({'p1_mean_hp_last':p1_mean_hp,'p2_mean_hp_last':p2_mean_hp})
     return mean_spd_last
 
-def extract_p1_alive_pkmn(dataset)->pd.Series:
+def p1_alive_pkmn(dataset)->pd.Series: #feature
     pkmn_alive_p1=[]
     for game in dataset:
         turns=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
@@ -194,7 +212,7 @@ def extract_p1_alive_pkmn(dataset)->pd.Series:
     pkmn_alive_p1=pd.DataFrame(pkmn_alive_p1).rename(columns={0:'p1_pkmn_alive'})
     return pkmn_alive_p1
 
-def extract_p2_alive_pkmn(dataset)->pd.Series:
+def p2_alive_pkmn(dataset)->pd.Series: #feature
     pkmn_alive_p2=[]
     for game in dataset:
         turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
@@ -215,7 +233,7 @@ def all_pokemon_round(player: int,json):
 
 if __name__=="__main__":
     dataset=open_train_json()
-    pkmn_database=open_pkmn_database_csv()
+    # pkmn_database=open_pkmn_database_csv()
     #print(dataset[0]['battle_timeline'])
     #extract_lead_velocity(dataset)
     #print(pkmn_database(dataset))
