@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 class ModelTrainer:
     """Classe per addestrare e valutare modelli"""
@@ -36,6 +36,13 @@ class ModelTrainer:
         print("MODEL EVALUATION")
         print("="*50)
         print(f"\nAccuracy: {accuracy_score(y, y_pred):.4f}")
+        
+        print("\nConfusion Matrix:")
+        cm = confusion_matrix(y, y_pred)
+        print(cm)
+        print(f"\nTrue Negatives:  {cm[0][0]:4d}  |  False Positives: {cm[0][1]:4d}")
+        print(f"False Negatives: {cm[1][0]:4d}  |  True Positives:  {cm[1][1]:4d}")
+        
         print("\nClassification Report:")
         print(classification_report(y, y_pred))
         

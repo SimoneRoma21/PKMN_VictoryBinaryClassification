@@ -1,8 +1,74 @@
 import pandas as pd
 import json
 import numpy as np
+from typing import List, Dict, Callable
+from enum import Enum
 
+class Feature(Enum):
+    """Enum con tutte le feature disponibili"""
 
+    P1_MEAN_HP_START = "p1_mean_hp_start"
+    P2_MEAN_HP_START = "p2_mean_hp_start"
+    LEAD_SPD = "lead_spd"
+    MEAN_SPD_START = "mean_spd_start"
+    MEAN_SPD_LAST = "mean_spd_last"
+    MEAN_HP_LAST = "mean_hp_last"
+    P1_ALIVE_PKMN = "p1_alive_pkmn"
+    P2_ALIVE_PKMN = "p2_alive_pkmn"
+
+    P1_SWITCHES_COUNT = "p1_switches_count"
+    P2_SWITCHES_COUNT = "p2_switches_count"
+    P1_STATUS_INFLICTED = "p1_status_inflicted"
+    P2_STATUS_INFLICTED = "p2_status_inflicted"
+    SWITCHES_DIFFERENCE = "switches_difference"
+    STATUS_INFLICTED_DIFFERENCE = "status_inflicted_difference"
+    P1_FINAL_TEAM_HP = "p1_final_team_hp"
+    P2_FINAL_TEAM_HP = "p2_final_team_hp"
+    FINAL_TEAM_HP_DIFFERENCE = "final_team_hp_difference"
+    P1_FIRST_FAINT_TURN = "p1_first_faint_turn"  
+    P1_AVG_HP_WHEN_SWITCHING = "p1_avg_hp_when_switching"
+    P1_MAX_DEBUFF_RECEIVED = "p1_max_debuff_received"
+    P2_MAX_DEBUFF_RECEIVED = "p2_max_debuff_received"
+    
+
+class FeatureRegistry:
+    """
+    Registry che mappa ogni feature alla sua funzione di estrazione.
+    Gestisce automaticamente le dipendenze tra feature.
+    """
+    
+    def __init__(self):
+        self._extractors = {}
+        self._register_all_extractors()
+
+    def get_extractor(self, feature: Feature) -> Callable:
+        """Ritorna l'extractor per una feature"""
+        return self._extractors.get(feature)
+    
+    def _register_all_extractors(self):
+        """Registra tutti gli extractor disponibili"""
+        
+        self._extractors[Feature.P1_MEAN_HP_START] = p1_mean_hp_start
+        self._extractors[Feature.P2_MEAN_HP_START] = p2_mean_hp_start
+        self._extractors[Feature.LEAD_SPD] = lead_spd
+        self._extractors[Feature.MEAN_SPD_START] = mean_spd_start
+        self._extractors[Feature.MEAN_SPD_LAST] = mean_spd_last
+        self._extractors[Feature.MEAN_HP_LAST] = mean_hp_last
+        self._extractors[Feature.P1_ALIVE_PKMN] = p1_alive_pkmn
+        self._extractors[Feature.P2_ALIVE_PKMN] = p2_alive_pkmn
+        self._extractors[Feature.P1_SWITCHES_COUNT] = p1_switches_count
+        self._extractors[Feature.P2_SWITCHES_COUNT] = p2_switches_count
+        self._extractors[Feature.P1_STATUS_INFLICTED] = p1_status_inflicted
+        self._extractors[Feature.P2_STATUS_INFLICTED] = p2_status_inflicted
+        self._extractors[Feature.SWITCHES_DIFFERENCE] = switches_difference
+        self._extractors[Feature.STATUS_INFLICTED_DIFFERENCE] = status_inflicted_difference
+        self._extractors[Feature.P1_FINAL_TEAM_HP] = p1_final_team_hp
+        self._extractors[Feature.P2_FINAL_TEAM_HP] = p2_final_team_hp
+        self._extractors[Feature.FINAL_TEAM_HP_DIFFERENCE] = final_team_hp_difference
+        self._extractors[Feature.P1_FIRST_FAINT_TURN] = p1_first_faint_turn
+        self._extractors[Feature.P1_AVG_HP_WHEN_SWITCHING] = p1_avg_hp_when_switching
+        self._extractors[Feature.P1_MAX_DEBUFF_RECEIVED] = p1_max_debuff_received
+        self._extractors[Feature.P2_MAX_DEBUFF_RECEIVED] = p2_max_debuff_received
 
 
 def open_pkmn_database_csv() -> pd.DataFrame:
@@ -227,6 +293,316 @@ def all_pokemon_round(player: int,json):
         return set([elem['p1_pokemon_state']['name'] for elem in json['battle_timeline']])
     elif player==2:
         return set([elem['p2_pokemon_state']['name'] for elem in json['battle_timeline']])
+
+
+
+
+def p1_switches_count(dataset) -> pd.DataFrame: #feature
+    """
+    Conta il numero di volte che P1 cambia Pokémon durante la battaglia.
+    Molti switch possono indicare strategia difensiva o problemi di matchup.
+    """
+    switches = []
+    for game in dataset:
+        switch_count = 0
+        prev_pokemon = None
+        
+        for turn in game['battle_timeline']:
+            current_pokemon = turn['p1_pokemon_state']['name']
+            if prev_pokemon is not None and current_pokemon != prev_pokemon:
+                switch_count += 1
+            prev_pokemon = current_pokemon
+        
+        switches.append(switch_count)
+    
+    return pd.DataFrame({'p1_switches_count': switches})
+
+
+def p2_switches_count(dataset) -> pd.DataFrame: #feature
+    """
+    Conta il numero di volte che P2 cambia Pokémon durante la battaglia.
+    """
+    switches = []
+    for game in dataset:
+        switch_count = 0
+        prev_pokemon = None
+        
+        for turn in game['battle_timeline']:
+            current_pokemon = turn['p2_pokemon_state']['name']
+            if prev_pokemon is not None and current_pokemon != prev_pokemon:
+                switch_count += 1
+            prev_pokemon = current_pokemon
+        
+        switches.append(switch_count)
+    
+    return pd.DataFrame({'p2_switches_count': switches})
+
+
+def p1_status_inflicted(dataset) -> pd.DataFrame: #feature
+    """
+    Conta quanti status conditions P1 è riuscito ad infliggere a P2.
+    Include: paralysis (par), burn (brn), poison (psn), toxic (tox), sleep (slp), freeze (frz).
+    """
+    status_count = []
+    for game in dataset:
+        count = 0
+        prev_status = 'nostatus'
+        
+        for turn in game['battle_timeline']:
+            current_status = turn['p2_pokemon_state']['status']
+            # Conta quando P2 passa da nostatus a uno status (inflitto da P1)
+            if prev_status == 'nostatus' and current_status not in ['nostatus', 'fnt']:
+                count += 1
+            prev_status = current_status
+        
+        status_count.append(count)
+    
+    return pd.DataFrame({'p1_status_inflicted': status_count})
+
+
+def p2_status_inflicted(dataset) -> pd.DataFrame: #feature
+    """
+    Conta quanti status conditions P2 è riuscito ad infliggere a P1.
+    """
+    status_count = []
+    for game in dataset:
+        count = 0
+        pokemon_status_map = {}  # tiene traccia dello status per ogni pokemon
+        
+        for turn in game['battle_timeline']:
+            pokemon_name = turn['p1_pokemon_state']['name']
+            current_status = turn['p1_pokemon_state']['status']
+            
+            # Se il pokemon non è ancora nella mappa, lo aggiungiamo
+            if pokemon_name not in pokemon_status_map:
+                pokemon_status_map[pokemon_name] = 'nostatus'
+            
+            prev_status = pokemon_status_map[pokemon_name]
+            
+            # Conta quando P1 passa da nostatus a uno status (inflitto da P2)
+            if prev_status == 'nostatus' and current_status not in ['nostatus', 'fnt']:
+                count += 1
+            
+            pokemon_status_map[pokemon_name] = current_status
+        
+        status_count.append(count)
+    
+    return pd.DataFrame({'p2_status_inflicted': status_count})
+
+
+def switches_difference(dataset) -> pd.DataFrame: #feature
+    """
+    Differenza tra switch di P1 e P2.
+    Valori positivi indicano che P1 ha switchato più spesso (potenzialmente più difensivo).
+    """
+    p1_sw = p1_switches_count(dataset)
+    p2_sw = p2_switches_count(dataset)
+    
+    diff = p1_sw['p1_switches_count'] - p2_sw['p2_switches_count']
+    
+    return pd.DataFrame({'switches_difference': diff})
+
+
+def status_inflicted_difference(dataset) -> pd.DataFrame: #feature
+    """
+    Differenza tra status inflitti da P1 e P2.
+    Valori positivi indicano che P1 ha inflitto più status conditions.
+    """
+    p1_status = p1_status_inflicted(dataset)
+    p2_status = p2_status_inflicted(dataset)
+    
+    diff = p1_status['p1_status_inflicted'] - p2_status['p2_status_inflicted']
+    
+    return pd.DataFrame({'status_inflicted_difference': diff})
+
+
+def p1_final_team_hp(dataset) -> pd.DataFrame: #feature
+    """
+    Calcola l'HP totale rimanente del team P1 alla fine della battaglia.
+    Somma gli hp_pct di tutti i Pokémon ancora vivi moltiplicati per i loro base_hp.
+    """
+    pkmn_database = open_pkmn_database_csv()
+    final_hp = []
+    
+    for game in dataset:
+        # Ottieni l'ultimo turno
+        last_turn = game['battle_timeline'][-1]
+        
+        # Trova tutti i Pokémon P1 ancora vivi (non fnt)
+        all_turns = pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
+        alive_pokemon = []
+        
+        # Per ogni Pokémon nel team, trova l'ultimo stato
+        for pkmn in game['p1_team_details']:
+            pkmn_name = pkmn['name']
+            pkmn_turns = all_turns[all_turns['name'] == pkmn_name]
+            
+            if len(pkmn_turns) > 0:
+                last_state = pkmn_turns.iloc[-1]
+                if last_state['status'] != 'fnt':
+                    # Calcola HP rimanente: hp_pct * base_hp
+                    hp_remaining = last_state['hp_pct'] * pkmn['base_hp']
+                    alive_pokemon.append(hp_remaining)
+        
+        final_hp.append(sum(alive_pokemon) if alive_pokemon else 0)
+    
+    return pd.DataFrame({'p1_final_team_hp': final_hp})
+
+
+def p2_final_team_hp(dataset) -> pd.DataFrame: #feature
+    """
+    Calcola l'HP totale rimanente del team P2 alla fine della battaglia.
+    """
+    pkmn_database = open_pkmn_database_csv()
+    final_hp = []
+    
+    for game in dataset:
+        # Trova tutti i Pokémon P2 visti durante la battaglia
+        all_turns = pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
+        alive_pokemon = []
+        
+        # Per ogni Pokémon unico di P2, trova l'ultimo stato
+        unique_pokemon = all_turns['name'].unique()
+        
+        for pkmn_name in unique_pokemon:
+            pkmn_turns = all_turns[all_turns['name'] == pkmn_name]
+            last_state = pkmn_turns.iloc[-1]
+            
+            if last_state['status'] != 'fnt':
+                # Ottieni base_hp dal database
+                pkmn_info = pkmn_database[pkmn_database['name'] == pkmn_name]
+                if len(pkmn_info) > 0:
+                    base_hp = pkmn_info.iloc[0]['base_hp']
+                    hp_remaining = last_state['hp_pct'] * base_hp
+                    alive_pokemon.append(hp_remaining)
+        
+        final_hp.append(sum(alive_pokemon) if alive_pokemon else 0)
+    
+    return pd.DataFrame({'p2_final_team_hp': final_hp})
+
+
+def final_team_hp_difference(dataset) -> pd.DataFrame: #feature
+    """
+    Differenza tra HP finale del team P1 e P2.
+    Valori positivi indicano che P1 ha finito con più HP totale.
+    """
+    p1_hp = p1_final_team_hp(dataset)
+    p2_hp = p2_final_team_hp(dataset)
+    
+    diff = p1_hp['p1_final_team_hp'] - p2_hp['p2_final_team_hp']
+    
+    return pd.DataFrame({'final_team_hp_difference': diff})
+
+
+def p1_first_faint_turn(dataset) -> pd.DataFrame: #feature
+    """
+    Turno in cui P1 perde il primo Pokémon.
+    Valori alti indicano che P1 è riuscito a resistere più a lungo.
+    Se P1 non perde nessun Pokémon, restituisce il numero totale di turni.
+    """
+    first_faint = []
+    
+    for game in dataset:
+        faint_turn = None
+        pokemon_fainted = set()
+        
+        for turn in game['battle_timeline']:
+            pkmn_name = turn['p1_pokemon_state']['name']
+            pkmn_status = turn['p1_pokemon_state']['status']
+            
+            if pkmn_status == 'fnt' and pkmn_name not in pokemon_fainted:
+                faint_turn = turn['turn']
+                pokemon_fainted.add(pkmn_name)
+                break
+        
+        # Se nessun Pokémon è svenuto, usa l'ultimo turno + 1
+        if faint_turn is None:
+            faint_turn = len(game['battle_timeline']) + 1
+        
+        first_faint.append(faint_turn)
+    
+    return pd.DataFrame({'p1_first_faint_turn': first_faint})
+
+
+
+
+
+def p1_avg_hp_when_switching(dataset) -> pd.DataFrame: #feature
+    """
+    HP percentuale medio dei Pokémon P1 quando effettuano uno switch.
+    Valori bassi indicano switch difensivi (Pokémon in difficoltà).
+    Valori alti indicano switch offensivi/strategici.
+    """
+    avg_hp_switches = []
+    
+    for game in dataset:
+        switch_hp = []
+        prev_pokemon = None
+        
+        for i, turn in enumerate(game['battle_timeline']):
+            current_pokemon = turn['p1_pokemon_state']['name']
+            
+            # Se c'è stato uno switch
+            if prev_pokemon is not None and current_pokemon != prev_pokemon:
+                # HP del Pokémon che ha switchato out (turno precedente)
+                if i > 0:
+                    prev_turn = game['battle_timeline'][i-1]
+                    switch_hp.append(prev_turn['p1_pokemon_state']['hp_pct'])
+            
+            prev_pokemon = current_pokemon
+        
+        # Media degli HP quando si switcha
+        avg_hp = np.mean(switch_hp) if switch_hp else 1.0  # 1.0 se non ci sono switch
+        avg_hp_switches.append(avg_hp)
+    
+    return pd.DataFrame({'p1_avg_hp_when_switching': avg_hp_switches})
+
+
+def p1_max_debuff_received(dataset) -> pd.DataFrame: #feature
+    """
+    Massimo debuff (boost negativo) ricevuto da P1 su una singola stat.
+    Valori negativi più bassi indicano debuff pesanti subiti.
+    """
+    max_debuff_list = []
+    
+    for game in dataset:
+        max_debuff = 0
+        
+        for turn in game['battle_timeline']:
+            boosts = turn['p1_pokemon_state']['boosts']
+            
+            # Trova il debuff più forte (valore più negativo)
+            turn_min = min(boosts.values())
+            if turn_min < max_debuff:
+                max_debuff = turn_min
+        
+        max_debuff_list.append(max_debuff)
+    
+    return pd.DataFrame({'p1_max_debuff_received': max_debuff_list})
+
+
+def p2_max_debuff_received(dataset) -> pd.DataFrame: #feature
+    """
+    Massimo debuff (boost negativo) ricevuto da P2 su una singola stat.
+    """
+    max_debuff_list = []
+    
+    for game in dataset:
+        max_debuff = 0
+        
+        for turn in game['battle_timeline']:
+            boosts = turn['p2_pokemon_state']['boosts']
+            
+            # Trova il debuff più forte (valore più negativo)
+            turn_min = min(boosts.values())
+            if turn_min < max_debuff:
+                max_debuff = turn_min
+        
+        max_debuff_list.append(max_debuff)
+    
+    return pd.DataFrame({'p2_max_debuff_received': max_debuff_list})
+
+
 
 
 

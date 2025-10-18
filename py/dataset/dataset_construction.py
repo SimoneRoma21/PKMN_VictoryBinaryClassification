@@ -4,55 +4,9 @@ from tqdm import tqdm
 from typing import List, Dict, Callable, Union
 from enum import Enum
 
-from .feature_data_extract import (
-    p1_mean_hp_start,
-    p2_mean_hp_start,
-    lead_spd,
-    mean_spd_start,
-    mean_spd_last,
-    mean_hp_last,
-    p1_alive_pkmn,
-    p2_alive_pkmn
-)
-
-class Feature(Enum):
-    """Enum con tutte le feature disponibili"""
-
-    P1_MEAN_HP_START = "p1_mean_hp_start"
-    P2_MEAN_HP_START = "p2_mean_hp_start"
-    LEAD_SPD = "lead_spd"
-    MEAN_SPD_START = "mean_spd_start"
-    MEAN_SPD_LAST = "mean_spd_last"
-    MEAN_HP_LAST = "mean_hp_last"
-    P1_ALIVE_PKMN = "p1_alive_pkmn"
-    P2_ALIVE_PKMN = "p2_alive_pkmn"
+from .feature_data_extract import Feature, FeatureRegistry
 
 
-class FeatureRegistry:
-    """
-    Registry che mappa ogni feature alla sua funzione di estrazione.
-    Gestisce automaticamente le dipendenze tra feature.
-    """
-    
-    def __init__(self):
-        self._extractors = {}
-        self._register_all_extractors()
-
-    def get_extractor(self, feature: Feature) -> Callable:
-        """Ritorna l'extractor per una feature"""
-        return self._extractors.get(feature)
-    
-    def _register_all_extractors(self):
-        """Registra tutti gli extractor disponibili"""
-        
-        self._extractors[Feature.P1_MEAN_HP_START] = p1_mean_hp_start
-        self._extractors[Feature.P2_MEAN_HP_START] = p2_mean_hp_start
-        self._extractors[Feature.LEAD_SPD] = lead_spd
-        self._extractors[Feature.MEAN_SPD_START] = mean_spd_start
-        self._extractors[Feature.MEAN_SPD_LAST] = mean_spd_last
-        self._extractors[Feature.MEAN_HP_LAST] = mean_hp_last
-        self._extractors[Feature.P1_ALIVE_PKMN] = p1_alive_pkmn
-        self._extractors[Feature.P2_ALIVE_PKMN] = p2_alive_pkmn
 
 def p1_mean_hp(data: List[Dict]) -> np.ndarray:
     """Calcola la media dei punti salute per il team del player 1 per tutte le battaglie"""

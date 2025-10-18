@@ -4,6 +4,9 @@ from dataset.dataset_construction import Feature, FeaturePipeline
 from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from sklearn.pipeline import Pipeline
 
 def main():
 
@@ -14,7 +17,21 @@ def main():
         # Feature.MEAN_SPD_LAST,
         # Feature.MEAN_HP_LAST,
         Feature.P1_ALIVE_PKMN,
-        Feature.P2_ALIVE_PKMN
+        Feature.P2_ALIVE_PKMN,
+        # Feature.TOTAL_TURNS,
+        Feature.P1_SWITCHES_COUNT,
+        Feature.P2_SWITCHES_COUNT,
+        Feature.P1_STATUS_INFLICTED,
+        Feature.P2_STATUS_INFLICTED,
+        Feature.SWITCHES_DIFFERENCE,
+        Feature.STATUS_INFLICTED_DIFFERENCE,
+        Feature.P1_FINAL_TEAM_HP,
+        Feature.P2_FINAL_TEAM_HP,
+        Feature.FINAL_TEAM_HP_DIFFERENCE,
+        Feature.P1_FIRST_FAINT_TURN,
+        Feature.P1_AVG_HP_WHEN_SWITCHING,
+        Feature.P1_MAX_DEBUFF_RECEIVED,
+        Feature.P2_MAX_DEBUFF_RECEIVED,
     ]
 
     pipeline = FeaturePipeline(selected_features)
@@ -29,43 +46,57 @@ def main():
         for line in f:
             train_data.append(json.loads(line))
     
-    print("Loading test data...")
-    test_data = []
-    with open(test_file_path, 'r') as f:
-        for line in f:
-            test_data.append(json.loads(line))
+    # print("Loading test data...")
+    # test_data = []
+    # with open(test_file_path, 'r') as f:
+    #     for line in f:
+    #         test_data.append(json.loads(line))
     
     # Estrai le feature
     print("\nExtracting features from training data...")
     train_df = pipeline.extract_features(train_data)
     
-    print("Extracting features from test data...")
-    test_df = pipeline.extract_features(test_data)
+    # print("Extracting features from test data...")
+    # test_df = pipeline.extract_features(test_data)
     
     print("\nTraining features preview:")
     print(train_df.head())
 
+    # Save train_df to CSV for inspection
+    train_df.to_csv('train_features_extracted.csv', index=False)
+
+
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
-    X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
+    # X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
 
 
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.15, random_state=42)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     
+    # Crea una pipeline con normalizzazione e modello
+    print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
+    pipeline = Pipeline([
+        ('scaler', MinMaxScaler()),
+        ('classifier', LogisticRegression(random_state=42, max_iter=2000))
+    ])
+    # pipeline with RandomForestClassifier
+    # pipeline = Pipeline([
+    #     ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
+    # ])
+
     # Addestra e valuta
-    model = LogisticRegression(random_state=42, max_iter=2000)
-    trainer = ModelTrainer(model)
+    trainer = ModelTrainer(pipeline)
     trainer.train(X_tr, y_tr)
     trainer.evaluate(X_val, y_val)
     
     # Predici sul test set
-    predictions = trainer.predict(X_test)
+    # predictions = trainer.predict(X_test)
     
-    submission = pd.DataFrame({
-        'battle_id': test_df['battle_id'],
-        'player_won': predictions
-    })
-    submission.to_csv('predictions.csv', index=False)
+    # submission = pd.DataFrame({
+    #     'battle_id': test_df['battle_id'],
+    #     'player_won': predictions
+    # })
+    # submission.to_csv('predictions.csv', index=False)
 
 
 if __name__ == "__main__":
