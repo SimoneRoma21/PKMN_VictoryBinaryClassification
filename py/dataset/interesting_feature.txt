@@ -1,25 +1,27 @@
 feature estraibili dalle statistiche:
-- media vantaggi velocità --> prima e rimasti --> fatto
-- velocità lead -> FATTO
-- media hp team per pokemon conosciuti --> fatto
-- media hp team rimanenti ai due giocatori --> fatto
+- media vantaggi velocità --> prima e rimasti --> fatto (sistemato boost) (sistemata media)
+- velocità lead -> FATTO 
+- media hp team per pokemon conosciuti --> fatto (sistemata media)
+- media hp team rimanenti ai due giocatori --> fatto (sistemata media)
 - numero vantaggi pokemon che hanno atk phys più alto su pokemon con difesa phys bassa --> (Vedere) --> complessa
 - numero vantaggi pokemon che hanno atk special più alto su pokemon con difesa special bassa --> (Vedere) --> complessa
-- media stat totali prima e dopo 
+- media stat totali inizio --> fatto
+- media hp rimasti totali alla fine -> Fatta da patryk (forse sistemare scaling media???)
+
+#sistemare fattore media -> /6 oppure (somma+expectedmean*(6-known))/6
 
 Feature estraibile dalla composizione del team:
 - numero pokemon morti (subtask) --> fatto
 - numero pokemon rimanenti --> fatto
 - numero pokemon con debolezze prima e rimasti
-- livello totale squadra (ma se non li abbiamo tutti?) (normalizzati)
+- livello totale squadra (ma se non li abbiamo tutti?) (normalizzati) -> non ci sono le informazioni --> RIMOSSA
 
 
 Feature estraibile dalle mosse:
-- numero tipi coperti dalle mosse prima e rimasti --> non serve
 - numero pokemon con mosse buone sull'altro prima e rimasti
-- numero pokemon con mosse priority prima e rimasti --> complessa
+- numero pokemon con mosse priority prima e rimasti --> complessa --> non ci sono mosse priority --> RIMOSSA
 - numero pokemon con mosse field prima e rimasti --> complessa (ma sono previste dal json?)
-- numero pokemon con mosse di stato danno (infliggono danni) prima e rimasti --> complessa
-- numero pokemon con mosse di stato stun (skippano turno) prima --> complessa
+- numero pokemon con mosse di stato danno (infliggono danni) prima e rimasti --> complessa (pat ha valutato i numeri di status inflitti da p1 a p2)
+- numero pokemon con mosse di stato stun (skippano turno) prima --> complessa (pat ha valutato i numeri di status inflitti da p1 a p2)
 
 
