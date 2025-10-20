@@ -16,6 +16,7 @@ class Feature(Enum):
     MEAN_STATS_START= "mean_stats_start"
     P1_ALIVE_PKMN = "p1_alive_pkmn"
     P2_ALIVE_PKMN = "p2_alive_pkmn"
+    WEAKNESS_TEAMS= "weakness_teams"
     
     P1_SWITCHES_COUNT = "p1_switches_count"
     P2_SWITCHES_COUNT = "p2_switches_count"
@@ -29,8 +30,8 @@ class Feature(Enum):
     P1_FIRST_FAINT_TURN = "p1_first_faint_turn"  
     P1_AVG_HP_WHEN_SWITCHING = "p1_avg_hp_when_switching"
     P1_MAX_DEBUFF_RECEIVED = "p1_max_debuff_received" #non sicuro se necessaria
-    P2_MAX_DEBUFF_RECEIVED = "p2_max_debuff_received" #non sicura se necessaria
-   
+    P2_MAX_DEBUFF_RECEIVED = "p2_max_debuff_received" #non sicuro se necessaria
+    
 
 class FeatureRegistry:
     """
@@ -58,6 +59,7 @@ class FeatureRegistry:
         self._extractors[Feature.MEAN_STATS_START] = mean_stats_start
         self._extractors[Feature.P1_ALIVE_PKMN] = p1_alive_pkmn
         self._extractors[Feature.P2_ALIVE_PKMN] = p2_alive_pkmn
+        self._extractors[Feature.WEAKNESS_TEAMS] = weakness_teams
         self._extractors[Feature.P1_SWITCHES_COUNT] = p1_switches_count
         self._extractors[Feature.P2_SWITCHES_COUNT] = p2_switches_count
         self._extractors[Feature.P1_STATUS_INFLICTED] = p1_status_inflicted
@@ -80,18 +82,32 @@ def open_pkmn_database_csv() -> pd.DataFrame:
     pkmn_db=pkmn_db.drop("Unnamed: 0",axis=1)
     return pkmn_db
 
+def open_pkmn_database_weak_csv() -> pd.DataFrame:
+    #opening pkmn database weakness csv
+    pkmn_db_weak=pd.read_csv("../data/pkmn_database_weaknesses.csv")
+    return pkmn_db_weak
+
 def open_train_json() -> list:
     list = []
     with open("../data/train.jsonl", "r") as f:
         for line in f:
             list.append(json.loads(line))
+    list.remove(list[4877])
     return list
 
-    
+
+def open_type_chart_json() -> pd.DataFrame:
+    with open("../data/type_chart.json", "r") as f:
+        data=json.load(f)
+    return pd.DataFrame(data).transpose()
+
 def extract_all_pokemon_p1_teams(dataset) -> pd.DataFrame:
     #extracting all p1 teams
     db_pkmn_p1= pd.DataFrame([team for game in dataset for team in game['p1_team_details']]) 
     db_pkmn_p1.drop_duplicates(subset=['name'],inplace=True)
+
+    db_types_p1=pd.concat([extract_types_from_team_p1(game) for game in dataset]).drop_duplicates(subset="name",keep='first')
+    db_pkmn_p1=db_pkmn_p1.merge(db_types_p1, how='inner',on='name')
     return db_pkmn_p1
 
 def extract_all_pokemon_p2_seen(dataset) -> pd.DataFrame:
@@ -117,12 +133,16 @@ def extract_all_pokemon_p2(dataset) -> pd.DataFrame:
     # merging the two dataset
     db_pkmn_p2=db_pkmn_p2_lead.merge(db_pkmn_p2_battles, how='inner', on=['name'])
 
+    db_types_p2=pd.concat([extract_types_from_team_p2(game) for game in dataset]).drop_duplicates(subset="name",keep='first')
+    db_pkmn_p2=db_pkmn_p2.merge(db_types_p2, how='inner',on='name')
+
     return db_pkmn_p2
 
 def pkmn_database(dataset):
 
     # picking all pokemons seen of p1 in all games
     db_pkmn_p1=extract_all_pokemon_p1_teams(dataset)
+        
     #picking all pokemon seen of p2 in all games
     db_pkmn_p2=extract_all_pokemon_p2(dataset)
 
@@ -131,8 +151,19 @@ def pkmn_database(dataset):
     db_pkmn.drop_duplicates(subset=['name'],inplace=True)
     
     #saving to csv
-    pd.DataFrame.to_csv(db_pkmn,"../../data/pkmn_database.csv")
+    pd.DataFrame.to_csv(db_pkmn,"../data/pkmn_database.csv")
+    
 
+def pkmn_weak_database():
+    db_pkmn=open_pkmn_database_csv()
+    weaknesses=[]
+    for index,row in db_pkmn.iterrows():
+        weak=calc_weakness(row["type_1"],row["type_2"]).reset_index().rename(columns={'index':'type'})['type'].to_list()
+        weaknesses.append(weak)
+
+    db_weak=pd.DataFrame({"weaknesses":weaknesses})
+    db_pkmn_weak=pd.concat([db_pkmn,db_weak],axis=1)
+    pd.DataFrame.to_csv(db_pkmn_weak,"../data/pkmn_database_weaknesses.csv")
 
 def moves_database():
     pass
@@ -532,7 +563,10 @@ def p1_final_team_hp(dataset) -> pd.DataFrame: #feature
                     hp_remaining = last_state['hp_pct'] * pkmn['base_hp']
                     alive_pokemon.append(hp_remaining)
         
-        final_hp.append(sum(alive_pokemon) if alive_pokemon else 0)
+        #final_hp.append(sum(alive_pokemon) if alive_pokemon else 0)
+        p1_known=len(extract_p1_team_from_game_start(game))
+        hp_team_known=sum(alive_pokemon) if alive_pokemon else 0
+        final_hp.append(hp_team_known+(mean_hp_database(pkmn_database)*(6-p1_known)))
     
     return pd.DataFrame({'p1_final_team_hp': final_hp})
 
@@ -564,8 +598,11 @@ def p2_final_team_hp(dataset) -> pd.DataFrame: #feature
                     hp_remaining = last_state['hp_pct'] * base_hp
                     alive_pokemon.append(hp_remaining)
         
-        final_hp.append(sum(alive_pokemon) if alive_pokemon else 0) # forse qua andrebbe integrata con la media generale
-    
+        #final_hp.append(sum(alive_pokemon) if alive_pokemon else 0) # forse qua andrebbe integrata con la media generale
+        p2_known=len(extract_p2_team_from_game_start(game))
+        hp_team_known=sum(alive_pokemon) if alive_pokemon else 0
+        final_hp.append(hp_team_known+(mean_hp_database(pkmn_database)*(6-p2_known)))
+
     return pd.DataFrame({'p2_final_team_hp': final_hp})
 
 
@@ -610,9 +647,6 @@ def p1_first_faint_turn(dataset) -> pd.DataFrame: #feature
         first_faint.append(faint_turn)
     
     return pd.DataFrame({'p1_first_faint_turn': first_faint})
-
-
-
 
 
 def p1_avg_hp_when_switching(dataset) -> pd.DataFrame: #feature
@@ -691,8 +725,115 @@ def p2_max_debuff_received(dataset) -> pd.DataFrame: #feature
     return pd.DataFrame({'p2_max_debuff_received': max_debuff_list})
 
 
+def extract_types_from_team_p1(game)-> pd.DataFrame:
 
+    pkmn_database=open_pkmn_database_csv()
+    p1_team=extract_p1_team_from_game_start(game).to_frame()
+    p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+    p1_team=p1_team[['name','types']]
 
+    types=pd.DataFrame([type.split(",") for pokemon in p1_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
+    p1_team_types=p1_team.drop('types',axis=1)
+    p1_team_types['type_1']=types[0]
+    p1_team_types['type_2']=types[1]
+  
+    return p1_team_types
+
+def extract_types_from_team_p2(game)-> pd.DataFrame:
+
+    pkmn_database=open_pkmn_database_csv()
+    p2_team=extract_p2_team_from_game_start(game).to_frame()
+    p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+    p2_team=p2_team[['name','types']]
+
+    types=pd.DataFrame([type.split(",") for pokemon in p2_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
+    p2_team_types=p2_team.drop('types',axis=1)
+    p2_team_types['type_1']=types[0]
+    p2_team_types['type_2']=types[1]
+  
+    return p2_team_types
+
+def calc_weakness(type_1,type_2)->pd.DataFrame:
+    type_chart=open_type_chart_json()
+    weaknesses=pd.DataFrame([])
+
+    if type_1=='notype' and type_2!='notype':
+            type_col=type_chart[type_2].copy()
+            weaknesses=type_col[type_col>=2]
+
+    elif type_1!='notype' and type_2=='notype':
+            type_col=type_chart[type_1].copy()
+            weaknesses=type_col[type_col>=2]
+
+    elif type_1!='notype' and type_2!='notype':
+            type_col=type_chart[[type_1,type_2]].copy()
+            type_col['total']=type_col.prod(axis=1)
+            #type=[elem for elem in type if elem[1]>=2]
+            weaknesses=type_col[type_col['total']>=2]
+            weaknesses=weaknesses['total']
+
+    return weaknesses
+
+def weakness_teams(dataset) ->pd.DataFrame:
+    weak_games_p1,weak_games_p2=[],[]
+    for game in dataset:
+        weakness_p1=[]
+        p1_team_types=extract_types_from_team_p1(game)
+        for index,row in p1_team_types.iterrows():
+            weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
+            weakness_p1.append(weaknesses)
+        weakness_p1=pd.concat(weakness_p1).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
+        weakness_p1=weakness_p1['type']
+
+        weakness_p2=[]
+        p2_team_types=extract_types_from_team_p2(game)
+        for index,row in p2_team_types.iterrows():
+            weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
+            weakness_p2.append(weaknesses)
+        weakness_p2=pd.concat(weakness_p2).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
+        weakness_p2=weakness_p2['type']
+    
+        weak_games_p1.append(weakness_p1.count())
+        weak_games_p2.append(weakness_p2.count())
+    
+    return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
+
+def weakness_teams_opt(dataset) ->pd.DataFrame:
+    pkmn_db_weak=open_pkmn_database_weak_csv()
+    pkmn_db_weak=pkmn_db_weak[['name','weaknesses']].to_dict()
+    for elem in pkmn_db_weak['weaknesses']:
+
+            pkmn_db_weak['weaknesses'][elem]=pkmn_db_weak
+            #elem=elem.replace("[]","").split(",")
+    print(type(pkmn_db_weak['weaknesses'][0]))
+    #pkmn_db_weak['weaknesses'].apply(lambda x: pd.DataFrame(x.replace("[]","").split(",")))
+    #print(pkmn_db_weak['weaknesses'][2])
+    weak_games_p1,weak_games_p2=[],[]
+
+    '''
+    for game in dataset:
+        weakness_p1=[]
+        p1_team_types=extract_types_from_team_p1(game)
+        for index,row in p1_team_types.iterrows():
+            weaknesses=pkmn_db_weak[pkmn_db_weak['name'==row.loc['name']]]
+            #weakness_p1.append(weaknesses)
+        #weakness_p1=pd.concat(weakness_p1).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
+        #weakness_p1=weakness_p1['type']
+    '''
+    '''
+        weakness_p2=[]
+        p2_team_types=extract_types_from_team_p2(game)
+        for index,row in p2_team_types.iterrows():
+            weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
+            weakness_p2.append(weaknesses)
+        weakness_p2=pd.concat(weakness_p2).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
+        weakness_p2=weakness_p2['type']
+    
+        weak_games_p1.append(weakness_p1.count())
+        weak_games_p2.append(weakness_p2.count())
+
+    return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
+        '''
 
 if __name__=="__main__":
     dataset=open_train_json()
@@ -724,6 +865,19 @@ if __name__=="__main__":
 
     #print(p2_mean_hp_start(dataset))
     
-    print(pd.concat([p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),mean_spe_start(dataset),mean_spe_last(dataset),mean_stats_start(dataset)],axis=1))
+    #print(pd.concat([p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),mean_spe_start(dataset),mean_spe_last(dataset),mean_stats_start(dataset)],axis=1))
     #print(mean_stats_start(dataset))
-  
+
+    #print(pd.concat([p1_final_team_hp(dataset),p2_final_team_hp(dataset),final_team_hp_difference(dataset)],axis=1))
+    
+
+    #print(extract_types_from_team_p1(dataset[0]),"\n",extract_types_from_team_p2(dataset[0]))
+    #print(open_type_chart_json())
+    #print(weakness_teams(dataset))
+    #pkmn_weak_database()
+
+    #print(extract_all_pokemon_p1_teams(dataset)['types'][0])
+    #print(extract_all_pokemon_p2(dataset)['types'])
+    #print(open_pkmn_database_csv()['types'][0])
+
+    weakness_teams_opt(dataset)

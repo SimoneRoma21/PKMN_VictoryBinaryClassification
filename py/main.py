@@ -18,6 +18,7 @@ def main():
         Feature.MEAN_HP_LAST, 
         Feature.P1_ALIVE_PKMN,
         Feature.P2_ALIVE_PKMN,
+        Feature.WEAKNESS_TEAMS,
         Feature.MEAN_STATS_START,
         # Feature.TOTAL_TURNS, 
         Feature.P1_SWITCHES_COUNT,
@@ -77,7 +78,8 @@ def main():
     # Crea una pipeline con normalizzazione e modello
     print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
     pipeline = Pipeline([
-        ('scaler', MinMaxScaler()),
+        #('scaler', MinMaxScaler()),
+        ('scaler',StandardScaler()),
         ('classifier', LogisticRegression(random_state=42, max_iter=2000))
     ])
     # pipeline with RandomForestClassifier
