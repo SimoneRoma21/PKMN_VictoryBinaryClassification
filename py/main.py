@@ -32,8 +32,19 @@ def main():
         Feature.FINAL_TEAM_HP_DIFFERENCE,
         Feature.P1_FIRST_FAINT_TURN,
         Feature.P1_AVG_HP_WHEN_SWITCHING,
-        Feature.P1_MAX_DEBUFF_RECEIVED,
-        Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P2_AVG_HP_WHEN_SWITCHING,
+        # Feature.P1_MAX_DEBUFF_RECEIVED,
+        # Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P1_AVG_MOVE_POWER,
+        Feature.P2_AVG_MOVE_POWER,
+        Feature.AVG_MOVE_POWER_DIFFERENCE,
+        Feature.P1_OFFENSIVE_RATIO,
+        Feature.P2_OFFENSIVE_RATIO,
+        Feature.OFFENSIVE_RATIO_DIFFERENCE,
+        Feature.P1_MOVED_FIRST_COUNT,
+        Feature.P2_MOVED_FIRST_COUNT,
+        Feature.SPEED_ADVANTAGE_RATIO
+
     ]
 
     pipeline = FeaturePipeline(selected_features)
@@ -48,18 +59,20 @@ def main():
         for line in f:
             train_data.append(json.loads(line))
     
-    # print("Loading test data...")
-    # test_data = []
-    # with open(test_file_path, 'r') as f:
-    #     for line in f:
-    #         test_data.append(json.loads(line))
+    print("Loading test data...")
+    test_data = []
+    with open(test_file_path, 'r') as f:
+        for line in f:
+            test_data.append(json.loads(line))
     
     # Estrai le feature
     print("\nExtracting features from training data...")
     train_df = pipeline.extract_features(train_data)
+    # drop row number 4877
+    train_df = train_df.drop(index=4877)
     
     # print("Extracting features from test data...")
-    # test_df = pipeline.extract_features(test_data)
+    test_df = pipeline.extract_features(test_data)
     
     print("\nTraining features preview:")
     print(train_df.head())
@@ -70,7 +83,7 @@ def main():
 
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
-    # X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
+    X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
 
 
     X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
@@ -78,13 +91,13 @@ def main():
     # Crea una pipeline con normalizzazione e modello
     print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
     pipeline = Pipeline([
-        #('scaler', MinMaxScaler()),
+        # ('scaler', MinMaxScaler()),
         ('scaler',StandardScaler()),
         ('classifier', LogisticRegression(random_state=42, max_iter=2000))
     ])
     # pipeline with RandomForestClassifier
     # pipeline = Pipeline([
-    #     ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
+    #     ('classifier', RandomForestClassifier(n_estimators=4, random_state=42))
     # ])
 
     # Addestra e valuta
@@ -93,13 +106,13 @@ def main():
     trainer.evaluate(X_val, y_val)
     
     # Predici sul test set
-    # predictions = trainer.predict(X_test)
+    predictions = trainer.predict(X_test)
     
-    # submission = pd.DataFrame({
-    #     'battle_id': test_df['battle_id'],
-    #     'player_won': predictions
-    # })
-    # submission.to_csv('predictions.csv', index=False)
+    submission = pd.DataFrame({
+        'battle_id': test_df['battle_id'],
+        'player_won': predictions
+    })
+    submission.to_csv('predictions.csv', index=False)
 
 
 if __name__ == "__main__":

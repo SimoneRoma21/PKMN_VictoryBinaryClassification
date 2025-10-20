@@ -29,9 +29,19 @@ class Feature(Enum):
     FINAL_TEAM_HP_DIFFERENCE = "final_team_hp_difference"
     P1_FIRST_FAINT_TURN = "p1_first_faint_turn"  
     P1_AVG_HP_WHEN_SWITCHING = "p1_avg_hp_when_switching"
+    P2_AVG_HP_WHEN_SWITCHING = "p2_avg_hp_when_switching"
     P1_MAX_DEBUFF_RECEIVED = "p1_max_debuff_received" #non sicuro se necessaria
     P2_MAX_DEBUFF_RECEIVED = "p2_max_debuff_received" #non sicuro se necessaria
-    
+    P1_AVG_MOVE_POWER = "p1_avg_move_power"
+    P2_AVG_MOVE_POWER = "p2_avg_move_power"
+    AVG_MOVE_POWER_DIFFERENCE = "avg_move_power_difference"
+    P1_OFFENSIVE_RATIO = "p1_offensive_ratio"
+    P2_OFFENSIVE_RATIO = "p2_offensive_ratio"
+    OFFENSIVE_RATIO_DIFFERENCE = "offensive_ratio_difference"
+    P1_MOVED_FIRST_COUNT = "p1_moved_first_count"
+    P2_MOVED_FIRST_COUNT = "p2_moved_first_count"
+    SPEED_ADVANTAGE_RATIO = "speed_advantage_ratio"
+
 
 class FeatureRegistry:
     """
@@ -71,9 +81,18 @@ class FeatureRegistry:
         self._extractors[Feature.FINAL_TEAM_HP_DIFFERENCE] = final_team_hp_difference
         self._extractors[Feature.P1_FIRST_FAINT_TURN] = p1_first_faint_turn
         self._extractors[Feature.P1_AVG_HP_WHEN_SWITCHING] = p1_avg_hp_when_switching
+        self._extractors[Feature.P2_AVG_HP_WHEN_SWITCHING] = p2_avg_hp_when_switching
         self._extractors[Feature.P1_MAX_DEBUFF_RECEIVED] = p1_max_debuff_received
         self._extractors[Feature.P2_MAX_DEBUFF_RECEIVED] = p2_max_debuff_received
-        
+        self._extractors[Feature.P1_AVG_MOVE_POWER] = p1_avg_move_power
+        self._extractors[Feature.P2_AVG_MOVE_POWER] = p2_avg_move_power
+        self._extractors[Feature.AVG_MOVE_POWER_DIFFERENCE] = avg_move_power_difference
+        self._extractors[Feature.P1_OFFENSIVE_RATIO] = p1_offensive_ratio
+        self._extractors[Feature.P2_OFFENSIVE_RATIO] = p2_offensive_ratio
+        self._extractors[Feature.OFFENSIVE_RATIO_DIFFERENCE] = offensive_ratio_difference
+        self._extractors[Feature.P1_MOVED_FIRST_COUNT] = p1_moved_first_count
+        self._extractors[Feature.P2_MOVED_FIRST_COUNT] = p2_moved_first_count
+        self._extractors[Feature.SPEED_ADVANTAGE_RATIO] = speed_advantage_ratio
 
 
 def open_pkmn_database_csv() -> pd.DataFrame:
@@ -622,9 +641,9 @@ def final_team_hp_difference(dataset) -> pd.DataFrame: #feature
 def p1_first_faint_turn(dataset) -> pd.DataFrame: #feature
     """
     Turno in cui P1 perde il primo Pokémon.
-    Valori alti indicano che P1 è riuscito a resistere più a lungo.
-    Se P1 non perde nessun Pokémon, restituisce il numero totale di turni.
-    """
+        Valori alti indicano che P1 è riuscito a resistere più a lungo.
+        Valori negativi indicano il turno in cui è avvenuto il primo faint (es. -3 significa che il primo faint è avvenuto al terzo turno).
+        """
     first_faint = []
     
     for game in dataset:
@@ -642,8 +661,10 @@ def p1_first_faint_turn(dataset) -> pd.DataFrame: #feature
         
         # Se nessun Pokémon è svenuto, usa l'ultimo turno + 1
         if faint_turn is None:
-            faint_turn = len(game['battle_timeline']) + 1
-        
+            faint_turn = -(len(game['battle_timeline']) + 1)
+        else:
+            faint_turn = - faint_turn
+
         first_faint.append(faint_turn)
     
     return pd.DataFrame({'p1_first_faint_turn': first_faint})
@@ -679,6 +700,33 @@ def p1_avg_hp_when_switching(dataset) -> pd.DataFrame: #feature
     
     return pd.DataFrame({'p1_avg_hp_when_switching': avg_hp_switches})
 
+def p2_avg_hp_when_switching(dataset) -> pd.DataFrame: #feature
+    """
+    HP percentuale medio dei Pokémon P2 quando effettuano uno switch.
+    """
+    avg_hp_switches = []
+    
+    for game in dataset:
+        switch_hp = []
+        prev_pokemon = None
+        
+        for i, turn in enumerate(game['battle_timeline']):
+            current_pokemon = turn['p2_pokemon_state']['name']
+            
+            # Se c'è stato uno switch
+            if prev_pokemon is not None and current_pokemon != prev_pokemon:
+                # HP del Pokémon che ha switchato out (turno precedente)
+                if i > 0:
+                    prev_turn = game['battle_timeline'][i-1]
+                    switch_hp.append(prev_turn['p2_pokemon_state']['hp_pct'])
+            
+            prev_pokemon = current_pokemon
+        
+        # Media degli HP quando si switcha
+        avg_hp = np.mean(switch_hp) if switch_hp else 1.0  # 1.0 se non ci sono switch
+        avg_hp_switches.append(avg_hp)
+    
+    return pd.DataFrame({'p2_avg_hp_when_switching': avg_hp_switches})
 
 def p1_max_debuff_received(dataset) -> pd.DataFrame: #feature
     """
@@ -837,6 +885,281 @@ def weakness_teams(dataset) ->pd.DataFrame:
 
     return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
         
+
+
+def p1_avg_move_power(dataset) -> pd.DataFrame: #feature
+    """
+    Calcola la potenza media delle mosse usate da P1 durante tutta la battaglia.
+    Esclude mosse con base_power = 0 (mosse di status).
+    Valori più alti indicano un approccio più offensivo.
+    """
+    avg_powers = []
+    
+    for game in dataset:
+        move_powers = []
+        
+        for turn in game['battle_timeline']:
+            move_details = turn['p1_move_details']
+            
+            # Se c'è una mossa e ha base_power > 0 (non è una mossa di status)
+            if move_details is not None and move_details['base_power'] > 0:
+                move_powers.append(move_details['base_power'])
+        
+        # Calcola la media, se non ci sono mosse offensive usa 0
+        avg_power = np.mean(move_powers) if move_powers else 0
+        avg_powers.append(avg_power)
+    
+    return pd.DataFrame({'p1_avg_move_power': avg_powers})
+
+
+def p2_avg_move_power(dataset) -> pd.DataFrame: #feature
+    """
+    Calcola la potenza media delle mosse usate da P2 durante tutta la battaglia.
+    Esclude mosse con base_power = 0 (mosse di status).
+    """
+    avg_powers = []
+    
+    for game in dataset:
+        move_powers = []
+        
+        for turn in game['battle_timeline']:
+            move_details = turn['p2_move_details']
+            
+            # Se c'è una mossa e ha base_power > 0 (non è una mossa di status)
+            if move_details is not None and move_details['base_power'] > 0:
+                move_powers.append(move_details['base_power'])
+        
+        # Calcola la media, se non ci sono mosse offensive usa 0
+        avg_power = np.mean(move_powers) if move_powers else 0
+        avg_powers.append(avg_power)
+    
+    return pd.DataFrame({'p2_avg_move_power': avg_powers})
+
+
+def avg_move_power_difference(dataset) -> pd.DataFrame: #feature
+    """
+    Differenza tra la potenza media delle mosse di P1 e P2.
+    Valori positivi indicano che P1 usa mosse più potenti in media.
+    """
+    p1_power = p1_avg_move_power(dataset)
+    p2_power = p2_avg_move_power(dataset)
+    
+    diff = p1_power['p1_avg_move_power'] - p2_power['p2_avg_move_power']
+    
+    return pd.DataFrame({'avg_move_power_difference': diff})
+
+
+def p1_offensive_ratio(dataset) -> pd.DataFrame: #feature
+    """
+    Rapporto tra statistiche offensive (Atk + SpA) e difensive (Def + SpD) per il team P1.
+    Ratio > 1: team offensivo
+    Ratio < 1: team difensivo
+    Ratio ~ 1: team bilanciato
+    """
+    ratios = []
+    
+    for game in dataset:
+        p1_team = game['p1_team_details']
+        
+        total_offensive = 0
+        total_defensive = 0
+        
+        for pokemon in p1_team:
+            total_offensive += pokemon['base_atk'] + pokemon['base_spa']
+            total_defensive += pokemon['base_def'] + pokemon['base_spd']
+        
+        # Calcola il rapporto, evita divisione per zero
+        ratio = total_offensive / total_defensive if total_defensive > 0 else 0
+        ratios.append(ratio)
+    
+    return pd.DataFrame({'p1_offensive_ratio': ratios})
+
+
+def p2_offensive_ratio(dataset) -> pd.DataFrame: #feature
+    """
+    Rapporto tra statistiche offensive (Atk + SpA) e difensive (Def + SpD) per il team P2.
+    Nota: P2 ha solo informazioni sul lead e sui Pokémon visti durante la battaglia.
+    """
+    pkmn_database = open_pkmn_database_csv()
+    ratios = []
+    
+    for game in dataset:
+        # Trova tutti i Pokémon P2 visti durante la battaglia
+        all_turns = pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
+        unique_pokemon = all_turns['name'].unique()
+        
+        total_offensive = 0
+        total_defensive = 0
+        
+        for pkmn_name in unique_pokemon:
+            # Ottieni stats dal database
+            pkmn_info = pkmn_database[pkmn_database['name'] == pkmn_name]
+            
+            if len(pkmn_info) > 0:
+                pkmn_stats = pkmn_info.iloc[0]
+                total_offensive += pkmn_stats['base_atk'] + pkmn_stats['base_spa']
+                total_defensive += pkmn_stats['base_def'] + pkmn_stats['base_spd']
+        
+        # Calcola il rapporto, evita divisione per zero
+        ratio = total_offensive / total_defensive if total_defensive > 0 else 0
+        ratios.append(ratio)
+    
+    return pd.DataFrame({'p2_offensive_ratio': ratios})
+
+
+def offensive_ratio_difference(dataset) -> pd.DataFrame: #feature
+    """
+    Differenza tra i rapporti offensivi/difensivi di P1 e P2.
+    Valori positivi indicano che P1 ha un team più offensivo rispetto a P2.
+    """
+    p1_ratio = p1_offensive_ratio(dataset)
+    p2_ratio = p2_offensive_ratio(dataset)
+    
+    diff = p1_ratio['p1_offensive_ratio'] - p2_ratio['p2_offensive_ratio']
+    
+    return pd.DataFrame({'offensive_ratio_difference': diff})
+
+
+def p1_moved_first_count(dataset) -> pd.DataFrame: #feature
+    """
+    Conta il numero di turni in cui P1 ha attaccato per primo.
+    Determina chi muove prima basandosi su:
+    1. Priority della mossa (più alta = muove prima)
+    2. Se priority è uguale, usa la Speed del Pokémon (considerando i boost)
+    
+    Ignora turni dove almeno uno dei due fa uno switch (move_details = None).
+    """
+    pkmn_database = open_pkmn_database_csv()
+    first_move_counts = []
+    
+    for game in dataset:
+        p1_first = 0
+        
+        for turn in game['battle_timeline']:
+            p1_move = turn['p1_move_details']
+            p2_move = turn['p2_move_details']
+            
+            # Se entrambi hanno fatto una mossa (non switch)
+            if p1_move is not None and p2_move is not None:
+                p1_priority = p1_move['priority']
+                p2_priority = p2_move['priority']
+                
+                # Chi ha priority più alta muove prima
+                if p1_priority > p2_priority:
+                    p1_first += 1
+                elif p1_priority == p2_priority:
+                    # Se priority uguale, controlla speed
+                    p1_name = turn['p1_pokemon_state']['name']
+                    p2_name = turn['p2_pokemon_state']['name']
+                    
+                    # Ottieni base speed
+                    p1_info = pkmn_database[pkmn_database['name'] == p1_name]
+                    p2_info = pkmn_database[pkmn_database['name'] == p2_name]
+                    
+                    if len(p1_info) > 0 and len(p2_info) > 0:
+                        p1_base_spe = p1_info.iloc[0]['base_spe']
+                        p2_base_spe = p2_info.iloc[0]['base_spe']
+                        
+                        # Considera i boost di speed
+                        p1_spe_boost = turn['p1_pokemon_state']['boosts']['spe']
+                        p2_spe_boost = turn['p2_pokemon_state']['boosts']['spe']
+                        
+                        # Applica i boost (ogni stage = 50% in più o in meno)
+                        # Semplificazione: +1 = 1.5x, +2 = 2x, -1 = 0.67x, etc.
+                        p1_effective_spe = p1_base_spe * (1 + 0.5 * p1_spe_boost) if p1_spe_boost >= 0 else p1_base_spe / (1 + 0.5 * abs(p1_spe_boost))
+                        p2_effective_spe = p2_base_spe * (1 + 0.5 * p2_spe_boost) if p2_spe_boost >= 0 else p2_base_spe / (1 + 0.5 * abs(p2_spe_boost))
+                        
+                        # Considera paralisi (riduce speed del 75% in Gen 1)
+                        if turn['p1_pokemon_state']['status'] == 'par':
+                            p1_effective_spe *= 0.25
+                        if turn['p2_pokemon_state']['status'] == 'par':
+                            p2_effective_spe *= 0.25
+                        
+                        if p1_effective_spe > p2_effective_spe:
+                            p1_first += 1
+        
+        first_move_counts.append(p1_first)
+    
+    return pd.DataFrame({'p1_moved_first_count': first_move_counts})
+
+
+def p2_moved_first_count(dataset) -> pd.DataFrame: #feature
+    """
+    Conta il numero di turni in cui P2 ha attaccato per primo.
+    Usa la stessa logica di p1_moved_first_count.
+    """
+    pkmn_database = open_pkmn_database_csv()
+    first_move_counts = []
+    
+    for game in dataset:
+        p2_first = 0
+        
+        for turn in game['battle_timeline']:
+            p1_move = turn['p1_move_details']
+            p2_move = turn['p2_move_details']
+            
+            # Se entrambi hanno fatto una mossa (non switch)
+            if p1_move is not None and p2_move is not None:
+                p1_priority = p1_move['priority']
+                p2_priority = p2_move['priority']
+                
+                # Chi ha priority più alta muove prima
+                if p2_priority > p1_priority:
+                    p2_first += 1
+                elif p1_priority == p2_priority:
+                    # Se priority uguale, controlla speed
+                    p1_name = turn['p1_pokemon_state']['name']
+                    p2_name = turn['p2_pokemon_state']['name']
+                    
+                    # Ottieni base speed
+                    p1_info = pkmn_database[pkmn_database['name'] == p1_name]
+                    p2_info = pkmn_database[pkmn_database['name'] == p2_name]
+                    
+                    if len(p1_info) > 0 and len(p2_info) > 0:
+                        p1_base_spe = p1_info.iloc[0]['base_spe']
+                        p2_base_spe = p2_info.iloc[0]['base_spe']
+                        
+                        # Considera i boost di speed
+                        p1_spe_boost = turn['p1_pokemon_state']['boosts']['spe']
+                        p2_spe_boost = turn['p2_pokemon_state']['boosts']['spe']
+                        
+                        # Applica i boost
+                        p1_effective_spe = p1_base_spe * (1 + 0.5 * p1_spe_boost) if p1_spe_boost >= 0 else p1_base_spe / (1 + 0.5 * abs(p1_spe_boost))
+                        p2_effective_spe = p2_base_spe * (1 + 0.5 * p2_spe_boost) if p2_spe_boost >= 0 else p2_base_spe / (1 + 0.5 * abs(p2_spe_boost))
+                        
+                        # Considera paralisi
+                        if turn['p1_pokemon_state']['status'] == 'par':
+                            p1_effective_spe *= 0.25
+                        if turn['p2_pokemon_state']['status'] == 'par':
+                            p2_effective_spe *= 0.25
+                        
+                        if p2_effective_spe > p1_effective_spe:
+                            p2_first += 1
+        
+        first_move_counts.append(p2_first)
+    
+    return pd.DataFrame({'p2_moved_first_count': first_move_counts})
+
+
+def speed_advantage_ratio(dataset) -> pd.DataFrame: #feature
+    """
+    Rapporto tra il numero di turni in cui P1 muove prima vs P2.
+    
+    Ratio > 1: P1 ha vantaggio di speed
+    Ratio < 1: P2 ha vantaggio di speed
+    Ratio = 1: Speed equilibrata
+    
+    Formula: (p1_moved_first + 1) / (p2_moved_first + 1)
+    Aggiungiamo +1 per evitare divisioni per zero.
+    """
+    p1_first = p1_moved_first_count(dataset)
+    p2_first = p2_moved_first_count(dataset)
+    
+    # Calcola il rapporto con smoothing (+1) per evitare divisione per zero
+    ratio = (p1_first['p1_moved_first_count'] + 1) / (p2_first['p2_moved_first_count'] + 1)
+    
+    return pd.DataFrame({'speed_advantage_ratio': ratio})
+
 
 if __name__=="__main__":
     dataset=open_train_json()
