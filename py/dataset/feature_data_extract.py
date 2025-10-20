@@ -774,66 +774,69 @@ def calc_weakness(type_1,type_2)->pd.DataFrame:
 
     return weaknesses
 
+def weakness_teams_not_opt(dataset) -> pd.DataFrame: #feature
+    weak_games_p1,weak_games_p2=[],[]
+    for game in dataset:
+        #if game['battle_id']==0:
+            weakness_p1=[]
+            p1_team_types=extract_types_from_team_p1(game)
+            for index,row in p1_team_types.iterrows():
+                weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
+                weakness_p1.append(weaknesses)
+                #print(weaknesses,"\n")
+            weakness_p1=pd.concat(weakness_p1).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
+            weakness_p1=weakness_p1['type']
+
+            weakness_p2=[]
+            p2_team_types=extract_types_from_team_p2(game)
+            for index,row in p2_team_types.iterrows():
+                weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
+                weakness_p2.append(weaknesses)
+                #print(weaknesses,"\n")
+            weakness_p2=pd.concat(weakness_p2).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
+            weakness_p2=weakness_p2['type']
+    
+            weak_games_p1.append(weakness_p1.count())
+            weak_games_p2.append(weakness_p2.count())
+    
+    return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
+
 def weakness_teams(dataset) ->pd.DataFrame:
-    weak_games_p1,weak_games_p2=[],[]
-    for game in dataset:
-        weakness_p1=[]
-        p1_team_types=extract_types_from_team_p1(game)
-        for index,row in p1_team_types.iterrows():
-            weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
-            weakness_p1.append(weaknesses)
-        weakness_p1=pd.concat(weakness_p1).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
-        weakness_p1=weakness_p1['type']
-
-        weakness_p2=[]
-        p2_team_types=extract_types_from_team_p2(game)
-        for index,row in p2_team_types.iterrows():
-            weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
-            weakness_p2.append(weaknesses)
-        weakness_p2=pd.concat(weakness_p2).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
-        weakness_p2=weakness_p2['type']
-    
-        weak_games_p1.append(weakness_p1.count())
-        weak_games_p2.append(weakness_p2.count())
-    
-    return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
-
-def weakness_teams_opt(dataset) ->pd.DataFrame:
     pkmn_db_weak=open_pkmn_database_weak_csv()
-    pkmn_db_weak=pkmn_db_weak[['name','weaknesses']].to_dict()
-    for elem in pkmn_db_weak['weaknesses']:
-
-            pkmn_db_weak['weaknesses'][elem]=pkmn_db_weak
-            #elem=elem.replace("[]","").split(",")
-    print(type(pkmn_db_weak['weaknesses'][0]))
-    #pkmn_db_weak['weaknesses'].apply(lambda x: pd.DataFrame(x.replace("[]","").split(",")))
-    #print(pkmn_db_weak['weaknesses'][2])
+    pkmn_db_weak=pd.DataFrame(pkmn_db_weak[['name','weaknesses']])
+    pkmn_db_weak['weaknesses']=pkmn_db_weak['weaknesses'].apply(lambda x: x.strip("[] ").replace("'","").replace(" ","").split(","))
+    
+    #print(pkmn_db_weak)
     weak_games_p1,weak_games_p2=[],[]
 
-    '''
-    for game in dataset:
-        weakness_p1=[]
-        p1_team_types=extract_types_from_team_p1(game)
-        for index,row in p1_team_types.iterrows():
-            weaknesses=pkmn_db_weak[pkmn_db_weak['name'==row.loc['name']]]
-            #weakness_p1.append(weaknesses)
-        #weakness_p1=pd.concat(weakness_p1).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
-        #weakness_p1=weakness_p1['type']
-    '''
-    '''
-        weakness_p2=[]
-        p2_team_types=extract_types_from_team_p2(game)
-        for index,row in p2_team_types.iterrows():
-            weaknesses=calc_weakness(row.iloc[1],row.iloc[2])
-            weakness_p2.append(weaknesses)
-        weakness_p2=pd.concat(weakness_p2).reset_index().rename(columns={'index':'type'}).drop_duplicates(subset='type').reset_index(drop=True)
-        weakness_p2=weakness_p2['type']
     
-        weak_games_p1.append(weakness_p1.count())
-        weak_games_p2.append(weakness_p2.count())
+    for game in dataset:
+        #if game['battle_id']==0:
+            #weakness_p1=[]
+            p1_team_types=extract_types_from_team_p1(game)
+            p1_team_types=p1_team_types.merge(pkmn_db_weak,how='inner',on='name')
+            #print(p1_team_types)
+            #print(p1_team_types,"\n")
+            sw_1=set(sum(p1_team_types['weaknesses'],[]))
+            #print(sw_1)
+            
+            #weakness_p1.append(len(sw_1))
+            weak_games_p1.append(len(sw_1))
+
+            #weakness_p2=[]
+            p2_team_types=extract_types_from_team_p2(game)
+            p2_team_types=p2_team_types.merge(pkmn_db_weak,how='inner',on='name')
+            #print(p2_team_types,"\n")
+            #print(p2_team_types)
+            sw_2=set(sum(p2_team_types['weaknesses'],[]))
+            #print(sw_2)
+            #weakness_p2.append(len(sw_2))
+            weak_games_p2.append(len(sw_2))
+            
+            
 
     return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
-        '''
+        
 
 if __name__=="__main__":
     dataset=open_train_json()
@@ -859,7 +862,7 @@ if __name__=="__main__":
     #print(mhl.iloc[4877])
     #print(p1_alive_pkmn(dataset).iloc[4877:4880],"\n",p2_alive_pkmn(dataset).iloc[4877:4880])
     #print(p1_alive_pkmn_try(dataset))
-    #pd.set_option('display.max_colwidth',None)
+    pd.set_option('display.max_colwidth',None)
     #msl=mean_spd_last(dataset)
     #print(msl.iloc[58])
 
@@ -880,4 +883,5 @@ if __name__=="__main__":
     #print(extract_all_pokemon_p2(dataset)['types'])
     #print(open_pkmn_database_csv()['types'][0])
 
-    weakness_teams_opt(dataset)
+    #print(pd.concat([weakness_teams_opt(dataset),weakness_teams(dataset)],axis=1))
+    print(weakness_teams(dataset))
