@@ -9,14 +9,29 @@ class Feature(Enum):
 
     P1_MEAN_HP_START = "p1_mean_hp_start"
     P2_MEAN_HP_START = "p2_mean_hp_start"
+    MEAN_HP_DIFFERENCE_START= "mean_hp_difference_start"
     LEAD_SPD = "lead_spd"
     MEAN_SPE_START = "mean_spe_start"
+    # P1_MEAN_SPE_LAST="p1_mean_spe_start"
+    # P2_MEAN_SPE_LAST="p2_mean_spe_start"
+    # MEAN_SPE_START_DIFFERENCE="mean_spe_start_difference"
     MEAN_SPE_LAST = "mean_spe_last"
+    # P1_MEAN_SPE_LAST="p1_mean_spe_last"
+    # P2_MEAN_SPE_LAST="p2_mean_spe_last"
+    # MEAN_SPE_LAST_DIFFERENCE="mean_spe_last_difference"
     MEAN_HP_LAST = "mean_hp_last"
+    # P1_MEAN_HP_LAST= "p1_mean_hp_last" 
+    # P2_MEAN_HP_LAST= "p2_mean_hp_last"
+    # MEAN_HP_DIFFERENCE_LAST= "mean_hp_last_difference"
     MEAN_STATS_START= "mean_stats_start"
+    MEAN_STATS_LAST= "mean_stats_last"
     P1_ALIVE_PKMN = "p1_alive_pkmn"
     P2_ALIVE_PKMN = "p2_alive_pkmn"
-    WEAKNESS_TEAMS= "weakness_teams"
+    ALIVE_PKMN_DIFFERENCE="alive_pkmn_difference"
+    WEAKNESS_TEAMS_START= "weakness_teams"
+    WEAKNESS_TEAMS_LAST= "weakness_teams_last"
+    ADVANTAGE_WEAK_START="advantage_weak_start"
+    ADVANTAGE_WEAK_LAST="advantage_weak_last"
     
     P1_SWITCHES_COUNT = "p1_switches_count"
     P2_SWITCHES_COUNT = "p2_switches_count"
@@ -62,14 +77,30 @@ class FeatureRegistry:
         
         self._extractors[Feature.P1_MEAN_HP_START] = p1_mean_hp_start
         self._extractors[Feature.P2_MEAN_HP_START] = p2_mean_hp_start
+        self._extractors[Feature.MEAN_HP_DIFFERENCE_START]= mean_hp_difference_start
         self._extractors[Feature.LEAD_SPD] = lead_spd
         self._extractors[Feature.MEAN_SPE_START] = mean_spe_start
+        #self._extractors[Feature.P1_MEAN_SPE_START]= p1_mean_spe_start 
+        #self._extractors[Feature.P2_MEAN_HP_START]= p2_mean_spe_start 
+        #self._extractors[Feature.MEAN_SPE_DIFFERENCE_START]= mean_spe_start_difference
         self._extractors[Feature.MEAN_SPE_LAST] = mean_spe_last
+        #self._extractors[Feature.P1_MEAN_SPE_LAST]= p1_mean_spe_last
+        #self._extractors[Feature.P2_MEAN_HP_LAST]= p2_mean_spe_last
+        #self._extractors[Feature.MEAN_SPE_DIFFERENCE_LAST]= mean_spe_last_difference
         self._extractors[Feature.MEAN_HP_LAST] = mean_hp_last
+        #self._extractors[Feature.P1_MEAN_HP_LAST]= p1_mean_hp_last 
+        #self._extractors[Feature.P2_MEAN_HP_LAST]= p2_mean_hp_last
+        #self._extractors[Feature.MEAN_HP_DIFFERENCE_LAST]= mean_hp_last_difference
         self._extractors[Feature.MEAN_STATS_START] = mean_stats_start
+        self._extractors[Feature.MEAN_STATS_LAST] = mean_stats_last
         self._extractors[Feature.P1_ALIVE_PKMN] = p1_alive_pkmn
         self._extractors[Feature.P2_ALIVE_PKMN] = p2_alive_pkmn
-        self._extractors[Feature.WEAKNESS_TEAMS] = weakness_teams
+        self._extractors[Feature.ALIVE_PKMN_DIFFERENCE]=alive_pkmn_difference
+        self._extractors[Feature.WEAKNESS_TEAMS_START] = weakness_teams
+        self._extractors[Feature.WEAKNESS_TEAMS_LAST] = weakness_teams_last
+        self._extractors[Feature.ADVANTAGE_WEAK_START] = advantage_weak_start
+        self._extractors[Feature.ADVANTAGE_WEAK_LAST] = advantage_weak_last
+        
         self._extractors[Feature.P1_SWITCHES_COUNT] = p1_switches_count
         self._extractors[Feature.P2_SWITCHES_COUNT] = p2_switches_count
         self._extractors[Feature.P1_STATUS_INFLICTED] = p1_status_inflicted
@@ -288,7 +319,18 @@ def mean_spe_start(dataset) -> pd.DataFrame: #feature
         p2_mean_spe.append((np.sum(p2_team['base_spe'])+ mean_spe_database(pkmn_database)*(6-p2_known))/6)
 
     mean_spe_start=pd.DataFrame({'p1_mean_spe_start':p1_mean_spe,'p2_mean_spe_start':p2_mean_spe})
+    mean_spe_start['mean_spe_start_difference']=np.subtract.reduce(mean_spe_start[['p1_mean_spe_start','p2_mean_spe_start']],axis=1)
+    #return mean_spe_start['p2_mean_spe_start']
     return mean_spe_start
+
+def p1_mean_start_last(dataset)-> pd.DataFrame: #feature
+    return mean_spe_start(dataset)['p1_mean_spe_start']
+
+def p2_mean_start_last(dataset)-> pd.DataFrame: #feature
+    return mean_spe_start(dataset)['p2_mean_spe_start']
+
+def mean_spe_start_difference(dataset)-> pd.DataFrame: #feature
+    return mean_spe_start(dataset)['mean_spe_start_difference']
 
 def mean_spe_last(dataset) -> pd.DataFrame: #feature
     pkmn_database = open_pkmn_database_csv()
@@ -323,8 +365,18 @@ def mean_spe_last(dataset) -> pd.DataFrame: #feature
 
 
     mean_spe_last=pd.DataFrame({'p1_mean_spe_last':p1_mean_spe,'p2_mean_spe_last':p2_mean_spe})
+    mean_spe_last['mean_hp_last_difference']=np.subtract.reduce(mean_spe_last[['p1_mean_spe_last','p2_mean_spe_last']],axis=1)
     mean_spe_last=mean_spe_last.fillna(value=0)
     return mean_spe_last 
+
+def p1_mean_spe_last(dataset)-> pd.DataFrame: #feature
+    return mean_spe_last(dataset)['p1_mean_spe_last']
+
+def p2_mean_spe_last(dataset)-> pd.DataFrame: #feature
+    return mean_spe_last(dataset)['p2_mean_spe_last']
+
+def mean_spe_last_difference(dataset)-> pd.DataFrame: #feature
+    return mean_spe_last(dataset)['mean_spe_last_difference']
 
 def mean_hp_database(pkmn_database) -> float:
     return np.mean(pkmn_database['base_hp'])
@@ -355,7 +407,20 @@ def p2_mean_hp_start(dataset) -> pd.DataFrame: #feature
     mean_hp_start=pd.DataFrame({'p2_mean_hp_start':p2_mean_hp})
     return mean_hp_start
 
-def mean_hp_last(dataset):
+def mean_hp_difference_start(dataset)-> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+
+    mean_hp_p1=p1_mean_hp_start(dataset)
+    mean_hp_p2=p2_mean_hp_start(dataset)
+
+    mean_hp_difference=pd.concat([mean_hp_p1,mean_hp_p2],axis=1)
+    mean_hp_difference['mean_hp_difference']=np.subtract.reduce(mean_hp_difference[['p1_mean_hp_start','p2_mean_hp_start']],axis=1)
+
+    #return mean_hp_difference['mean_hp_difference']
+    #return mean_hp_difference['p2_mean_hp_start']
+    return mean_hp_difference
+
+def mean_hp_last(dataset): #feature
     pkmn_database = open_pkmn_database_csv()
     p1_mean_hp=[]
     p2_mean_hp=[]
@@ -375,8 +440,19 @@ def mean_hp_last(dataset):
         p2_mean_hp.append((np.sum(p2_team['base_hp'])+ mean_hp_database(pkmn_database)*(6-p2_known))/6)
 
     mean_hp_last=pd.DataFrame({'p1_mean_hp_last':p1_mean_hp,'p2_mean_hp_last':p2_mean_hp})
+    mean_hp_last['mean_hp_last_difference']=np.subtract.reduce(mean_hp_last[['p1_mean_hp_last','p2_mean_hp_last']],axis=1)
     mean_hp_last=mean_hp_last.fillna(value=0)
+    #return mean_hp_last['mean_hp_last_difference']
     return mean_hp_last
+
+def p1_mean_hp_last(dataset)->pd.DataFrame: #feature
+    return mean_hp_last(dataset)['p1_mean_hp_last']
+
+def p2_mean_hp_last(dataset)->pd.DataFrame: #feature
+    return mean_hp_last(dataset)['p2_mean_hp_last']
+
+def mean_hp_last_difference(dataset)->pd.DataFrame: #feature
+    return mean_hp_last(dataset)['mean_hp_last_difference']
 
 def mean_total_database(pkmn_database) -> float:
     pkmn_database['total']=np.sum(pkmn_database[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
@@ -403,10 +479,56 @@ def mean_stats_start(dataset) -> pd.DataFrame: #feature
         p2_team=p2_team[['name','total']]
         p2_mean_stats.append((np.sum(p2_team['total'])+ mean_total_database(pkmn_database)*(6-p2_known))/6)
 
-    mean_stats=pd.DataFrame({'p1_mean_stats':p1_mean_stats,'p2_mean_stats':p2_mean_stats})
+    mean_stats=pd.DataFrame({'p1_mean_stats_start':p1_mean_stats,'p2_mean_stats_start':p2_mean_stats})
+    mean_stats['mean_stats_start_difference']=np.subtract.reduce(mean_stats[['p1_mean_stats_start','p2_mean_stats_start']],axis=1)
+    #return mean_stats['mean_stats_difference']
     return mean_stats
 
-def p1_alive_pkmn(dataset)->pd.Series: #feature
+def p1_mean_stats_start(dataset)-> pd.DataFrame: #feature
+    return mean_stats_last(dataset)['p1_mean_stats_start']
+
+def p2_mean_stats_start(dataset)-> pd.DataFrame: #feature
+    return mean_stats_last(dataset)['p2_mean_stats_start']
+
+def difference_mean_stats_start(dataset)-> pd.DataFrame: #feature
+    return mean_stats_last(dataset)['mean_stats_start_difference']
+
+def mean_stats_last(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+
+    p1_mean_stats=[]
+    p2_mean_stats=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last(game).to_frame()
+        p2_team=extract_p2_team_from_game_last(game).to_frame()
+
+        p1_team=p1_team.merge(pkmn_database,how='inner',on='name')
+        p1_known=len(extract_p1_team_from_game_start(game))
+        p1_team['total']=np.sum(p1_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+        p1_team=p1_team[['name','total']]
+        p1_mean_stats.append((np.sum(p1_team['total'])+ (mean_total_database(pkmn_database)*(6-p1_known)))/6)
+    
+        p2_team=p2_team.merge(pkmn_database,how='inner',on='name')
+        p2_known=len(extract_p2_team_from_game_start(game))
+        p2_team['total']=np.sum(p2_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+        p2_team=p2_team[['name','total']]
+        p2_mean_stats.append((np.sum(p2_team['total'])+ mean_total_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_stats=pd.DataFrame({'p1_mean_stats_last':p1_mean_stats,'p2_mean_stats_last':p2_mean_stats})
+    mean_stats['mean_stats_last_difference']=np.subtract.reduce(mean_stats[['p1_mean_stats_last','p2_mean_stats_last']],axis=1)
+    #return mean_stats['mean_stats_last_difference']
+    return mean_stats
+
+def p1_mean_stats_last(dataset)-> pd.DataFrame: #feature
+    return mean_stats_last(dataset)['p1_mean_stats_last']
+
+def p2_mean_stats_last(dataset)-> pd.DataFrame: #feature
+    return mean_stats_last(dataset)['p2_mean_stats_last']
+
+def difference_mean_stats_last(dataset)-> pd.DataFrame: #feature
+    return mean_stats_last(dataset)['mean_stats_last_difference']
+
+def p1_alive_pkmn(dataset)->pd.DataFrame: #feature
     pkmn_alive_p1=[]
     for game in dataset:
         turns=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
@@ -416,7 +538,7 @@ def p1_alive_pkmn(dataset)->pd.Series: #feature
     return pkmn_alive_p1
 
 
-def p2_alive_pkmn(dataset)->pd.Series: #feature
+def p2_alive_pkmn(dataset)->pd.DataFrame: #feature
     pkmn_alive_p2=[]
     for game in dataset:
         turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
@@ -425,13 +547,20 @@ def p2_alive_pkmn(dataset)->pd.Series: #feature
     pkmn_alive_p2=pd.DataFrame(pkmn_alive_p2).rename(columns={0:'p2_pkmn_alive'})
     return pkmn_alive_p2
    
+def alive_pkmn_difference(dataset)->pd.DataFrame: #feature
+    
+    p1_alive=p1_alive_pkmn(dataset)
+    p2_alive=p2_alive_pkmn(dataset)
+    pkmn_alive_difference=pd.concat([p1_alive,p2_alive],axis=1)
+    pkmn_alive_difference['pkmn_alive_difference']=np.subtract.reduce(pkmn_alive_difference[['p1_pkmn_alive','p2_pkmn_alive']],axis=1)
+    #return pkmn_alive_difference['pkmn_alive_difference']
+    return pkmn_alive_difference
 
 def all_pokemon_round(player: int,json):
     if player==1:
         return set([elem['p1_pokemon_state']['name'] for elem in json['battle_timeline']])
     elif player==2:
         return set([elem['p2_pokemon_state']['name'] for elem in json['battle_timeline']])
-
 
 
 
@@ -787,6 +916,22 @@ def extract_types_from_team_p1(game)-> pd.DataFrame:
   
     return p1_team_types
 
+def extract_types_from_team_p1_last (game)-> pd.DataFrame:
+
+    pkmn_database=open_pkmn_database_csv()
+    p1_team=extract_p1_team_from_game_last(game).to_frame()
+    if len(p1_team)!=0:
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_team=p1_team[['name','types']]
+
+        types=pd.DataFrame([type.split(",") for pokemon in p1_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
+        p1_team_types=p1_team.drop('types',axis=1)
+        p1_team_types['type_1']=types[0]
+        p1_team_types['type_2']=types[1]
+    
+        return p1_team_types
+    return pd.DataFrame()
+
 def extract_types_from_team_p2(game)-> pd.DataFrame:
 
     pkmn_database=open_pkmn_database_csv()
@@ -800,6 +945,22 @@ def extract_types_from_team_p2(game)-> pd.DataFrame:
     p2_team_types['type_2']=types[1]
   
     return p2_team_types
+
+def extract_types_from_team_p2_last(game)-> pd.DataFrame:
+
+    pkmn_database=open_pkmn_database_csv()
+    p2_team=extract_p2_team_from_game_last(game).to_frame()
+    if len(p2_team)!=0:
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_team=p2_team[['name','types']]
+
+        types=pd.DataFrame([type.split(",") for pokemon in p2_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
+        p2_team_types=p2_team.drop('types',axis=1)
+        p2_team_types['type_1']=types[0]
+        p2_team_types['type_2']=types[1]
+    
+        return p2_team_types
+    return pd.DataFrame()
 
 def calc_weakness(type_1,type_2)->pd.DataFrame:
     type_chart=open_type_chart_json()
@@ -822,7 +983,7 @@ def calc_weakness(type_1,type_2)->pd.DataFrame:
 
     return weaknesses
 
-def weakness_teams_not_opt(dataset) -> pd.DataFrame: #feature
+def weakness_teams_not_opt(dataset) -> pd.DataFrame: #---> DONT USE <---
     weak_games_p1,weak_games_p2=[],[]
     for game in dataset:
         #if game['battle_id']==0:
@@ -857,35 +1018,179 @@ def weakness_teams(dataset) ->pd.DataFrame:
     #print(pkmn_db_weak)
     weak_games_p1,weak_games_p2=[],[]
 
-    
     for game in dataset:
-        #if game['battle_id']==0:
-            #weakness_p1=[]
             p1_team_types=extract_types_from_team_p1(game)
             p1_team_types=p1_team_types.merge(pkmn_db_weak,how='inner',on='name')
-            #print(p1_team_types)
-            #print(p1_team_types,"\n")
             sw_1=set(sum(p1_team_types['weaknesses'],[]))
-            #print(sw_1)
-            
-            #weakness_p1.append(len(sw_1))
             weak_games_p1.append(len(sw_1))
 
-            #weakness_p2=[]
             p2_team_types=extract_types_from_team_p2(game)
             p2_team_types=p2_team_types.merge(pkmn_db_weak,how='inner',on='name')
-            #print(p2_team_types,"\n")
-            #print(p2_team_types)
             sw_2=set(sum(p2_team_types['weaknesses'],[]))
-            #print(sw_2)
-            #weakness_p2.append(len(sw_2))
             weak_games_p2.append(len(sw_2))
             
+    weakness_teams=pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
+    weakness_teams['weakness_start_difference']=np.subtract.reduce(weakness_teams[['weakness_start_p1','weakness_start_p2']],axis=1)
+    #return weakness_teams['weakness_start_difference']
+    return weakness_teams
+
+def p1_weakness_start(dataset) -> pd.DataFrame : #Feature
+    return weakness_teams(dataset)['weakness_start_p1']
+
+def p2_weakness_start(dataset) -> pd.DataFrame : #Feature
+    return weakness_teams(dataset)['weakness_start_p2']
+
+def weakness_start_difference(dataset) -> pd.DataFrame: #feature
+    return  weakness_teams(dataset)['weakness_start_difference']  
+
+def weakness_teams_last(dataset) ->pd.DataFrame: #feature
+    pkmn_db_weak=open_pkmn_database_weak_csv()
+    pkmn_db_weak=pd.DataFrame(pkmn_db_weak[['name','weaknesses']])
+    pkmn_db_weak['weaknesses']=pkmn_db_weak['weaknesses'].apply(lambda x: x.strip("[] ").replace("'","").replace(" ","").split(","))
+    
+    #print(pkmn_db_weak)
+    weak_games_p1,weak_games_p2=[],[]
+
+    
+    for game in dataset:
+            p1_team_types=extract_types_from_team_p1_last(game)
+            if len(p1_team_types)!=0:
+                p1_team_types=p1_team_types.merge(pkmn_db_weak,how='inner',on='name')
+                sw_1=set(sum(p1_team_types['weaknesses'],[]))
+                weak_games_p1.append(len(sw_1))
+            else:
+                weak_games_p1.append(0)
+
+            p2_team_types=extract_types_from_team_p2_last(game)
+            if len(p2_team_types)!=0:
+                p2_team_types=p2_team_types.merge(pkmn_db_weak,how='inner',on='name')
+                sw_2=set(sum(p2_team_types['weaknesses'],[]))
+                weak_games_p2.append(len(sw_2))
+            else:
+                weak_games_p2.append(0)
             
+    weakness_teams=pd.DataFrame({'weakness_last_p1':weak_games_p1,'weakness_last_p2':weak_games_p2})
+    weakness_teams['weakness_last_difference']=np.subtract.reduce(weakness_teams[['weakness_last_p1','weakness_last_p2']],axis=1)
+    #return weakness_teams['weakness_last_difference']
+    return weakness_teams
 
-    return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
+def p1_weakness_last(dataset) -> pd.DataFrame : #Feature
+    return weakness_teams_last(dataset)['weakness_last_p1']
+
+def p2_weakness_last(dataset) -> pd.DataFrame : #Feature
+    return weakness_teams_last(dataset)['weakness_last_p2']
+
+def weakness_last_difference(dataset) -> pd.DataFrame: #feature
+    return  weakness_teams_last(dataset)['weakness_last_difference']  
+
+def advantage_weak_start(dataset) ->pd.DataFrame: #feature
+    pkmn_db_weak=open_pkmn_database_weak_csv()
+    pkmn_db_weak=pd.DataFrame(pkmn_db_weak[['name','weaknesses']])
+    pkmn_db_weak['weaknesses']=pkmn_db_weak['weaknesses'].apply(lambda x: x.strip("[] ").replace("'","").replace(" ","").split(","))
+    
+    #print(pkmn_db_weak)
+    adv_games_p1,adv_games_p2=[],[]
+
+    
+    for game in dataset:
+        #if game['battle_id']==0 or game['battle_id']==9999:
+            p1_team_types=extract_types_from_team_p1(game)
+            p2_team_types=extract_types_from_team_p2(game)
+
+            p1_team_weakness=p1_team_types.merge(pkmn_db_weak,how='inner',on='name')
+            p2_team_weakness=p2_team_types.merge(pkmn_db_weak,how='inner',on='name')
+
+            sw_1=set(sum(p1_team_weakness['weaknesses'],[]))
+            sw_2=set(sum(p2_team_weakness['weaknesses'],[]))
+
+            all_type_s1=set((p1_team_types['type_1'].to_list()+p1_team_types['type_2'].to_list()))
+            all_type_s2=set((p2_team_types['type_1'].to_list()+p2_team_types['type_2'].to_list()))
+
+            if len(all_type_s1)!=0:
+                all_type_s1.discard("notype")
+                advantages_p1=all_type_s1.intersection(sw_2)
+                adv_games_p1.append(len(advantages_p1))
+            else:
+                adv_games_p1.append(0)
+            if len(all_type_s2)!=0:
+                all_type_s2.discard("notype")
+                advantages_p2=all_type_s2.intersection(sw_1)
+                adv_games_p2.append(len(advantages_p2))
+            else:
+                adv_games_p2.append(0)
+
+            #print("Start:\n")
+            #print(all_type_s1," ", sw_2," ",advantages_p1, "\n",all_type_s2, " ", sw_1," ",advantages_p2,"\n")
+    
+    advantage_weak_teams=pd.DataFrame({'advantage_weak_start_p1':adv_games_p1,'advantage_weak_start_p2':adv_games_p2})
+    advantage_weak_teams['advantage_weak_difference']=np.subtract.reduce(advantage_weak_teams[['advantage_weak_start_p1','advantage_weak_start_p2']],axis=1)
+    #return advantage_weak_teams['advantage_weak_difference']
+    #return advantage_weak_teams['advantage_weak_start_p2']
+    return advantage_weak_teams
         
+def p1_advantage_weak_start(dataset) -> pd.DataFrame : #Feature
+    return advantage_weak_last(dataset)['advantage_weak_start_p1']
 
+def p2_advantage_weak_start(dataset) -> pd.DataFrame : #feature
+    return advantage_weak_last(dataset)['advantage_weak_start_p2']  
+
+def advantage_weak_start_difference(dataset) -> pd.DataFrame: #feature
+    return advantage_weak_last(dataset)['advantage_weak_difference']  
+
+def advantage_weak_last(dataset) ->pd.DataFrame: #feature
+    pkmn_db_weak=open_pkmn_database_weak_csv()
+    pkmn_db_weak=pd.DataFrame(pkmn_db_weak[['name','weaknesses']])
+    pkmn_db_weak['weaknesses']=pkmn_db_weak['weaknesses'].apply(lambda x: x.strip("[] ").replace("'","").replace(" ","").split(","))
+    
+    #print(pkmn_db_weak)
+    adv_games_p1,adv_games_p2=[],[]
+
+    
+    for game in dataset:
+        #if game['battle_id']==0 or game['battle_id']==9999:
+            p1_team_types=extract_types_from_team_p1_last(game)
+            p2_team_types=extract_types_from_team_p2_last(game)
+            all_type_s1,all_type_s2=set(),set()
+
+            if len(p1_team_types)!=0 and len(p2_team_types)!=0:
+                p1_team_weakness=p1_team_types.merge(pkmn_db_weak,how='inner',on='name')
+                sw_1=set(sum(p1_team_weakness['weaknesses'],[]))
+                all_type_s1=set((p1_team_types['type_1'].to_list()+p1_team_types['type_2'].to_list()))
+            
+                p2_team_weakness=p2_team_types.merge(pkmn_db_weak,how='inner',on='name')
+                sw_2=set(sum(p2_team_weakness['weaknesses'],[]))
+                all_type_s2=set((p2_team_types['type_1'].to_list()+p2_team_types['type_2'].to_list()))
+
+            if len(all_type_s1)!=0:
+                all_type_s1.discard("notype")
+                advantages_p1=all_type_s1.intersection(sw_2)
+                adv_games_p1.append(len(advantages_p1))
+            else:
+                adv_games_p1.append(0)
+
+            if len(all_type_s2)!=0:
+                all_type_s2.discard("notype")
+                advantages_p2=all_type_s2.intersection(sw_1)
+                adv_games_p2.append(len(advantages_p2))
+            else:
+                adv_games_p2.append(0)
+
+            #print("Last:\n")
+            #print(all_type_s1," ", sw_2," ",advantages_p1, "\n",all_type_s2, " ", sw_1," ",advantages_p2,"\n")
+    advantage_weak_teams=pd.DataFrame({'advantage_weak_last_p1':adv_games_p1,'advantage_last_start_p2':adv_games_p2})
+    advantage_weak_teams['advantage_weak_last_difference']=np.subtract.reduce(advantage_weak_teams[['advantage_weak_last_p1','advantage_last_start_p2']],axis=1)
+    #return advantage_weak_teams['advantage_weak_last_difference'] 
+    #return advantage_weak_teams['advantage_weak_last_p1']
+    return advantage_weak_teams
+
+def p1_advantage_weak_last(dataset) -> pd.DataFrame : #Feature
+    return advantage_weak_last(dataset)['advantage_weak_last_p1']
+
+def p2_advantage_weak_last(dataset) -> pd.DataFrame : #feature
+    return advantage_weak_last(dataset)['advantage_weak_last_p2']  
+
+def advantage_weak_last_difference(dataset) -> pd.DataFrame: #feature
+    return advantage_weak_last(dataset)['advantage_weak_last_difference']  
 
 def p1_avg_move_power(dataset) -> pd.DataFrame: #feature
     """
@@ -1207,4 +1512,12 @@ if __name__=="__main__":
     #print(open_pkmn_database_csv()['types'][0])
 
     #print(pd.concat([weakness_teams_opt(dataset),weakness_teams(dataset)],axis=1))
-    print(weakness_teams(dataset))
+    #print(weakness_teams(dataset))
+    
+    #print(pd.concat([weakness_teams(dataset),weakness_teams_last(dataset),p1_alive_pkmn(dataset),p2_alive_pkmn(dataset)],axis=1))
+    #print(weakness_teams_last(dataset))
+    
+    #print(pd.concat([advantage_weak_start(dataset),advantage_weak_last(dataset)],axis=1))
+    #print(advantage_weak_last(dataset))
+    #print(mean_hp_difference_start(dataset))
+    print(p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),alive_pkmn_difference(dataset))
