@@ -5,7 +5,7 @@ from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
+#from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
@@ -13,8 +13,8 @@ from sklearn.feature_selection import SelectFromModel
 def save_features(train_out_path,test_out_path):
     selected_features = [
         Feature.P1_MEAN_HP_START, #*
-        Feature.P2_MEAN_HP_START, #*
-        Feature.MEAN_HP_DIFFERENCE_START,
+        #Feature.P2_MEAN_HP_START, #*
+        #Feature.MEAN_HP_DIFFERENCE_START,
         Feature.MEAN_HP_LAST, #*
         # Feature.P1_MEAN_HP_LAST
         # Feature.P2_MEAN_HP_LAST
@@ -44,21 +44,49 @@ def save_features(train_out_path,test_out_path):
         Feature.ADVANTAGE_WEAK_LAST, #*
         Feature.MEAN_STATS_START, #*
         Feature.MEAN_STATS_LAST, #*
+
+        Feature.P1_FROZEN_PKMN,
+        Feature.P2_FROZEN_PKMN,
+        Feature.P1_PARALIZED_PKMN,
+        Feature.P2_PARALIZED_PKMN,
+        Feature.P1_SLEEP_PKMN,
+        Feature.P2_SLEEP_PKMN,
+        Feature.P1_POISON_PKMN,
+        Feature.P2_POISON_PKMN,
+        Feature.P1_BURNED_PKMN,
+        Feature.P2_BURNED_PKMN,
+
+        Feature.P1_PKMN_REFLECT,
+        Feature.P2_PKMN_REFLECT,
+        Feature.P1_PKMN_REST,
+        Feature.P2_PKMN_REST,
+        Feature.P1_PKMN_EXPLOSION,
+        Feature.P2_PKMN_EXPLOSION,
+        Feature.P1_PKMN_THUNDERWAVE,
+        Feature.P2_PKMN_THUNDERWAVE,
+        Feature.P1_PKMN_RECOVER,
+        Feature.P2_PKMN_RECOVER,
+        Feature.P1_PKMN_TOXIC,
+        Feature.P2_PKMN_TOXIC,
+        Feature.P1_PKMN_FIRESPIN,
+        Feature.P2_PKMN_FIRESPIN,
         #
         Feature.P1_SWITCHES_COUNT,
         Feature.P2_SWITCHES_COUNT,
         Feature.P1_STATUS_INFLICTED, #*
         Feature.P2_STATUS_INFLICTED, #*
         Feature.SWITCHES_DIFFERENCE,
-        Feature.STATUS_INFLICTED_DIFFERENCE, #*
+        #Feature.P1_STATUS_INFLICTED, #*
+        #Feature.P2_STATUS_INFLICTED, #*
+        #Feature.STATUS_INFLICTED_DIFFERENCE, #*
         Feature.P1_FINAL_TEAM_HP, #*
         Feature.P2_FINAL_TEAM_HP, #*
         Feature.FINAL_TEAM_HP_DIFFERENCE, #*
-        Feature.P1_FIRST_FAINT_TURN,
+        #Feature.P1_FIRST_FAINT_TURN,
         Feature.P1_AVG_HP_WHEN_SWITCHING,
         Feature.P2_AVG_HP_WHEN_SWITCHING,
-        Feature.P1_MAX_DEBUFF_RECEIVED,
-        Feature.P2_MAX_DEBUFF_RECEIVED,
+        #Feature.P1_MAX_DEBUFF_RECEIVED,
+        #Feature.P2_MAX_DEBUFF_RECEIVED,
         Feature.P1_AVG_MOVE_POWER, #*
         Feature.P2_AVG_MOVE_POWER, #*
         Feature.AVG_MOVE_POWER_DIFFERENCE, #*
@@ -122,7 +150,7 @@ def main():
     train_out_path="train_features_extracted.csv"
     test_out_path="test_features_extracted.csv"
     # Uncomment to extract and save features
-    # save_features(train_out_path,test_out_path) 
+    #save_features(train_out_path,test_out_path) 
 
     #---------------Model Training and Evaluation Code------------------------
     # Carica il train e test set da csv con le feature estratte
@@ -213,19 +241,15 @@ def main():
 
     # #---------------Feature Utility Code------------------------
     # # ottieni i coefficienti
-    # coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+    coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
 
     # # ordina per importanza
-    # coefficients = coefficients.abs().sort_values(ascending=False)
+    coefficients = coefficients.abs().sort_values(ascending=False)
 
-    # print("Most useful features:")
-    # pd.set_option('display.max_rows', None)
-    # print(coefficients)
+    print("Most useful features:")
+    pd.set_option('display.max_rows', None)
+    print(coefficients)
 
-
-    # print(train_df.corr())
-    # print("Best CV score:", grid.best_score_)
-    # print("Best params:", grid.best_params_)
 
 
     #---------------Feature Utility Code GRID------------------------

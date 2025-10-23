@@ -40,7 +40,34 @@ class Feature(Enum):
     WEAKNESS_TEAMS_LAST= "weakness_teams_last"
     ADVANTAGE_WEAK_START="advantage_weak_start"
     ADVANTAGE_WEAK_LAST="advantage_weak_last"
-    
+
+    P1_FROZEN_PKMN="p1_frozen_pkmn"
+    P2_FROZEN_PKMN="p2_frozen_pkmn"
+    P1_PARALIZED_PKMN="p1_paralized_pkmn"
+    P2_PARALIZED_PKMN="p2_paralized_pkmn"
+    P1_SLEEP_PKMN="p1_sleep_pkmn"
+    P2_SLEEP_PKMN="p2_sleep_pkmn"
+    P1_POISON_PKMN="p1_poison_pkmn"
+    P2_POISON_PKMN="p2_poison_pkmn"
+    P1_BURNED_PKMN="p1_burned_pkmn"
+    P2_BURNED_PKMN="p2_burned_pkmn"
+
+    P1_PKMN_REFLECT="p1_pkmn_reflect"
+    P2_PKMN_REFLECT="p2_pkmn_reflect"
+    P1_PKMN_REST="p1_pkmn_rest"
+    P2_PKMN_REST="p2_pkmn_rest"
+    P1_PKMN_EXPLOSION="p1_pkmn_explosion"
+    P2_PKMN_EXPLOSION="p2_pkmn_explosion"
+    P1_PKMN_THUNDERWAVE="p1_pkmn_thunderwave"
+    P2_PKMN_THUNDERWAVE="p2_pkmn_thunderwave"
+    P1_PKMN_RECOVER="p1_pkmn_recover"
+    P2_PKMN_RECOVER="p2_pkmn_recover"
+    P1_PKMN_TOXIC="p1_pkmn_toxic"
+    P2_PKMN_TOXIC="p2_pkmn_toxic"
+    P1_PKMN_FIRESPIN="p1_pkmn_firespin"
+    P2_PKMN_FIRESPIN="p2_pkmn_firespin"
+
+
     P1_SWITCHES_COUNT = "p1_switches_count"
     P2_SWITCHES_COUNT = "p2_switches_count"
     P1_STATUS_INFLICTED = "p1_status_inflicted"
@@ -116,7 +143,33 @@ class FeatureRegistry:
         self._extractors[Feature.WEAKNESS_TEAMS_LAST] = weakness_teams_last
         self._extractors[Feature.ADVANTAGE_WEAK_START] = advantage_weak_start
         self._extractors[Feature.ADVANTAGE_WEAK_LAST] = advantage_weak_last
-        
+
+        self._extractors[Feature.P1_FROZEN_PKMN] = p1_frozen_pkmn
+        self._extractors[Feature.P2_FROZEN_PKMN] = p2_frozen_pkmn
+        self._extractors[Feature.P1_PARALIZED_PKMN] = p1_paralized_pkmn
+        self._extractors[Feature.P2_PARALIZED_PKMN] = p2_paralized_pkmn
+        self._extractors[Feature.P1_SLEEP_PKMN] = p1_sleep_pkmn
+        self._extractors[Feature.P2_SLEEP_PKMN] = p2_sleep_pkmn
+        self._extractors[Feature.P1_POISON_PKMN] = p1_poison_pkmn
+        self._extractors[Feature.P2_POISON_PKMN] = p2_poison_pkmn
+        self._extractors[Feature.P1_BURNED_PKMN] = p1_burned_pkmn
+        self._extractors[Feature.P2_BURNED_PKMN] = p2_burned_pkmn
+
+        self._extractors[Feature.P1_PKMN_REFLECT] = p1_pokemon_reflect
+        self._extractors[Feature.P2_PKMN_REFLECT] = p2_pokemon_reflect
+        self._extractors[Feature.P1_PKMN_REST] = p1_pokemon_rest
+        self._extractors[Feature.P2_PKMN_REST] = p2_pokemon_rest
+        self._extractors[Feature.P1_PKMN_EXPLOSION] = p1_pokemon_explosion
+        self._extractors[Feature.P2_PKMN_EXPLOSION] = p2_pokemon_explosion
+        self._extractors[Feature.P1_PKMN_THUNDERWAVE] = p1_pokemon_thunderwave
+        self._extractors[Feature.P2_PKMN_THUNDERWAVE] = p2_pokemon_thunderwave
+        self._extractors[Feature.P1_PKMN_RECOVER] = p1_pokemon_recover
+        self._extractors[Feature.P2_PKMN_RECOVER] = p2_pokemon_recover
+        self._extractors[Feature.P1_PKMN_TOXIC] = p1_pokemon_toxic
+        self._extractors[Feature.P2_PKMN_TOXIC] = p2_pokemon_toxic
+        self._extractors[Feature.P1_PKMN_FIRESPIN] = p1_pokemon_firespin
+        self._extractors[Feature.P2_PKMN_FIRESPIN] = p2_pokemon_firespin
+
         self._extractors[Feature.P1_SWITCHES_COUNT] = p1_switches_count
         self._extractors[Feature.P2_SWITCHES_COUNT] = p2_switches_count
         self._extractors[Feature.P1_STATUS_INFLICTED] = p1_status_inflicted
@@ -266,18 +319,18 @@ def extract_p1_team_from_game_last(game) -> pd.Series:
     
     return team_remain_p1
 
-def extract_p1_team_from_game_start_with_boosts(game)-> pd.DataFrame:
+def extract_p1_team_from_game_start_with_stats(game)-> pd.DataFrame:
     turns=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_p1_start=turns.drop_duplicates(subset='name',keep='last')[['name','boosts']]
+    pkmn_p1_start=turns.drop_duplicates(subset='name',keep='last')
 
     return pkmn_p1_start
 
-def extract_p1_team_from_game_last_with_boosts(game) -> pd.Series:
+def extract_p1_team_from_game_last_with_stats(game) -> pd.Series:
     turns=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
     pkmn_dead_p1=turns[turns['status']=='fnt']['name'].drop_duplicates(keep='last')
     
-    team_start_p1=extract_p1_team_from_game_start_with_boosts(game)
-    team_remain_p1=team_start_p1[~team_start_p1.isin(pkmn_dead_p1)]
+    team_start_p1=extract_p1_team_from_game_start_with_stats(game)
+    team_remain_p1=team_start_p1[~team_start_p1['name'].isin(pkmn_dead_p1)]
     
     return team_remain_p1
 
@@ -297,18 +350,18 @@ def extract_p2_team_from_game_last(game) -> pd.Series:
     
     return pkmn_p2_last 
 
-def extract_p2_team_from_game_start_with_boosts(game)-> pd.DataFrame:
+def extract_p2_team_from_game_start_with_stats(game)-> pd.DataFrame:
     turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_p2_start=turns.drop_duplicates(subset='name',keep='last')[['name','boosts']]
+    pkmn_p2_start=turns.drop_duplicates(subset='name',keep='last')
 
     return pkmn_p2_start
 
-def extract_p2_team_from_game_last_with_boosts(game) -> pd.Series:
+def extract_p2_team_from_game_last_with_stats(game) -> pd.Series:
     turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
     pkmn_dead_p2=turns[turns['status']=='fnt']['name'].drop_duplicates(keep='last')
     
-    team_start_p2=extract_p2_team_from_game_start_with_boosts(game)
-    team_remain_p2=team_start_p2[~team_start_p2.isin(pkmn_dead_p2)]
+    team_start_p2=extract_p2_team_from_game_start_with_stats(game)
+    team_remain_p2=team_start_p2[~team_start_p2['name'].isin(pkmn_dead_p2)]
     
     return team_remain_p2
 
@@ -460,14 +513,16 @@ def mean_spe_last(dataset) -> pd.DataFrame: #feature
     multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
     
     for game in dataset:
-        p1_team=extract_p1_team_from_game_last_with_boosts(game)
-        p2_team=extract_p2_team_from_game_last_with_boosts(game)
+        p1_team=extract_p1_team_from_game_last_with_stats(game)
+        p2_team=extract_p2_team_from_game_last_with_stats(game)
 
         p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
         p1_known=len(extract_p1_team_from_game_start(game))
-        p1_team=p1_team[['name','base_spe','boosts']]
+        p1_team=p1_team[['name','base_spe','boosts','status']]
         if(len(p1_team)!=0):
-            p1_mean_spe.append((np.sum(p1_team['base_spe']*multipliers[p1_team['boosts'][0]['spe']])+ mean_spe_database(pkmn_database)*(6-p1_known))/6)
+            p1_team['total']=p1_team['base_spe']*multipliers[p1_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p1_team['status']]
+            val=np.sum(p1_team['total'])
+            p1_mean_spe.append((val)+ mean_spe_database(pkmn_database)*(6-p1_known)/6)
              #p1_mean_spd.append(np.mean(p1_team['base_spe']))
         else:
             p1_mean_spe.append(0)
@@ -475,13 +530,14 @@ def mean_spe_last(dataset) -> pd.DataFrame: #feature
     
         p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
         p2_known=len(extract_p2_team_from_game_start(game))
-        p2_team=p2_team[['name','base_spe','boosts']]
+        p2_team=p2_team[['name','base_spe','boosts','status']]
         if(len(p2_team)!=0):
-            p2_mean_spe.append((np.sum(p2_team['base_spe']*multipliers[p2_team['boosts'][0]['spe']])+ mean_spe_database(pkmn_database)*(6-p2_known))/6)
+            p2_team['total']=p2_team['base_spe']*multipliers[p2_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p2_team['status']]
+            val=np.sum(p2_team['total'])
+            p2_mean_spe.append(val+mean_spe_database(pkmn_database)*(6-p2_known)/6)
             #p2_mean_spd.append(np.mean(p2_team['base_spe']))
         else:
             p2_mean_spe.append(0)
-
 
     mean_spe_last=pd.DataFrame({'p1_mean_spe_last':p1_mean_spe,'p2_mean_spe_last':p2_mean_spe})
     mean_spe_last['mean_spe_last_difference']=np.subtract.reduce(mean_spe_last[['p1_mean_spe_last','p2_mean_spe_last']],axis=1)
@@ -830,7 +886,325 @@ def all_pokemon_round(player: int,json):
     elif player==2:
         return set([elem['p2_pokemon_state']['name'] for elem in json['battle_timeline']])
 
+def p1_frozen_pkmn(dataset)-> pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last_with_stats(game)
+        if len(p1_team)!=0:
+            p1_count.append(len(p1_team[p1_team['status']=='frz']))
+        else:
+            p1_count.append(0)
+        
+    return pd.DataFrame({'p1_frozen_pkmn':p1_count})
 
+def p2_frozen_pkmn(dataset)-> pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+        p2_team=extract_p2_team_from_game_last_with_stats(game)
+        if len(p2_team)!=0:
+            p2_count.append(len(p2_team[p2_team['status']=='frz']))
+        else:
+            p2_count.append(0)
+        
+    return pd.DataFrame({'p2_frozen_pkmn':p2_count})
+    
+def p1_paralized_pkmn(dataset)-> pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last_with_stats(game)
+        if len(p1_team)!=0:
+            p1_count.append(len(p1_team[p1_team['status']=='par']))
+        else:
+            p1_count.append(0)
+        
+    return pd.DataFrame({'p1_paralized_pkmn':p1_count})
+
+def p2_paralized_pkmn(dataset)-> pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+        p2_team=extract_p2_team_from_game_last_with_stats(game)
+        if len(p2_team)!=0:
+            p2_count.append(len(p2_team[p2_team['status']=='par']))
+        else:
+            p2_count.append(0)
+        
+    return pd.DataFrame({'p2_paralized_pkmn':p2_count})
+    
+def p1_sleep_pkmn(dataset)-> pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last_with_stats(game)
+        if len(p1_team)!=0:
+            p1_count.append(len(p1_team[p1_team['status']=='slp']))
+        else:
+            p1_count.append(0)
+        
+    return pd.DataFrame({'p1_sleep_pkmn':p1_count})
+
+def p2_sleep_pkmn(dataset)-> pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+        p2_team=extract_p2_team_from_game_last_with_stats(game)
+        if len(p2_team)!=0:
+            p2_count.append(len(p2_team[p2_team['status']=='slp']))
+        else:
+            p2_count.append(0)
+        
+    return pd.DataFrame({'p2_sleep_pkmn':p2_count})
+
+def p1_poison_pkmn(dataset)-> pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last_with_stats(game)
+        if len(p1_team)!=0:
+            p1_count.append(len(p1_team[p1_team['status']=='psn']))
+        else:
+            p1_count.append(0)
+        
+    return pd.DataFrame({'p1_poison_pkmn':p1_count})
+ 
+def p2_poison_pkmn(dataset)-> pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+        p2_team=extract_p2_team_from_game_last_with_stats(game)
+        if len(p2_team)!=0:
+            p2_count.append(len(p2_team[p2_team['status']=='psn']))
+        else:
+            p2_count.append(0)
+        
+    return pd.DataFrame({'p2_poison_pkmn':p2_count})
+    
+def p1_burned_pkmn(dataset)-> pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last_with_stats(game)
+        if len(p1_team)!=0:
+            p1_count.append(len(p1_team[p1_team['status']=='brn']))
+        else:
+            p1_count.append(0)
+        
+    return pd.DataFrame({'p1_burned_pkmn':p1_count})
+
+def p2_burned_pkmn(dataset)-> pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+        p2_team=extract_p2_team_from_game_last_with_stats(game)
+        if len(p2_team)!=0:
+            p2_count.append(len(p2_team[p2_team['status']=='brn']))
+        else:
+            p2_count.append(0)
+        
+    return pd.DataFrame({'p2_burned_pkmn':p2_count})
+    
+def p1_pokemon_rest(dataset)->pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+
+        turns_p1_state=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
+            turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='rest']
+            turns=turns[turns['status']!='fnt']
+            p1_count.append(len(turns))
+        else:
+            p1_count.append(0)
+    return pd.DataFrame({'p1_pkmn_rest':p1_count})
+
+def p2_pokemon_rest(dataset)->pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+
+        turns_p2_state=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
+            turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='rest']
+            turns=turns[turns['status']!='fnt']
+            p2_count.append(len(turns))
+        else:
+            p2_count.append(0)
+    return pd.DataFrame({'p2_pkmn_rest':p2_count})
+
+def p1_pokemon_reflect(dataset)->pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+
+        turns_p1_state=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
+            turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='reflect']
+            turns=turns[turns['status']!='fnt']
+            p1_count.append(len(turns))
+        else:
+            p1_count.append(0)
+    return pd.DataFrame({'p1_pkmn_reflect':p1_count})
+
+def p2_pokemon_reflect(dataset)->pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+
+        turns_p2_state=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
+            turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='reflect']
+            turns=turns[turns['status']!='fnt']
+            p2_count.append(len(turns))
+        else:
+            p2_count.append(0)
+    return pd.DataFrame({'p2_pkmn_reflect':p2_count})
+
+def p1_pokemon_explosion(dataset)->pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+
+        turns_p1_state=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
+            turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='explosion' | turns['name']=='selfdestruct']
+            #turns=turns[turns['status']!='fnt']
+            p1_count.append(len(turns))
+        else:
+            p1_count.append(0)
+    return pd.DataFrame({'p1_pkmn_explosion':p1_count})
+
+def p2_pokemon_explosion(dataset)->pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+
+        turns_p2_state=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
+            turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='explosion']
+            #turns=turns[turns['status']!='fnt']
+            p2_count.append(len(turns))
+        else:
+            p2_count.append(0)
+    return pd.DataFrame({'p2_pkmn_explosion':p2_count})
+
+def p1_pokemon_thunderwave(dataset)->pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+
+        turns_p1_state=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
+            turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='thunderwave']
+            turns=turns[turns['status']!='fnt']
+            p1_count.append(len(turns))
+        else:
+            p1_count.append(0)
+    return pd.DataFrame({'p1_pkmn_thunderwave':p1_count})
+
+def p2_pokemon_thunderwave(dataset)->pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+
+        turns_p2_state=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
+            turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='thunderwave']
+            turns=turns[turns['status']!='fnt']
+            p2_count.append(len(turns))
+        else:
+            p2_count.append(0)
+    return pd.DataFrame({'p2_pkmn_thunderwave':p2_count})
+
+def p1_pokemon_recover(dataset)->pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+
+        turns_p1_state=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
+            turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='recover']
+            turns=turns[turns['status']!='fnt']
+            p1_count.append(len(turns))
+        else:
+            p1_count.append(0)
+    return pd.DataFrame({'p1_pkmn_recover':p1_count})
+
+def p2_pokemon_recover(dataset)->pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+
+        turns_p2_state=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
+            turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='recover']
+            turns=turns[turns['status']!='fnt']
+            p2_count.append(len(turns))
+        else:
+            p2_count.append(0)
+    return pd.DataFrame({'p2_pkmn_recover':p2_count})
+
+def p1_pokemon_toxic(dataset)->pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+
+        turns_p1_state=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
+            turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='toxic']
+            turns=turns[turns['status']!='fnt']
+            p1_count.append(len(turns))
+        else:
+            p1_count.append(0)
+    return pd.DataFrame({'p1_pkmn_toxic':p1_count})
+
+def p2_pokemon_toxic(dataset)->pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+
+        turns_p2_state=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
+            turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='toxic']
+            turns=turns[turns['status']!='fnt']
+            p2_count.append(len(turns))
+        else:
+            p2_count.append(0)
+    return pd.DataFrame({'p2_pkmn_toxic':p2_count})
+
+def p1_pokemon_firespin(dataset)->pd.DataFrame: #feature
+    p1_count=[]
+    for game in dataset:
+
+        turns_p1_state=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
+            turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='firespin']
+            turns=turns[turns['status']!='fnt']
+            p1_count.append(len(turns))
+        else:
+            p1_count.append(0)
+    return pd.DataFrame({'p1_pkmn_firespin':p1_count})
+
+def p2_pokemon_firespin(dataset)->pd.DataFrame: #feature
+    p2_count=[]
+    for game in dataset:
+
+        turns_p2_state=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])[['name','status']].rename(columns={'name':'pkmn_name'})
+        turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
+        if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
+            turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
+            turns=turns[turns['name']=='firespin']
+            turns=turns[turns['status']!='fnt']
+            p2_count.append(len(turns))
+        else:
+            p2_count.append(0)
+    return pd.DataFrame({'p2_pkmn_firespin':p2_count})
 
 def p1_switches_count(dataset) -> pd.DataFrame: #feature
     """
@@ -1659,7 +2033,21 @@ def p1_moved_first_count(dataset) -> pd.DataFrame: #feature
 def p2_moved_first_count(dataset) -> pd.DataFrame: #feature
     """
     Conta il numero di turni in cui P2 ha attaccato per primo.
-    Usa la stessa logica di p1_moved_first_count.
+    Usa la stessa logica di p1_moved_first_count.--Feature Utility Code------------------------
+    # ottieni i coefficienti
+    #coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+
+    # ordina per importanza
+    coefficients = coefficients.abs().sort_values(ascending=False)
+
+    #print("Most useful features:")
+    print(coefficients)
+
+
+    print(train_df.corr())
+    #print("Best CV score:", grid.best_score_)
+    #print("Best params:", grid.best_params_)
+
     """
     pkmn_database = open_pkmn_database_csv()
     first_move_counts = []
@@ -1788,4 +2176,7 @@ if __name__=="__main__":
     #print(pd.concat([advantage_weak_start(dataset),advantage_weak_last(dataset)],axis=1))
     #print(advantage_weak_last(dataset))
     #print(mean_hp_difference_start(dataset))
-    print(p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),alive_pkmn_difference(dataset))
+    #print(p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),alive_pkmn_difference(dataset))
+    #print(mean_spe_last(dataset))
+    # print(p1_frozen_pkmn(dataset).sum()," \n",p2_frozen_pkmn(dataset).sum())
+    print(p1_pokemon_firespin(dataset).sum()," \n",p2_pokemon_firespin(dataset).sum())
