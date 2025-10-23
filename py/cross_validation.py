@@ -20,6 +20,7 @@ def save_features(train_out_path,test_out_path):
         Feature.MEAN_HP_LAST, 
         Feature.P1_ALIVE_PKMN,
         Feature.P2_ALIVE_PKMN,
+        Feature.WEAKNESS_TEAMS,
         Feature.MEAN_STATS_START,
         # Feature.TOTAL_TURNS, 
         Feature.P1_SWITCHES_COUNT,
@@ -33,8 +34,19 @@ def save_features(train_out_path,test_out_path):
         Feature.FINAL_TEAM_HP_DIFFERENCE,
         Feature.P1_FIRST_FAINT_TURN,
         Feature.P1_AVG_HP_WHEN_SWITCHING,
-        Feature.P1_MAX_DEBUFF_RECEIVED,
-        Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P2_AVG_HP_WHEN_SWITCHING,
+        # Feature.P1_MAX_DEBUFF_RECEIVED,
+        # Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P1_AVG_MOVE_POWER,
+        Feature.P2_AVG_MOVE_POWER,
+        Feature.AVG_MOVE_POWER_DIFFERENCE,
+        Feature.P1_OFFENSIVE_RATIO,
+        Feature.P2_OFFENSIVE_RATIO,
+        Feature.OFFENSIVE_RATIO_DIFFERENCE,
+        Feature.P1_MOVED_FIRST_COUNT,
+        Feature.P2_MOVED_FIRST_COUNT,
+        Feature.SPEED_ADVANTAGE_RATIO
+
     ]
 
     pipeline = FeaturePipeline(selected_features)
@@ -56,18 +68,18 @@ def save_features(train_out_path,test_out_path):
     # Salva il dataset in un file CSV
     train_df.to_csv(train_out_path, index=False)
 
-    # print("Loading test data...")
-    # test_data = []
-    # with open(test_file_path, 'r') as f:
-    #     for line in f:
-    #         test_data.append(json.loads(line))
-    # # Estrai le feature test_set
-    # print("\nExtracting features from test data...")
-    # test_df = pipeline.extract_features(test_data)
-    # print("\nTest features preview:")
-    # print(test_df.head())
-    # # Salva il dataset in un file CSV
-    # test_df.to_csv(test_out_path, index=False)
+    print("Loading test data...")
+    test_data = []
+    with open(test_file_path, 'r') as f:
+        for line in f:
+            test_data.append(json.loads(line))
+    # Estrai le feature test_set
+    print("\nExtracting features from test data...")
+    test_df = pipeline.extract_features(test_data)
+    print("\nTest features preview:")
+    print(test_df.head())
+    # Salva il dataset in un file CSV
+    test_df.to_csv(test_out_path, index=False)
 
 
 def main(train_out_path,test_out_path):
@@ -76,7 +88,7 @@ def main(train_out_path,test_out_path):
     train_df = pd.read_csv(train_out_path)
     #Rimuovi la riga 4877 dal dataset
     # train_df = train_df.drop(index=4877)
-    # test_df = pd.read_csv(test_out_path)
+    test_df = pd.read_csv(test_out_path)
 
     X_train = train_df.drop(['battle_id', 'player_won'],axis=1)
     y_train = train_df['player_won']
@@ -104,7 +116,8 @@ def main(train_out_path,test_out_path):
                     y_tr, y_val = y_train.iloc[train_idx], y_train.iloc[val_idx]
 
                     # Scaler
-                    scaler = StandardScaler()
+                    # scaler = StandardScaler()
+                    scaler = RobustScaler()
                     X_tr_scal = scaler.fit_transform(X_tr)
                     X_val_scal = scaler.transform(X_val)
 
@@ -135,29 +148,42 @@ def main(train_out_path,test_out_path):
                     best_score = {"mean_acc": mean_acc, "mean f1": mean_f1, "mean prec": mean_prec, "mean rec": mean_prec,"cm":cm}
                     best_params = {'C': C, 'penalty': penalty, 'solver': solver}
 
+
     print("\nBest params found:", best_params)
     print("Best CV accuracy:", best_score)
+
+    final_model = LogisticRegression(C=best_params['C'], penalty=best_params['penalty'], solver=best_params['solver'], max_iter=2000, random_state=42)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    scaler = RobustScaler()
+    X_tr_scal = scaler.fit_transform(X_tr)
+    X_val_scal = scaler.transform(X_val)
+    final_model.fit(X_tr_scal, y_tr)
+    val_preds = final_model.predict(X_val_scal)
+    print("\nFinal model evaluation on validation set:")
+    print(classification_report(y_val, val_preds))
 
     print("Confusion Matrix")
     print(best_score.get("cm"))
     print(f"\nTrue Negatives:  {cm[0][0]:4d}  |  False Positives: {cm[0][1]:4d}")
     print(f"False Negatives: {cm[1][0]:4d}  |  True Positives:  {cm[1][1]:4d}")
 
+    #Predici sul test_set
+    X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
+    X_test_scal = scaler.transform(X_test)
+    test_preds = final_model.predict(X_test_scal)
+    # Salva le predizioni
+    submission = pd.DataFrame({
+        'battle_id': test_df['battle_id'],
+        'player_won': test_preds
+    })
+    submission.to_csv('predictions_cross_val.csv', index=False)
 
-    # # Testa il modello con i migliori iperparametri sul test set
-    # best_model = grid_search.best_estimator_
-    # test_accuracy = best_model.score(X_test, Y_test)
-    # print(f"Test set accuracy with best hyperparameters: {test_accuracy}")
-    
-    # submission = pd.DataFrame({
-    #     'battle_id': test_df['battle_id'],
-    #     'player_won': predictions
-    # })
-    # submission.to_csv('predictions.csv', index=False)
+
+
 
 
 if __name__ == "__main__":
     train_out_path="train_features_extracted.csv"
-    test_out_path="train_features_extracted.csv"
+    test_out_path="test_features_extracted.csv"
     # save_features(train_out_path,test_out_path)
     main(train_out_path,test_out_path)
