@@ -12,6 +12,10 @@ class Feature(Enum):
     MEAN_HP_DIFFERENCE_START= "mean_hp_difference_start"
     LEAD_SPD = "lead_spd"
     MEAN_SPE_START = "mean_spe_start"
+    MEAN_ATK_START = "mean_atk_start"
+    MEAN_DEF_START = "mean_def_start"
+    MEAN_SPA_START = "mean_spa_start"
+    MEAN_SPD_START = "mean_spd_start"
     # P1_MEAN_SPE_LAST="p1_mean_spe_start"
     # P2_MEAN_SPE_LAST="p2_mean_spe_start"
     # MEAN_SPE_START_DIFFERENCE="mean_spe_start_difference"
@@ -23,6 +27,10 @@ class Feature(Enum):
     # P1_MEAN_HP_LAST= "p1_mean_hp_last" 
     # P2_MEAN_HP_LAST= "p2_mean_hp_last"
     # MEAN_HP_DIFFERENCE_LAST= "mean_hp_last_difference"
+    MEAN_ATK_LAST = "mean_atk_last"
+    MEAN_DEF_LAST = "mean_def_last"
+    MEAN_SPA_LAST = "mean_spa_last"
+    MEAN_SPD_LAST = "mean_spd_last"
     MEAN_STATS_START= "mean_stats_start"
     MEAN_STATS_LAST= "mean_stats_last"
     P1_ALIVE_PKMN = "p1_alive_pkmn"
@@ -80,6 +88,10 @@ class FeatureRegistry:
         self._extractors[Feature.MEAN_HP_DIFFERENCE_START]= mean_hp_difference_start
         self._extractors[Feature.LEAD_SPD] = lead_spd
         self._extractors[Feature.MEAN_SPE_START] = mean_spe_start
+        self._extractors[Feature.MEAN_ATK_START] = mean_atk_start
+        self._extractors[Feature.MEAN_DEF_START] = mean_def_start
+        self._extractors[Feature.MEAN_SPA_START] = mean_spa_start
+        self._extractors[Feature.MEAN_SPD_START] = mean_spd_start
         #self._extractors[Feature.P1_MEAN_SPE_START]= p1_mean_spe_start 
         #self._extractors[Feature.P2_MEAN_HP_START]= p2_mean_spe_start 
         #self._extractors[Feature.MEAN_SPE_DIFFERENCE_START]= mean_spe_start_difference
@@ -91,6 +103,10 @@ class FeatureRegistry:
         #self._extractors[Feature.P1_MEAN_HP_LAST]= p1_mean_hp_last 
         #self._extractors[Feature.P2_MEAN_HP_LAST]= p2_mean_hp_last
         #self._extractors[Feature.MEAN_HP_DIFFERENCE_LAST]= mean_hp_last_difference
+        self._extractors[Feature.MEAN_ATK_LAST] = mean_atk_last
+        self._extractors[Feature.MEAN_DEF_LAST] = mean_def_last
+        self._extractors[Feature.MEAN_SPA_LAST] = mean_spa_last
+        self._extractors[Feature.MEAN_SPD_LAST] = mean_spd_last
         self._extractors[Feature.MEAN_STATS_START] = mean_stats_start
         self._extractors[Feature.MEAN_STATS_LAST] = mean_stats_last
         self._extractors[Feature.P1_ALIVE_PKMN] = p1_alive_pkmn
@@ -296,9 +312,6 @@ def extract_p2_team_from_game_last_with_boosts(game) -> pd.Series:
     
     return team_remain_p2
 
-def mean_spe_database(pkmn_database) -> float:
-    return np.mean(pkmn_database['base_spe'])
-
 def mean_spe_start(dataset) -> pd.DataFrame: #feature
     pkmn_database = open_pkmn_database_csv()
 
@@ -331,6 +344,112 @@ def p2_mean_start_last(dataset)-> pd.DataFrame: #feature
 
 def mean_spe_start_difference(dataset)-> pd.DataFrame: #feature
     return mean_spe_start(dataset)['mean_spe_start_difference']
+
+# --- Feature ATK DEF SPA SPD START ---
+# ATK
+def mean_atk_start(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_atk=[]
+    p2_mean_atk=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_start(game)
+        p2_team=extract_p2_team_from_game_start(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_atk']]
+        p1_mean_atk.append((np.sum(p1_team['base_atk'])+ (mean_atk_database(pkmn_database)*(6-p1_known)))/6)
+    
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_atk']]
+        p2_mean_atk.append((np.sum(p2_team['base_atk'])+ mean_atk_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_atk_start=pd.DataFrame({'p1_mean_atk_start':p1_mean_atk,'p2_mean_atk_start':p2_mean_atk})
+    mean_atk_start['mean_atk_start_difference']=np.subtract.reduce(mean_atk_start[['p1_mean_atk_start','p2_mean_atk_start']],axis=1)
+    return mean_atk_start
+
+def mean_atk_start_difference(dataset)-> pd.DataFrame: #feature
+    return mean_atk_start(dataset)['mean_atk_start_difference']
+
+# DEF
+def mean_def_start(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_def=[]
+    p2_mean_def=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_start(game)
+        p2_team=extract_p2_team_from_game_start(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_def']]
+        p1_mean_def.append((np.sum(p1_team['base_def'])+ (mean_def_database(pkmn_database)*(6-p1_known)))/6)
+    
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_def']]
+        p2_mean_def.append((np.sum(p2_team['base_def'])+ mean_def_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_def_start=pd.DataFrame({'p1_mean_def_start':p1_mean_def,'p2_mean_def_start':p2_mean_def})
+    mean_def_start['mean_def_start_difference']=np.subtract.reduce(mean_def_start[['p1_mean_def_start','p2_mean_def_start']],axis=1)
+    return mean_def_start
+
+def mean_def_start_difference(dataset)-> pd.DataFrame: #feature
+    return mean_def_start(dataset)['mean_def_start_difference']
+
+# SPA
+def mean_spa_start(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_spa=[]
+    p2_mean_spa=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_start(game)
+        p2_team=extract_p2_team_from_game_start(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_spa']]
+        p1_mean_spa.append((np.sum(p1_team['base_spa'])+ (mean_spa_database(pkmn_database)*(6-p1_known)))/6)
+    
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_spa']]
+        p2_mean_spa.append((np.sum(p2_team['base_spa'])+ mean_spa_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_spa_start=pd.DataFrame({'p1_mean_spa_start':p1_mean_spa,'p2_mean_spa_start':p2_mean_spa})
+    mean_spa_start['mean_spa_start_difference']=np.subtract.reduce(mean_spa_start[['p1_mean_spa_start','p2_mean_spa_start']],axis=1)
+    return mean_spa_start
+
+def mean_spa_start_difference(dataset)-> pd.DataFrame: #feature
+    return mean_spa_start(dataset)['mean_spa_start_difference']
+
+# SPD
+def mean_spd_start(dataset) -> pd.DataFrame: #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_spd=[]
+    p2_mean_spd=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_start(game)
+        p2_team=extract_p2_team_from_game_start(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_spd']]
+        p1_mean_spd.append((np.sum(p1_team['base_spd'])+ (mean_spd_database(pkmn_database)*(6-p1_known)))/6)
+    
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_spd']]
+        p2_mean_spd.append((np.sum(p2_team['base_spd'])+ mean_spd_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_spd_start=pd.DataFrame({'p1_mean_spd_start':p1_mean_spd,'p2_mean_spd_start':p2_mean_spd})
+    mean_spd_start['mean_spd_start_difference']=np.subtract.reduce(mean_spd_start[['p1_mean_spd_start','p2_mean_spd_start']],axis=1)
+    return mean_spd_start
+def mean_spd_start_difference(dataset)-> pd.DataFrame: #feature
+    return mean_spd_start(dataset)['mean_spd_start_difference']
+
+#--- --------------
 
 def mean_spe_last(dataset) -> pd.DataFrame: #feature
     pkmn_database = open_pkmn_database_csv()
@@ -365,7 +484,7 @@ def mean_spe_last(dataset) -> pd.DataFrame: #feature
 
 
     mean_spe_last=pd.DataFrame({'p1_mean_spe_last':p1_mean_spe,'p2_mean_spe_last':p2_mean_spe})
-    mean_spe_last['mean_hp_last_difference']=np.subtract.reduce(mean_spe_last[['p1_mean_spe_last','p2_mean_spe_last']],axis=1)
+    mean_spe_last['mean_spe_last_difference']=np.subtract.reduce(mean_spe_last[['p1_mean_spe_last','p2_mean_spe_last']],axis=1)
     mean_spe_last=mean_spe_last.fillna(value=0)
     return mean_spe_last 
 
@@ -380,6 +499,22 @@ def mean_spe_last_difference(dataset)-> pd.DataFrame: #feature
 
 def mean_hp_database(pkmn_database) -> float:
     return np.mean(pkmn_database['base_hp'])
+
+def mean_atk_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_atk'])
+
+def mean_def_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_def'])
+
+def mean_spa_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_spa'])
+
+def mean_spd_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_spd'])
+
+def mean_spe_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_spe'])
+
 
 def p1_mean_hp_start(dataset) -> pd.DataFrame: #feature
     pkmn_database = open_pkmn_database_csv()
@@ -418,7 +553,7 @@ def mean_hp_difference_start(dataset)-> pd.DataFrame: #feature
 
     #return mean_hp_difference['mean_hp_difference']
     #return mean_hp_difference['p2_mean_hp_start']
-    return mean_hp_difference
+    return mean_hp_difference['mean_hp_difference']
 
 def mean_hp_last(dataset): #feature
     pkmn_database = open_pkmn_database_csv()
@@ -453,6 +588,139 @@ def p2_mean_hp_last(dataset)->pd.DataFrame: #feature
 
 def mean_hp_last_difference(dataset)->pd.DataFrame: #feature
     return mean_hp_last(dataset)['mean_hp_last_difference']
+
+# ---- Features ATK ------#
+def mean_atk_last(dataset): #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_atk=[]
+    p2_mean_atk=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last(game)
+        p2_team=extract_p2_team_from_game_last(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_atk']]
+        p1_mean_atk.append((np.sum(p1_team['base_atk'])+ mean_atk_database(pkmn_database)*(6-p1_known))/6)
+
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_atk']]
+        p2_known=len(extract_p2_team_from_game_start(game))
+        p2_mean_atk.append((np.sum(p2_team['base_atk'])+ mean_atk_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_atk_last=pd.DataFrame({'p1_mean_atk_last':p1_mean_atk,'p2_mean_atk_last':p2_mean_atk})
+    mean_atk_last['mean_atk_last_difference']=np.subtract.reduce(mean_atk_last[['p1_mean_atk_last','p2_mean_atk_last']],axis=1)
+    mean_atk_last=mean_atk_last.fillna(value=0)
+    return mean_atk_last
+
+def p1_mean_atk_last(dataset)->pd.DataFrame: #feature
+    return mean_atk_last(dataset)['p1_mean_atk_last']
+
+def p2_mean_atk_last(dataset)->pd.DataFrame: #feature
+    return mean_atk_last(dataset)['p2_mean_atk_last']
+
+def mean_atk_last_difference(dataset)->pd.DataFrame: #feature
+    return mean_atk_last(dataset)['mean_atk_last_difference']
+
+# ---- Features DEF ------#
+def mean_def_last(dataset): #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_def=[]
+    p2_mean_def=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last(game)
+        p2_team=extract_p2_team_from_game_last(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_def']]
+        p1_mean_def.append((np.sum(p1_team['base_def'])+ mean_def_database(pkmn_database)*(6-p1_known))/6)
+
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_def']]
+        p2_known=len(extract_p2_team_from_game_start(game))
+        p2_mean_def.append((np.sum(p2_team['base_def'])+ mean_def_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_def_last=pd.DataFrame({'p1_mean_def_last':p1_mean_def,'p2_mean_def_last':p2_mean_def})
+    mean_def_last['mean_def_last_difference']=np.subtract.reduce(mean_def_last[['p1_mean_def_last','p2_mean_def_last']],axis=1)
+    mean_def_last=mean_def_last.fillna(value=0)
+    return mean_def_last
+
+def p1_mean_def_last(dataset)->pd.DataFrame: #feature
+    return mean_def_last(dataset)['p1_mean_def_last']
+
+def p2_mean_def_last(dataset)->pd.DataFrame: #feature
+    return mean_def_last(dataset)['p2_mean_def_last']
+
+def mean_def_last_difference(dataset)->pd.DataFrame: #feature
+    return mean_def_last(dataset)['mean_def_last_difference']
+
+# ---- Features SPA ------#
+def mean_spa_last(dataset): #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_spa=[]
+    p2_mean_spa=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last(game)
+        p2_team=extract_p2_team_from_game_last(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spa']]
+        p1_mean_spa.append((np.sum(p1_team['base_spa'])+ mean_spa_database(pkmn_database)*(6-p1_known))/6)
+
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_spa']]
+        p2_known=len(extract_p2_team_from_game_start(game))
+        p2_mean_spa.append((np.sum(p2_team['base_spa'])+ mean_spa_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_spa_last=pd.DataFrame({'p1_mean_spa_last':p1_mean_spa,'p2_mean_spa_last':p2_mean_spa})
+    mean_spa_last['mean_spa_last_difference']=np.subtract.reduce(mean_spa_last[['p1_mean_spa_last','p2_mean_spa_last']],axis=1)
+    mean_spa_last=mean_spa_last.fillna(value=0)
+    return mean_spa_last
+
+def p1_mean_spa_last(dataset)->pd.DataFrame: #feature
+    return mean_spa_last(dataset)['p1_mean_spa_last']
+
+def p2_mean_spa_last(dataset)->pd.DataFrame: #feature
+    return mean_spa_last(dataset)['p2_mean_spa_last']
+
+def mean_spa_last_difference(dataset)->pd.DataFrame: #feature
+    return mean_spa_last(dataset)['mean_spa_last_difference']
+
+# ---- Features SPD ------#
+def mean_spd_last(dataset): #feature
+    pkmn_database = open_pkmn_database_csv()
+    p1_mean_spd=[]
+    p2_mean_spd=[]
+    for game in dataset:
+        p1_team=extract_p1_team_from_game_last(game)
+        p2_team=extract_p2_team_from_game_last(game)
+
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spd']]
+        p1_mean_spd.append((np.sum(p1_team['base_spd'])+ mean_spd_database(pkmn_database)*(6-p1_known))/6)
+
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_spd']]
+        p2_known=len(extract_p2_team_from_game_start(game))
+        p2_mean_spd.append((np.sum(p2_team['base_spd'])+ mean_spd_database(pkmn_database)*(6-p2_known))/6)
+
+    mean_spd_last=pd.DataFrame({'p1_mean_spd_last':p1_mean_spd,'p2_mean_spd_last':p2_mean_spd})
+    mean_spd_last['mean_spd_last_difference']=np.subtract.reduce(mean_spd_last[['p1_mean_spd_last','p2_mean_spd_last']],axis=1)
+    mean_spd_last=mean_spd_last.fillna(value=0)
+    return mean_spd_last
+
+def p1_mean_spd_last(dataset)->pd.DataFrame: #feature
+    return mean_spd_last(dataset)['p1_mean_spd_last']
+
+def p2_mean_spd_last(dataset)->pd.DataFrame: #feature
+    return mean_spd_last(dataset)['p2_mean_spd_last']
+
+def mean_spd_last_difference(dataset)->pd.DataFrame: #feature
+    return mean_spd_last(dataset)['mean_spd_last_difference']
+
 
 def mean_total_database(pkmn_database) -> float:
     pkmn_database['total']=np.sum(pkmn_database[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
@@ -554,7 +822,7 @@ def alive_pkmn_difference(dataset)->pd.DataFrame: #feature
     pkmn_alive_difference=pd.concat([p1_alive,p2_alive],axis=1)
     pkmn_alive_difference['pkmn_alive_difference']=np.subtract.reduce(pkmn_alive_difference[['p1_pkmn_alive','p2_pkmn_alive']],axis=1)
     #return pkmn_alive_difference['pkmn_alive_difference']
-    return pkmn_alive_difference
+    return pkmn_alive_difference['pkmn_alive_difference']
 
 def all_pokemon_round(player: int,json):
     if player==1:
