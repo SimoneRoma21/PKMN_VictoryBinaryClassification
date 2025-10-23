@@ -1064,12 +1064,13 @@ def p1_pokemon_explosion(dataset)->pd.DataFrame: #feature
         turns_p1_moves=pd.DataFrame([turn['p1_move_details'] if turn['p1_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
         if len(turns_p1_state)!=0 and len(turns_p1_moves)!=0:
             turns=pd.concat([turns_p1_state,turns_p1_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
-            turns=turns[turns['name']=='explosion' | turns['name']=='selfdestruct']
+            turns=pd.concat([turns[turns['name']=='explosion'], turns[turns['name']=='selfdestruct']],axis=0)
             #turns=turns[turns['status']!='fnt']
             p1_count.append(len(turns))
         else:
             p1_count.append(0)
-    return pd.DataFrame({'p1_pkmn_explosion':p1_count})
+        
+    return pd.DataFrame({'p1_pkmn_explosions':p1_count})
 
 def p2_pokemon_explosion(dataset)->pd.DataFrame: #feature
     p2_count=[]
@@ -1079,12 +1080,12 @@ def p2_pokemon_explosion(dataset)->pd.DataFrame: #feature
         turns_p2_moves=pd.DataFrame([turn['p2_move_details'] if turn['p2_move_details']!=None else {'name':'None'} for turn in game['battle_timeline']])['name']
         if len(turns_p2_state)!=0 and len(turns_p2_moves)!=0:
             turns=pd.concat([turns_p2_state,turns_p2_moves],axis=1).drop_duplicates(subset='pkmn_name',keep='last')
-            turns=turns[turns['name']=='explosion']
+            turns=pd.concat([turns[turns['name']=='explosion'], turns[turns['name']=='selfdestruct']],axis=0)
             #turns=turns[turns['status']!='fnt']
             p2_count.append(len(turns))
         else:
             p2_count.append(0)
-    return pd.DataFrame({'p2_pkmn_explosion':p2_count})
+    return pd.DataFrame({'p2_pkmn_explosions':p2_count})
 
 def p1_pokemon_thunderwave(dataset)->pd.DataFrame: #feature
     p1_count=[]
@@ -2179,4 +2180,4 @@ if __name__=="__main__":
     #print(p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),alive_pkmn_difference(dataset))
     #print(mean_spe_last(dataset))
     # print(p1_frozen_pkmn(dataset).sum()," \n",p2_frozen_pkmn(dataset).sum())
-    print(p1_pokemon_firespin(dataset).sum()," \n",p2_pokemon_firespin(dataset).sum())
+    print(p1_pokemon_explosion(dataset).sum()," \n",p2_pokemon_explosion(dataset).sum())
