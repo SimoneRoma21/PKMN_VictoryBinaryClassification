@@ -8,8 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 
-def main():
-
+def save_features(train_out_path,test_out_path):
     selected_features = [
         Feature.P1_MEAN_HP_START, #*
         Feature.P2_MEAN_HP_START, #*
@@ -64,8 +63,7 @@ def main():
     ]#
 
     pipeline = FeaturePipeline(selected_features)
-
-     # Carica i dati
+    # Carica i dati
     train_file_path = '../data/train.jsonl'
     test_file_path = '../data/test.jsonl'
 
@@ -74,28 +72,43 @@ def main():
     with open(train_file_path, 'r') as f:
         for line in f:
             train_data.append(json.loads(line))
-    
+
+    # Estrai le feature train_set
+    print("\nExtracting features from training data...")
+    train_df = pipeline.extract_features(train_data)
+    print("\nTraining features preview:")
+    print(train_df.head())
+    # Salva il dataset in un file CSV
+    train_df.to_csv(train_out_path, index=False)
+
     print("Loading test data...")
     test_data = []
     with open(test_file_path, 'r') as f:
         for line in f:
             test_data.append(json.loads(line))
-    
-    # Estrai le feature
-    print("\nExtracting features from training data...")
-    train_df = pipeline.extract_features(train_data)
-    # drop row number 4877
-    train_df = train_df.drop(index=4877)
-    
-    # print("Extracting features from test data...")
+    # Estrai le feature test_set
+    print("\nExtracting features from test data...")
     test_df = pipeline.extract_features(test_data)
-    
-    print("\nTraining features preview:")
-    print(train_df.head())
+    print("\nTest features preview:")
+    print(test_df.head())
+    # Salva il dataset in un file CSV
+    test_df.to_csv(test_out_path, index=False)
 
-    # Save train_df to CSV for inspection
-    train_df.to_csv('train_features_extracted.csv', index=False)
 
+def main():
+    #---------------Feature Extraction Code------------------------
+    train_out_path="train_features_extracted.csv"
+    test_out_path="test_features_extracted.csv"
+    # Uncomment to extract and save features
+    # save_features(train_out_path,test_out_path) 
+
+    #---------------Model Training and Evaluation Code------------------------
+    # Carica il train e test set da csv con le feature estratte
+    print(f"\nLoading train_set from {train_out_path}...")
+    train_df = pd.read_csv(train_out_path)
+    # Rimuovi la riga 4877 dal dataset
+    train_df = train_df.drop(index=4877)
+    test_df = pd.read_csv(test_out_path)
 
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
@@ -107,10 +120,10 @@ def main():
     # Crea una pipeline con normalizzazione e modello
     print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
     pipeline = Pipeline([
-         ('scaler', MinMaxScaler()),
-        # ('scaler',StandardScaler()),
+        #  ('scaler', MinMaxScaler()),
+        ('scaler',StandardScaler()),
         # ('scaler',RobustScaler()),
-        ('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,solver='liblinear',Cs=1))
+         ('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,solver='liblinear',Cs=1))
         #('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier',LogisticRegressionCV(random_state=42, max_iter=2000)),
     ])
@@ -124,11 +137,12 @@ def main():
     params={
         'classifier__Cs':[0.01,0.1,1,10,100],
         'classifier__solver':['liblinear','saga'],
-        'classifier__max_iter':[1000,2000,3000,4000,5000]
+        'classifier__max_iter':[1000,2000]
     }
     grid=GridSearchCV(pipeline,params,cv=5)
 
     trainer = ModelTrainer(grid)
+    # trainer = ModelTrainer(pipeline)
     trainer.train(X_tr, y_tr)
     trainer.evaluate(X_val, y_val)
     
@@ -155,9 +169,8 @@ def main():
 
 
     print(train_df.corr())
-
-    print("Best CV score:", grid.best_score_)
-    print("Best params:", grid.best_params_)
+    # print("Best CV score:", grid.best_score_)
+    # print("Best params:", grid.best_params_)
 
 if __name__ == "__main__":
     main()

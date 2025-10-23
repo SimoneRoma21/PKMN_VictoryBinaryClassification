@@ -10,78 +10,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, classification_report, roc_auc_score
 import numpy as np
 
-
-def save_features(train_out_path,test_out_path):
-    selected_features = [
-        Feature.P1_MEAN_HP_START,
-        Feature.P2_MEAN_HP_START,
-        Feature.MEAN_SPE_START, 
-        Feature.MEAN_SPE_LAST, 
-        Feature.MEAN_HP_LAST, 
-        Feature.P1_ALIVE_PKMN,
-        Feature.P2_ALIVE_PKMN,
-        Feature.WEAKNESS_TEAMS,
-        Feature.MEAN_STATS_START,
-        # Feature.TOTAL_TURNS, 
-        Feature.P1_SWITCHES_COUNT,
-        Feature.P2_SWITCHES_COUNT,
-        Feature.P1_STATUS_INFLICTED,
-        Feature.P2_STATUS_INFLICTED,
-        Feature.SWITCHES_DIFFERENCE,
-        Feature.STATUS_INFLICTED_DIFFERENCE,
-        Feature.P1_FINAL_TEAM_HP,
-        Feature.P2_FINAL_TEAM_HP,
-        Feature.FINAL_TEAM_HP_DIFFERENCE,
-        Feature.P1_FIRST_FAINT_TURN,
-        Feature.P1_AVG_HP_WHEN_SWITCHING,
-        Feature.P2_AVG_HP_WHEN_SWITCHING,
-        # Feature.P1_MAX_DEBUFF_RECEIVED,
-        # Feature.P2_MAX_DEBUFF_RECEIVED,
-        Feature.P1_AVG_MOVE_POWER,
-        Feature.P2_AVG_MOVE_POWER,
-        Feature.AVG_MOVE_POWER_DIFFERENCE,
-        Feature.P1_OFFENSIVE_RATIO,
-        Feature.P2_OFFENSIVE_RATIO,
-        Feature.OFFENSIVE_RATIO_DIFFERENCE,
-        Feature.P1_MOVED_FIRST_COUNT,
-        Feature.P2_MOVED_FIRST_COUNT,
-        Feature.SPEED_ADVANTAGE_RATIO
-
-    ]
-
-    pipeline = FeaturePipeline(selected_features)
-    # Carica i dati
-    train_file_path = '../data/train.jsonl'
-    test_file_path = '../data/test.jsonl'
-
-    print("Loading training data...")
-    train_data = []
-    with open(train_file_path, 'r') as f:
-        for line in f:
-            train_data.append(json.loads(line))
-
-    # Estrai le feature train_set
-    print("\nExtracting features from training data...")
-    train_df = pipeline.extract_features(train_data)
-    print("\nTraining features preview:")
-    print(train_df.head())
-    # Salva il dataset in un file CSV
-    train_df.to_csv(train_out_path, index=False)
-
-    print("Loading test data...")
-    test_data = []
-    with open(test_file_path, 'r') as f:
-        for line in f:
-            test_data.append(json.loads(line))
-    # Estrai le feature test_set
-    print("\nExtracting features from test data...")
-    test_df = pipeline.extract_features(test_data)
-    print("\nTest features preview:")
-    print(test_df.head())
-    # Salva il dataset in un file CSV
-    test_df.to_csv(test_out_path, index=False)
-
-
 def main(train_out_path,test_out_path):
     # Carica il train e test set da csv con le feature estratte
     print(f"\nLoading train_set from {train_out_path}...")
@@ -185,5 +113,4 @@ def main(train_out_path,test_out_path):
 if __name__ == "__main__":
     train_out_path="train_features_extracted.csv"
     test_out_path="test_features_extracted.csv"
-    # save_features(train_out_path,test_out_path)
     main(train_out_path,test_out_path)
