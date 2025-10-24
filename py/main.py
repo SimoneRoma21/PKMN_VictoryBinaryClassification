@@ -35,6 +35,8 @@ def save_features(train_out_path,test_out_path):
         Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
         Feature.MEAN_SPD_LAST, #*
+        Feature.MEAN_STATS_LAST, #*
+        Feature.MEAN_CRIT, #*
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
         Feature.ALIVE_PKMN_DIFFERENCE, #*
@@ -43,7 +45,12 @@ def save_features(train_out_path,test_out_path):
         #Feature.ADVANTAGE_WEAK_START, 
         #Feature.ADVANTAGE_WEAK_LAST, 
         #Feature.MEAN_STATS_START, 
-        Feature.MEAN_STATS_LAST, #*
+        
+
+        Feature.P1_PSY_PKMN,
+        Feature.P2_PSY_PKMN,
+        Feature.P1_PKMN_STAB,
+        Feature.P2_PKMN_STAB,
 
         Feature.P1_FROZEN_PKMN, #*
         Feature.P2_FROZEN_PKMN, #*
@@ -70,15 +77,17 @@ def save_features(train_out_path,test_out_path):
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
         Feature.P2_PKMN_FIRESPIN, #*
+        Feature.P1_REFLECT_RATIO,
+        Feature.P2_REFLECT_RATIO,
+        Feature.P1_LIGHTSCREEN_RATIO,
+        Feature.P2_LIGHTSCREEN_RATIO,
         #
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-        #Feature.P1_STATUS_INFLICTED, #*
-        #Feature.P2_STATUS_INFLICTED, #*
-        Feature.SWITCHES_DIFFERENCE,
-        #Feature.P1_STATUS_INFLICTED, #*
-        #Feature.P2_STATUS_INFLICTED, #*
-        #Feature.STATUS_INFLICTED_DIFFERENCE, #*
+        Feature.SWITCHES_DIFFERENCE, #*
+        #Feature.P1_STATUS_INFLICTED, 
+        #Feature.P2_STATUS_INFLICTED, 
+        #Feature.STATUS_INFLICTED_DIFFERENCE, 
         Feature.P1_FINAL_TEAM_HP, #*
         Feature.P2_FINAL_TEAM_HP, #*
         Feature.FINAL_TEAM_HP_DIFFERENCE, #*
@@ -96,7 +105,7 @@ def save_features(train_out_path,test_out_path):
         Feature.P1_MOVED_FIRST_COUNT, #*
         Feature.P2_MOVED_FIRST_COUNT, #*
         Feature.SPEED_ADVANTAGE_RATIO #*
-        #crit ratio
+        
     ]#
 
     # feature_to_remove = [          ## Ma che è sta robba
@@ -173,9 +182,9 @@ def main():
     pipeline = Pipeline([
         ('scaler', MinMaxScaler()),
         #('scaler',StandardScaler()),
-        # ('scaler',RobustScaler()),
-         ('classifier', LogisticRegression(random_state=42, max_iter=1000,solver='liblinear',C=1))
-          ('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,solver='liblinear',Cs=100))
+        #('scaler',RobustScaler()),
+         ('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',C=100)) #*
+        #('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,solver='liblinear',Cs=1))
         #('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier',LogisticRegressionCV(random_state=42, max_iter=2000)),
     ])
@@ -184,11 +193,11 @@ def main():
     # Addestra e valuta
     #Grid Search per Logistic Regression 
     params={
-         'classifier__C':[0.01,0.1,1,10,100],
+         'classifier__Cs':[0.01,0.1,1,10,100],
          'classifier__solver':['liblinear','saga'],
          'classifier__max_iter':[1000,2000]
     }
-    grid=GridSearchCV(pipeline,params,cv=5)
+    #grid=GridSearchCV(pipeline,params,cv=5)
 
     # Pipeline with XGBoost
     # pipeline = Pipeline([
@@ -227,8 +236,8 @@ def main():
     #n_jobs=-1
     #)
 
-    trainer = ModelTrainer(grid)
-    #trainer = ModelTrainer(pipeline)
+    #trainer = ModelTrainer(grid)
+    trainer = ModelTrainer(pipeline)
     trainer.train(X_tr, y_tr)
     trainer.evaluate(X_val, y_val)
     
@@ -245,14 +254,14 @@ def main():
 
     # #---------------Feature Utility Code------------------------
     # # ottieni i coefficienti
-    #coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+    coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
 
     # # ordina per importanza
-    #coefficients = coefficients.abs().sort_values(ascending=False)
+    coefficients = coefficients.abs().sort_values(ascending=False)
 
-    #print("Most useful features:")
-    #pd.set_option('display.max_rows', None)
-    #print(coefficients)
+    print("Most useful features:")
+    pd.set_option('display.max_rows', None)
+    print(coefficients)
 
 
 
@@ -272,8 +281,8 @@ def main():
     # print(importances)
 
     # print(train_df.corr())
-    print("Best CV score:", grid.best_score_)
-    print("Best params:", grid.best_params_)
+    #print("Best CV score:", grid.best_score_)
+    #print("Best params:", grid.best_params_)
 
     # ------------------ Feature selection -----------------
 
@@ -299,5 +308,5 @@ if __name__ == "__main__":
     train_out_path="train_features_extracted.csv"
     test_out_path="test_features_extracted.csv"
     # Uncomment to extract and save features
-    #save_features(train_out_path,test_out_path) 
+    save_features(train_out_path,test_out_path) 
     main()
