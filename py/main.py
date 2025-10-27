@@ -157,8 +157,8 @@ def save_features(train_out_path,test_out_path):
 
 def main():
     #---------------Feature Extraction Code------------------------
-    train_out_path="train_features_extracted.csv"
-    test_out_path="test_features_extracted.csv"
+    train_out_path="predict_csv/train_features_extracted.csv"
+    test_out_path="predict_csv/test_features_extracted.csv"
     # Uncomment to extract and save features
     #save_features(train_out_path,test_out_path) 
 
@@ -248,7 +248,7 @@ def main():
         'battle_id': test_df['battle_id'],
         'player_won': predictions
     })
-    submission.to_csv('predictions.csv', index=False)
+    submission.to_csv('predict_csv/predictions.csv', index=False)
 
 
 
@@ -305,8 +305,8 @@ def main():
             
 
 if __name__ == "__main__":
-    train_out_path="train_features_extracted.csv"
-    test_out_path="test_features_extracted.csv"
+    train_out_path="predict_csv/train_features_extracted.csv"
+    test_out_path="predict_csv/test_features_extracted.csv"
     # Uncomment to extract and save features
-    save_features(train_out_path,test_out_path) 
+    #save_features(train_out_path,test_out_path) 
     main()
