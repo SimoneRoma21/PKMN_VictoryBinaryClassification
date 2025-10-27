@@ -3,4 +3,5 @@ data/train.jsonl
 venv
 __pycache__/
 *.priv*
-py/train_features_extracted.csv
+py/predict_csv
+other
