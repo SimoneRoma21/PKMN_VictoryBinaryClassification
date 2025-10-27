@@ -613,7 +613,6 @@ def mean_crit(dataset) -> pd.DataFrame: #feature
             p2_mean_crit.append(0)
 
     mean_crit=pd.DataFrame({'p1_mean_crit':p1_mean_crit,'p2_mean_crit':p2_mean_crit})
-    #mean_spe_last['mean_spe_last_difference']=np.subtract.reduce(mean_spe_last[['p1_mean_spe_last','p2_mean_spe_last']],axis=1)
     mean_crit=mean_crit.fillna(value=0)
     return mean_crit
 
@@ -964,7 +963,8 @@ def p1_reflect_ratio(dataset)->pd.DataFrame: #feature
     for game in dataset:
         p1_timeline=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
         p1_timeline['n_reflects']=p1_timeline['effects'].apply(lambda x: x[0].count('reflect'))
-        p1_count.append(np.sum(p1_timeline['n_reflects'])/30)
+        #p1_count.append(np.sum(p1_timeline['n_reflects'])/30)
+        p1_count.append(np.sum(p1_timeline['n_reflects']))
     return pd.DataFrame({'p1_reflect_ratio':p1_count})
 
 def p2_reflect_ratio(dataset)->pd.DataFrame: #feature
@@ -972,7 +972,8 @@ def p2_reflect_ratio(dataset)->pd.DataFrame: #feature
     for game in dataset:
         p2_timeline=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
         p2_timeline['n_reflects']=p2_timeline['effects'].apply(lambda x: x[0].count('reflect'))
-        p2_count.append(np.sum(p2_timeline['n_reflects'])/30)
+        #p2_count.append(np.sum(p2_timeline['n_reflects'])/30)
+        p2_count.append(np.sum(p2_timeline['n_reflects']))
     return pd.DataFrame({'p2_reflect_ratio':p2_count})
 
 def p1_lightscreen_ratio(dataset)->pd.DataFrame: #feature
@@ -980,7 +981,8 @@ def p1_lightscreen_ratio(dataset)->pd.DataFrame: #feature
     for game in dataset:
         p1_timeline=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
         p1_timeline['n_lightscreens']=p1_timeline['effects'].apply(lambda x: x[0].count('lightscreen'))
-        p1_count.append(np.sum(p1_timeline['n_lightscreens'])/30)
+        #p1_count.append(np.sum(p1_timeline['n_lightscreens'])/30)
+        p1_count.append(np.sum(p1_timeline['n_lightscreens']))
     return pd.DataFrame({'p1_lightscreens_ratio':p1_count})
 
 def p2_lightscreen_ratio(dataset)->pd.DataFrame: #feature
@@ -988,7 +990,8 @@ def p2_lightscreen_ratio(dataset)->pd.DataFrame: #feature
     for game in dataset:
         p2_timeline=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
         p2_timeline['n_lightscreens']=p2_timeline['effects'].apply(lambda x: x[0].count('lightscreen'))
-        p2_count.append(np.sum(p2_timeline['n_lightscreens'])/30)
+        #p2_count.append(np.sum(p2_timeline['n_lightscreens'])/30)
+        p2_count.append(np.sum(p2_timeline['n_lightscreens']))
     return pd.DataFrame({'p2_lightscreens_ratio':p2_count})
 
 

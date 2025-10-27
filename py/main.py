@@ -31,7 +31,7 @@ def save_features(train_out_path,test_out_path):
         # Feature.P1_MEAN_SPE_LAST
         # Feature.P2_MEAN_SPE_LAST
         # Feature.MEAN_SPE_DIFFERENCE_LAST
-        Feature.MEAN_ATK_LAST, #* -> sistema burn
+        Feature.MEAN_ATK_LAST, #* 
         Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
         Feature.MEAN_SPD_LAST, #*
@@ -39,18 +39,17 @@ def save_features(train_out_path,test_out_path):
         Feature.MEAN_CRIT, #*
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
-        Feature.ALIVE_PKMN_DIFFERENCE, #*
+        #Feature.ALIVE_PKMN_DIFFERENCE, #*
         #Feature.WEAKNESS_TEAMS_START, 
         #Feature.WEAKNESS_TEAMS_LAST, 
         #Feature.ADVANTAGE_WEAK_START, 
         #Feature.ADVANTAGE_WEAK_LAST, 
         #Feature.MEAN_STATS_START, 
         
-
-        Feature.P1_PSY_PKMN,
-        Feature.P2_PSY_PKMN,
-        Feature.P1_PKMN_STAB,
-        Feature.P2_PKMN_STAB,
+        #Feature.P1_PSY_PKMN,
+        #Feature.P2_PSY_PKMN,
+        #Feature.P1_PKMN_STAB, #*
+        #Feature.P2_PKMN_STAB, #*
 
         Feature.P1_FROZEN_PKMN, #*
         Feature.P2_FROZEN_PKMN, #*
@@ -77,10 +76,11 @@ def save_features(train_out_path,test_out_path):
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
         Feature.P2_PKMN_FIRESPIN, #*
-        Feature.P1_REFLECT_RATIO,
-        Feature.P2_REFLECT_RATIO,
-        Feature.P1_LIGHTSCREEN_RATIO,
-        Feature.P2_LIGHTSCREEN_RATIO,
+
+        #Feature.P1_REFLECT_RATIO,
+        #Feature.P2_REFLECT_RATIO,
+        #Feature.P1_LIGHTSCREEN_RATIO,
+        #Feature.P2_LIGHTSCREEN_RATIO,
         #
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
@@ -183,8 +183,8 @@ def main():
         ('scaler', MinMaxScaler()),
         #('scaler',StandardScaler()),
         #('scaler',RobustScaler()),
-         ('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',C=100)) #*
-        #('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,solver='liblinear',Cs=1))
+        #('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',C=100)) #*
+        ('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,solver='liblinear',Cs=100))
         #('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier',LogisticRegressionCV(random_state=42, max_iter=2000)),
     ])
