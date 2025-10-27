@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from typing import List, Dict, Callable, Union
 from enum import Enum
+import os
 
 from .feature_data_extract import Feature, FeatureRegistry
 
@@ -35,18 +36,24 @@ class FeaturePipeline:
         ])
     """
     
-    def __init__(self, features: List[Feature]):
+    def __init__(self, features: List[Feature], cache_dir: str = "../data/feature_cache"):
         self.registry = FeatureRegistry()
         self.features = features
+        self.cache_dir = cache_dir
+        
+        # Crea la directory di cache se non esiste
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
     
     
-    def extract_features(self, data: List[Dict], show_progress: bool = True) -> pd.DataFrame:
+    def extract_features(self, data: List[Dict], show_progress: bool = True, force_extraction: bool = False) -> pd.DataFrame:
         """
         Estrae le feature specificate dai dati
         
         Args:
             data: Lista di battaglie (dict)
             show_progress: Mostra progress bar
+            force_extraction: Se True, forza l'estrazione anche se esiste il file CSV cache
             
         Returns:
             DataFrame con le feature estratte
@@ -65,10 +72,30 @@ class FeaturePipeline:
         
         columns = []
         for feature in iterator:
-            extractor = self.registry.get_extractor(feature)
-            if extractor:
-                # L'extractor ora genera tutta la colonna
-                columns.append(extractor(data))
+            # Genera il nome del file di cache
+            cache_file = os.path.join(self.cache_dir, f"{feature.value}.csv")
+            
+            # Controlla se esiste il file cache e se non è forzata l'estrazione
+            if os.path.exists(cache_file) and not force_extraction:
+                if show_progress:
+                    print(f"Loading {feature.value} from cache...")
+                # Carica i dati dal CSV
+                cached_df = pd.read_csv(cache_file, index_col=0)
+                columns.append(cached_df)
+            else:
+                # Estrai la feature
+                if show_progress:
+                    print(f"Extracting {feature.value}...")
+                extractor = self.registry.get_extractor(feature)
+                if extractor:
+                    # L'extractor ora genera tutta la colonna
+                    feature_df = extractor(data)
+                    columns.append(feature_df)
+                    
+                    # Salva nel file CSV
+                    feature_df.to_csv(cache_file)
+                    if show_progress:
+                        print(f"Cached {feature.value} to {cache_file}")
 
         df = pd.concat([pd.DataFrame(df_dict)] + columns, axis=1)
         return df
@@ -80,4 +107,5 @@ class FeaturePipeline:
         for f in self.features:
             print(f"  • {f.value}")
         print(f"\nTotal: {len(self.features)} features")
+
 

@@ -10,7 +10,9 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, Po
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
 
-def save_features(train_out_path,test_out_path):
+
+def main():
+    #---------------Feature Extraction Code------------------------
     selected_features = [
         Feature.P1_MEAN_HP_START, #*
         #Feature.P2_MEAN_HP_START, 
@@ -46,10 +48,10 @@ def save_features(train_out_path,test_out_path):
         #Feature.ADVANTAGE_WEAK_LAST, 
         #Feature.MEAN_STATS_START, 
         
-        #Feature.P1_PSY_PKMN,
-        #Feature.P2_PSY_PKMN,
-        #Feature.P1_PKMN_STAB, #*
-        #Feature.P2_PKMN_STAB, #*
+        Feature.P1_PSY_PKMN,
+        Feature.P2_PSY_PKMN,
+        Feature.P1_PKMN_STAB, #*
+        Feature.P2_PKMN_STAB, #*
 
         Feature.P1_FROZEN_PKMN, #*
         Feature.P2_FROZEN_PKMN, #*
@@ -77,10 +79,10 @@ def save_features(train_out_path,test_out_path):
         Feature.P1_PKMN_FIRESPIN, #*
         Feature.P2_PKMN_FIRESPIN, #*
 
-        #Feature.P1_REFLECT_RATIO,
-        #Feature.P2_REFLECT_RATIO,
-        #Feature.P1_LIGHTSCREEN_RATIO,
-        #Feature.P2_LIGHTSCREEN_RATIO,
+        Feature.P1_REFLECT_RATIO,
+        Feature.P2_REFLECT_RATIO,
+        Feature.P1_LIGHTSCREEN_RATIO,
+        Feature.P2_LIGHTSCREEN_RATIO,
         #
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
@@ -105,27 +107,13 @@ def save_features(train_out_path,test_out_path):
         Feature.P1_MOVED_FIRST_COUNT, #*
         Feature.P2_MOVED_FIRST_COUNT, #*
         Feature.SPEED_ADVANTAGE_RATIO #*
-        
-    ]#
+    ]
+    feature_pipeline = FeaturePipeline(selected_features)
 
-    # feature_to_remove = [          ## Ma che è sta robba
-    # Feature.P1_FINAL_TEAM_HP,
-    # Feature.P1_AVG_MOVE_POWER,  
-    # Feature.P2_AVG_MOVE_POWER,  
-    # # Feature.P1_MEAN_STATS_START, 
-    # Feature.AVG_MOVE_POWER_DIFFERENCE,  
-    # # Feature.P1_MEAN_SPE_START, 
-    # Feature.P2_ALIVE_PKMN,
-    # Feature.SPEED_ADVANTAGE_RATIO
-    # ]
-
-    # # Rimuovi le feature inutili dalla lista
-    # selected_features = [feat for feat in selected_features if feat not in feature_to_remove]
-
-    pipeline = FeaturePipeline(selected_features)
-    # Carica i dati
     train_file_path = '../data/train.jsonl'
     test_file_path = '../data/test.jsonl'
+    train_out_path="train_features_extracted.csv"
+    #test_out_path="test_features_extracted.csv"
 
     print("Loading training data...")
     train_data = []
@@ -135,47 +123,26 @@ def save_features(train_out_path,test_out_path):
 
     # Estrai le feature train_set
     print("\nExtracting features from training data...")
-    train_df = pipeline.extract_features(train_data)
+    train_df = feature_pipeline.extract_features(train_data)
     print("\nTraining features preview:")
     print(train_df.head())
     # Salva il dataset in un file CSV
     train_df.to_csv(train_out_path, index=False)
 
-    print("Loading test data...")
-    test_data = []
-    with open(test_file_path, 'r') as f:
-        for line in f:
-            test_data.append(json.loads(line))
-    # Estrai le feature test_set
-    print("\nExtracting features from test data...")
-    test_df = pipeline.extract_features(test_data)
-    print("\nTest features preview:")
-    print(test_df.head())
-    # Salva il dataset in un file CSV
-    test_df.to_csv(test_out_path, index=False)
-
-
-def main():
-    #---------------Feature Extraction Code------------------------
-    train_out_path="train_features_extracted.csv"
-    test_out_path="test_features_extracted.csv"
-    # Uncomment to extract and save features
-    #save_features(train_out_path,test_out_path) 
-
     #---------------Model Training and Evaluation Code------------------------
     # Carica il train e test set da csv con le feature estratte
-    print(f"\nLoading train_set from {train_out_path}...")
-    train_df = pd.read_csv(train_out_path)
+    # print(f"\nLoading train_set from {train_out_path}...")
+    # train_df = pd.read_csv(train_out_path)
     # Rimuovi la riga 4877 dal dataset
     train_df = train_df.drop(index=4877)
-    test_df = pd.read_csv(test_out_path)
+    # test_df = pd.read_csv(test_out_path)
 
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
-    X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
+    # X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
 
 
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
     
     # Crea una pipeline con normalizzazione e modello
     print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
@@ -184,7 +151,7 @@ def main():
         #('scaler',StandardScaler()),
         #('scaler',RobustScaler()),
         #('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',C=100)) #*
-        ('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,solver='liblinear',Cs=100))
+        ('classifier', LogisticRegressionCV(random_state=210978, max_iter=1000,solver='liblinear',Cs=100))
         #('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier',LogisticRegressionCV(random_state=42, max_iter=2000)),
     ])
@@ -241,15 +208,6 @@ def main():
     trainer.train(X_tr, y_tr)
     trainer.evaluate(X_val, y_val)
     
-    # Predici sul test set
-    predictions = trainer.predict(X_test)
-    
-    submission = pd.DataFrame({
-        'battle_id': test_df['battle_id'],
-        'player_won': predictions
-    })
-    submission.to_csv('predictions.csv', index=False)
-
 
 
     # #---------------Feature Utility Code------------------------
@@ -263,7 +221,9 @@ def main():
     pd.set_option('display.max_rows', None)
     print(coefficients)
 
+    # ------------------ Evaluate on Test Set -----------------
 
+    evaluate_test_set(trainer, selected_features, test_file_path)
 
     #---------------Feature Utility Code GRID------------------------
 
@@ -302,11 +262,31 @@ def main():
     # selected_features = X.columns[selector.get_support()]
     # print("\nFeature selezionate:")
     # print(selected_features.tolist())
-            
+
+def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):
+
+    feature_pipeline = FeaturePipeline(feature_list, cache_dir="../data/test_feature_cache")
+
+    print("\nLoading test data...")
+    test_data = []
+    with open(test_file_path, 'r') as f:
+        for line in f:
+            test_data.append(json.loads(line))
+
+    # Estrai le feature del test_set
+    print("\nExtracting features from test data...")
+    test_df = feature_pipeline.extract_features(test_data, show_progress=True)
+
+    X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
+
+    # Predici sul test set
+    predictions = trainer.predict(X_test)
+
+    submission = pd.DataFrame({
+        'battle_id': test_df['battle_id'],
+        'player_won': predictions
+    })
+    submission.to_csv('predictions.csv', index=False)
 
 if __name__ == "__main__":
-    train_out_path="train_features_extracted.csv"
-    test_out_path="test_features_extracted.csv"
-    # Uncomment to extract and save features
-    save_features(train_out_path,test_out_path) 
     main()
