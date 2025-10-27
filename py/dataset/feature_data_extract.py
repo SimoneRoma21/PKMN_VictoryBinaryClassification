@@ -3,10 +3,12 @@ import json
 import numpy as np
 from typing import List, Dict, Callable
 from enum import Enum
+from dataset.extract_utilities import *
 
 class Feature(Enum):
     """Enum con tutte le feature disponibili"""
 
+    #----Feature Base Stats Pokemon----#
     P1_MEAN_HP_START = "p1_mean_hp_start"
     P2_MEAN_HP_START = "p2_mean_hp_start"
     MEAN_HP_DIFFERENCE_START= "mean_hp_difference_start"
@@ -27,6 +29,9 @@ class Feature(Enum):
     # P1_MEAN_HP_LAST= "p1_mean_hp_last" 
     # P2_MEAN_HP_LAST= "p2_mean_hp_last"
     # MEAN_HP_DIFFERENCE_LAST= "mean_hp_last_difference"
+    P1_FINAL_TEAM_HP = "p1_final_team_hp"
+    P2_FINAL_TEAM_HP = "p2_final_team_hp"
+    FINAL_TEAM_HP_DIFFERENCE = "final_team_hp_difference"
     MEAN_ATK_LAST = "mean_atk_last"
     MEAN_DEF_LAST = "mean_def_last"
     MEAN_SPA_LAST = "mean_spa_last"
@@ -34,19 +39,35 @@ class Feature(Enum):
     MEAN_STATS_START= "mean_stats_start"
     MEAN_STATS_LAST= "mean_stats_last"
     MEAN_CRIT= "mean_crit"
+
+    #----Feature Infos During Battle ----#
     P1_ALIVE_PKMN = "p1_alive_pkmn"
     P2_ALIVE_PKMN = "p2_alive_pkmn"
     ALIVE_PKMN_DIFFERENCE="alive_pkmn_difference"
-    WEAKNESS_TEAMS_START= "weakness_teams"
-    WEAKNESS_TEAMS_LAST= "weakness_teams_last"
-    ADVANTAGE_WEAK_START="advantage_weak_start"
-    ADVANTAGE_WEAK_LAST="advantage_weak_last"
-
-    P1_PSY_PKMN= "p1_psy_pkmn"    
-    P2_PSY_PKMN= "p2_psy_pkmn"
     P1_PKMN_STAB= "p1_pokemon_stab"
     P2_PKMN_STAB= "p2_pokemon_stab"
-
+    P1_SWITCHES_COUNT = "p1_switches_count"
+    P2_SWITCHES_COUNT = "p2_switches_count"
+    SWITCHES_DIFFERENCE = "switches_difference"
+    P1_STATUS_INFLICTED = "p1_status_inflicted"
+    P2_STATUS_INFLICTED = "p2_status_inflicted"
+    STATUS_INFLICTED_DIFFERENCE = "status_inflicted_difference"
+    P1_FIRST_FAINT_TURN = "p1_first_faint_turn"  
+    P1_AVG_HP_WHEN_SWITCHING = "p1_avg_hp_when_switching"
+    P2_AVG_HP_WHEN_SWITCHING = "p2_avg_hp_when_switching"
+    P1_MAX_DEBUFF_RECEIVED = "p1_max_debuff_received" 
+    P2_MAX_DEBUFF_RECEIVED = "p2_max_debuff_received" 
+    P1_AVG_MOVE_POWER = "p1_avg_move_power"
+    P2_AVG_MOVE_POWER = "p2_avg_move_power"
+    AVG_MOVE_POWER_DIFFERENCE = "avg_move_power_difference"
+    P1_OFFENSIVE_RATIO = "p1_offensive_ratio"
+    P2_OFFENSIVE_RATIO = "p2_offensive_ratio"
+    OFFENSIVE_RATIO_DIFFERENCE = "offensive_ratio_difference"
+    P1_MOVED_FIRST_COUNT = "p1_moved_first_count"
+    P2_MOVED_FIRST_COUNT = "p2_moved_first_count"
+    SPEED_ADVANTAGE_RATIO = "speed_advantage_ratio"
+   
+    #----Feature Status of Pokemons----#
     P1_FROZEN_PKMN="p1_frozen_pkmn"
     P2_FROZEN_PKMN="p2_frozen_pkmn"
     P1_PARALIZED_PKMN="p1_paralized_pkmn"
@@ -57,7 +78,8 @@ class Feature(Enum):
     P2_POISON_PKMN="p2_poison_pkmn"
     P1_BURNED_PKMN="p1_burned_pkmn"
     P2_BURNED_PKMN="p2_burned_pkmn"
-
+    
+    #----Feature Pokemon Moves----#
     P1_PKMN_REFLECT="p1_pkmn_reflect"
     P2_PKMN_REFLECT="p2_pkmn_reflect"
     P1_PKMN_REST="p1_pkmn_rest"
@@ -77,31 +99,13 @@ class Feature(Enum):
     P1_LIGHTSCREEN_RATIO="p1_lightscreen_ratio"
     P2_LIGHTSCREEN_RATIO="p2_lightscreen_ratio"
 
-
-    P1_SWITCHES_COUNT = "p1_switches_count"
-    P2_SWITCHES_COUNT = "p2_switches_count"
-    P1_STATUS_INFLICTED = "p1_status_inflicted"
-    P2_STATUS_INFLICTED = "p2_status_inflicted"
-    SWITCHES_DIFFERENCE = "switches_difference"
-    STATUS_INFLICTED_DIFFERENCE = "status_inflicted_difference"
-    P1_FINAL_TEAM_HP = "p1_final_team_hp"
-    P2_FINAL_TEAM_HP = "p2_final_team_hp"
-    FINAL_TEAM_HP_DIFFERENCE = "final_team_hp_difference"
-    P1_FIRST_FAINT_TURN = "p1_first_faint_turn"  
-    P1_AVG_HP_WHEN_SWITCHING = "p1_avg_hp_when_switching"
-    P2_AVG_HP_WHEN_SWITCHING = "p2_avg_hp_when_switching"
-    P1_MAX_DEBUFF_RECEIVED = "p1_max_debuff_received" #non sicuro se necessaria
-    P2_MAX_DEBUFF_RECEIVED = "p2_max_debuff_received" #non sicuro se necessaria
-    P1_AVG_MOVE_POWER = "p1_avg_move_power"
-    P2_AVG_MOVE_POWER = "p2_avg_move_power"
-    AVG_MOVE_POWER_DIFFERENCE = "avg_move_power_difference"
-    P1_OFFENSIVE_RATIO = "p1_offensive_ratio"
-    P2_OFFENSIVE_RATIO = "p2_offensive_ratio"
-    OFFENSIVE_RATIO_DIFFERENCE = "offensive_ratio_difference"
-    P1_MOVED_FIRST_COUNT = "p1_moved_first_count"
-    P2_MOVED_FIRST_COUNT = "p2_moved_first_count"
-    SPEED_ADVANTAGE_RATIO = "speed_advantage_ratio"
-
+    #----Feature Weaknesses of Teams / Team Composition----#
+    WEAKNESS_TEAMS_START= "weakness_teams"
+    WEAKNESS_TEAMS_LAST= "weakness_teams_last"
+    ADVANTAGE_WEAK_START="advantage_weak_start"
+    ADVANTAGE_WEAK_LAST="advantage_weak_last"
+    P1_PSY_PKMN= "p1_psy_pkmn"    
+    P2_PSY_PKMN= "p2_psy_pkmn"
 
 class FeatureRegistry:
     """
@@ -120,6 +124,7 @@ class FeatureRegistry:
     def _register_all_extractors(self):
         """Registra tutti gli extractor disponibili"""
         
+         #----Feature Base Stats Pokemon----#
         self._extractors[Feature.P1_MEAN_HP_START] = p1_mean_hp_start
         self._extractors[Feature.P2_MEAN_HP_START] = p2_mean_hp_start
         self._extractors[Feature.MEAN_HP_DIFFERENCE_START]= mean_hp_difference_start
@@ -140,6 +145,9 @@ class FeatureRegistry:
         #self._extractors[Feature.P1_MEAN_HP_LAST]= p1_mean_hp_last 
         #self._extractors[Feature.P2_MEAN_HP_LAST]= p2_mean_hp_last
         #self._extractors[Feature.MEAN_HP_DIFFERENCE_LAST]= mean_hp_last_difference
+        self._extractors[Feature.P1_FINAL_TEAM_HP] = p1_final_team_hp
+        self._extractors[Feature.P2_FINAL_TEAM_HP] = p2_final_team_hp
+        self._extractors[Feature.FINAL_TEAM_HP_DIFFERENCE] = final_team_hp_difference
         self._extractors[Feature.MEAN_ATK_LAST] = mean_atk_last
         self._extractors[Feature.MEAN_DEF_LAST] = mean_def_last
         self._extractors[Feature.MEAN_SPA_LAST] = mean_spa_last
@@ -147,19 +155,35 @@ class FeatureRegistry:
         self._extractors[Feature.MEAN_STATS_START] = mean_stats_start
         self._extractors[Feature.MEAN_STATS_LAST] = mean_stats_last
         self._extractors[Feature.MEAN_CRIT]= mean_crit
+
+        #----Feature Infos During Battle ----#
         self._extractors[Feature.P1_ALIVE_PKMN] = p1_alive_pkmn
         self._extractors[Feature.P2_ALIVE_PKMN] = p2_alive_pkmn
         self._extractors[Feature.ALIVE_PKMN_DIFFERENCE]=alive_pkmn_difference
-        self._extractors[Feature.WEAKNESS_TEAMS_START] = weakness_teams
-        self._extractors[Feature.WEAKNESS_TEAMS_LAST] = weakness_teams_last
-        self._extractors[Feature.ADVANTAGE_WEAK_START] = advantage_weak_start
-        self._extractors[Feature.ADVANTAGE_WEAK_LAST] = advantage_weak_last
-
-        self._extractors[Feature.P1_PSY_PKMN] = p1_psy_pkmn
-        self._extractors[Feature.P2_PSY_PKMN] =  p2_psy_pkmn
         self._extractors[Feature.P1_PKMN_STAB] =  p1_pokemon_stab
         self._extractors[Feature.P2_PKMN_STAB] =  p2_pokemon_stab
+        self._extractors[Feature.P1_SWITCHES_COUNT] = p1_switches_count
+        self._extractors[Feature.P2_SWITCHES_COUNT] = p2_switches_count
+        self._extractors[Feature.SWITCHES_DIFFERENCE] = switches_difference
+        self._extractors[Feature.P1_STATUS_INFLICTED] = p1_status_inflicted
+        self._extractors[Feature.P2_STATUS_INFLICTED] = p2_status_inflicted
+        self._extractors[Feature.STATUS_INFLICTED_DIFFERENCE] = status_inflicted_difference
+        self._extractors[Feature.P1_FIRST_FAINT_TURN] = p1_first_faint_turn
+        self._extractors[Feature.P1_AVG_HP_WHEN_SWITCHING] = p1_avg_hp_when_switching
+        self._extractors[Feature.P2_AVG_HP_WHEN_SWITCHING] = p2_avg_hp_when_switching
+        self._extractors[Feature.P1_MAX_DEBUFF_RECEIVED] = p1_max_debuff_received
+        self._extractors[Feature.P2_MAX_DEBUFF_RECEIVED] = p2_max_debuff_received
+        self._extractors[Feature.P1_AVG_MOVE_POWER] = p1_avg_move_power
+        self._extractors[Feature.P2_AVG_MOVE_POWER] = p2_avg_move_power
+        self._extractors[Feature.AVG_MOVE_POWER_DIFFERENCE] = avg_move_power_difference
+        self._extractors[Feature.P1_OFFENSIVE_RATIO] = p1_offensive_ratio
+        self._extractors[Feature.P2_OFFENSIVE_RATIO] = p2_offensive_ratio
+        self._extractors[Feature.OFFENSIVE_RATIO_DIFFERENCE] = offensive_ratio_difference
+        self._extractors[Feature.P1_MOVED_FIRST_COUNT] = p1_moved_first_count
+        self._extractors[Feature.P2_MOVED_FIRST_COUNT] = p2_moved_first_count
+        self._extractors[Feature.SPEED_ADVANTAGE_RATIO] = speed_advantage_ratio
 
+         #----Feature Status of Pokemons----#
         self._extractors[Feature.P1_FROZEN_PKMN] = p1_frozen_pkmn
         self._extractors[Feature.P2_FROZEN_PKMN] = p2_frozen_pkmn
         self._extractors[Feature.P1_PARALIZED_PKMN] = p1_paralized_pkmn
@@ -170,7 +194,8 @@ class FeatureRegistry:
         self._extractors[Feature.P2_POISON_PKMN] = p2_poison_pkmn
         self._extractors[Feature.P1_BURNED_PKMN] = p1_burned_pkmn
         self._extractors[Feature.P2_BURNED_PKMN] = p2_burned_pkmn
-
+        
+        #----Feature Pokemon Moves----#
         self._extractors[Feature.P1_PKMN_REFLECT] = p1_pokemon_reflect
         self._extractors[Feature.P2_PKMN_REFLECT] = p2_pokemon_reflect
         self._extractors[Feature.P1_PKMN_REST] = p1_pokemon_rest
@@ -190,125 +215,15 @@ class FeatureRegistry:
         self._extractors[Feature.P1_LIGHTSCREEN_RATIO] = p1_lightscreen_ratio
         self._extractors[Feature.P2_LIGHTSCREEN_RATIO] = p2_lightscreen_ratio
 
+        #----Feature Weaknesses of Teams / Team Composition----#
+        self._extractors[Feature.WEAKNESS_TEAMS_START] = weakness_teams
+        self._extractors[Feature.WEAKNESS_TEAMS_LAST] = weakness_teams_last
+        self._extractors[Feature.ADVANTAGE_WEAK_START] = advantage_weak_start
+        self._extractors[Feature.ADVANTAGE_WEAK_LAST] = advantage_weak_last
+        self._extractors[Feature.P1_PSY_PKMN] = p1_psy_pkmn
+        self._extractors[Feature.P2_PSY_PKMN] =  p2_psy_pkmn
+
         
-
-        self._extractors[Feature.P1_SWITCHES_COUNT] = p1_switches_count
-        self._extractors[Feature.P2_SWITCHES_COUNT] = p2_switches_count
-        self._extractors[Feature.P1_STATUS_INFLICTED] = p1_status_inflicted
-        self._extractors[Feature.P2_STATUS_INFLICTED] = p2_status_inflicted
-        self._extractors[Feature.SWITCHES_DIFFERENCE] = switches_difference
-        self._extractors[Feature.STATUS_INFLICTED_DIFFERENCE] = status_inflicted_difference
-        self._extractors[Feature.P1_FINAL_TEAM_HP] = p1_final_team_hp
-        self._extractors[Feature.P2_FINAL_TEAM_HP] = p2_final_team_hp
-        self._extractors[Feature.FINAL_TEAM_HP_DIFFERENCE] = final_team_hp_difference
-        self._extractors[Feature.P1_FIRST_FAINT_TURN] = p1_first_faint_turn
-        self._extractors[Feature.P1_AVG_HP_WHEN_SWITCHING] = p1_avg_hp_when_switching
-        self._extractors[Feature.P2_AVG_HP_WHEN_SWITCHING] = p2_avg_hp_when_switching
-        self._extractors[Feature.P1_MAX_DEBUFF_RECEIVED] = p1_max_debuff_received
-        self._extractors[Feature.P2_MAX_DEBUFF_RECEIVED] = p2_max_debuff_received
-        self._extractors[Feature.P1_AVG_MOVE_POWER] = p1_avg_move_power
-        self._extractors[Feature.P2_AVG_MOVE_POWER] = p2_avg_move_power
-        self._extractors[Feature.AVG_MOVE_POWER_DIFFERENCE] = avg_move_power_difference
-        self._extractors[Feature.P1_OFFENSIVE_RATIO] = p1_offensive_ratio
-        self._extractors[Feature.P2_OFFENSIVE_RATIO] = p2_offensive_ratio
-        self._extractors[Feature.OFFENSIVE_RATIO_DIFFERENCE] = offensive_ratio_difference
-        self._extractors[Feature.P1_MOVED_FIRST_COUNT] = p1_moved_first_count
-        self._extractors[Feature.P2_MOVED_FIRST_COUNT] = p2_moved_first_count
-        self._extractors[Feature.SPEED_ADVANTAGE_RATIO] = speed_advantage_ratio
-
-
-def open_pkmn_database_csv() -> pd.DataFrame:
-    #opening pkmn database csv
-    pkmn_db=pd.read_csv("../data/pkmn_database.csv")
-    pkmn_db=pkmn_db.drop("Unnamed: 0",axis=1)
-    return pkmn_db
-
-def open_pkmn_database_weak_csv() -> pd.DataFrame:
-    #opening pkmn database weakness csv
-    pkmn_db_weak=pd.read_csv("../data/pkmn_database_weaknesses.csv")
-    return pkmn_db_weak
-
-def open_train_json() -> list:
-    list = []
-    with open("../data/train.jsonl", "r") as f:
-        for line in f:
-            list.append(json.loads(line))
-    list.remove(list[4877])
-    return list
-
-
-def open_type_chart_json() -> pd.DataFrame:
-    with open("../data/type_chart.json", "r") as f:
-        data=json.load(f)
-    return pd.DataFrame(data).transpose()
-
-def extract_all_pokemon_p1_teams(dataset) -> pd.DataFrame:
-    #extracting all p1 teams
-    db_pkmn_p1= pd.DataFrame([team for game in dataset for team in game['p1_team_details']]) 
-    db_pkmn_p1.drop_duplicates(subset=['name'],inplace=True)
-
-    db_types_p1=pd.concat([extract_types_from_team_p1(game) for game in dataset]).drop_duplicates(subset="name",keep='first')
-    db_pkmn_p1=db_pkmn_p1.merge(db_types_p1, how='inner',on='name')
-    return db_pkmn_p1
-
-def extract_all_pokemon_p2_seen(dataset) -> pd.DataFrame:
-    #extracting all p2 seens pokemons
-    db_pkmn_p2_battles=pd.DataFrame([elem['p2_pokemon_state']['name'] for game in dataset for elem in game['battle_timeline']])
-    db_pkmn_p2_battles.drop_duplicates(inplace=True)
-    db_pkmn_p2_battles.rename(columns={0:'name'},inplace=True)
-    return db_pkmn_p2_battles
-
-def extract_all_pokemon_p2_lead(dataset,duplicates) -> pd.DataFrame:
-    # getting all p2 leads
-    db_pkmn_p2_lead=pd.DataFrame([game['p2_lead_details'] for game in dataset ])
-    if not(duplicates): # admitting duplicates or not
-        db_pkmn_p2_lead.drop_duplicates(subset=['name'],inplace=True)
-    return db_pkmn_p2_lead
-
-def extract_all_pokemon_p2(dataset) -> pd.DataFrame:
- 
-    # picking all pokemons seen in all battles of p2 
-    db_pkmn_p2_battles=extract_all_pokemon_p2_seen(dataset)
-    # picking all pokemon leads of p2 (has to be subset of db_pkmn_p2_battles)
-    db_pkmn_p2_lead=extract_all_pokemon_p2_lead(dataset,False)
-    # merging the two dataset
-    db_pkmn_p2=db_pkmn_p2_lead.merge(db_pkmn_p2_battles, how='inner', on=['name'])
-
-    db_types_p2=pd.concat([extract_types_from_team_p2(game) for game in dataset]).drop_duplicates(subset="name",keep='first')
-    db_pkmn_p2=db_pkmn_p2.merge(db_types_p2, how='inner',on='name')
-
-    return db_pkmn_p2
-
-def pkmn_database(dataset):
-
-    # picking all pokemons seen of p1 in all games
-    db_pkmn_p1=extract_all_pokemon_p1_teams(dataset)
-        
-    #picking all pokemon seen of p2 in all games
-    db_pkmn_p2=extract_all_pokemon_p2(dataset)
-
-    # union of dataframes and then dropping duplicates
-    db_pkmn=pd.concat([db_pkmn_p1,db_pkmn_p2])
-    db_pkmn.drop_duplicates(subset=['name'],inplace=True)
-    
-    #saving to csv
-    pd.DataFrame.to_csv(db_pkmn,"../data/pkmn_database.csv")
-    
-
-def pkmn_weak_database():
-    db_pkmn=open_pkmn_database_csv()
-    weaknesses=[]
-    for index,row in db_pkmn.iterrows():
-        weak=calc_weakness(row["type_1"],row["type_2"]).reset_index().rename(columns={'index':'type'})['type'].to_list()
-        weaknesses.append(weak)
-
-    db_weak=pd.DataFrame({"weaknesses":weaknesses})
-    db_pkmn_weak=pd.concat([db_pkmn,db_weak],axis=1)
-    pd.DataFrame.to_csv(db_pkmn_weak,"../data/pkmn_database_weaknesses.csv")
-
-def moves_database():
-    pass
-
 
 def lead_spd(dataset) -> pd.DataFrame: # feature
 
@@ -328,64 +243,6 @@ def lead_spd(dataset) -> pd.DataFrame: # feature
     return strt_player
 
     
-def extract_p1_team_from_game_start(game)-> pd.Series:
-    return pd.DataFrame(game['p1_team_details'])['name']
-
-
-def extract_p1_team_from_game_last(game) -> pd.Series:
-    turns=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_dead_p1=turns[turns['status']=='fnt']['name'].drop_duplicates(keep='last')
-    
-    team_start_p1=extract_p1_team_from_game_start(game)
-    team_remain_p1=team_start_p1[~team_start_p1.isin(pkmn_dead_p1)]
-    
-    return team_remain_p1
-
-def extract_p1_team_from_game_start_with_stats(game)-> pd.DataFrame:
-    turns=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_p1_start=turns.drop_duplicates(subset='name',keep='last')
-
-    return pkmn_p1_start
-
-def extract_p1_team_from_game_last_with_stats(game) -> pd.Series:
-    turns=pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_dead_p1=turns[turns['status']=='fnt']['name'].drop_duplicates(keep='last')
-    
-    team_start_p1=extract_p1_team_from_game_start_with_stats(game)
-    team_remain_p1=team_start_p1[~team_start_p1['name'].isin(pkmn_dead_p1)]
-    
-    return team_remain_p1
-
-def extract_p2_team_from_game_start(game) -> pd.Series:
-    turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_p2_start=turns.drop_duplicates(subset='name',keep='last')['name']
-    
-    return pkmn_p2_start
-
-def extract_p2_team_from_game_last(game) -> pd.Series:
-
-    turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_p2_fainted=turns[turns['status']=='fnt']['name'].drop_duplicates(keep='last')
-
-    pkmn_p2_start=extract_p2_team_from_game_start(game)
-    pkmn_p2_last=pkmn_p2_start[~pkmn_p2_start.isin(pkmn_p2_fainted)]
-    
-    return pkmn_p2_last 
-
-def extract_p2_team_from_game_start_with_stats(game)-> pd.DataFrame:
-    turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_p2_start=turns.drop_duplicates(subset='name',keep='last')
-
-    return pkmn_p2_start
-
-def extract_p2_team_from_game_last_with_stats(game) -> pd.Series:
-    turns=pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
-    pkmn_dead_p2=turns[turns['status']=='fnt']['name'].drop_duplicates(keep='last')
-    
-    team_start_p2=extract_p2_team_from_game_start_with_stats(game)
-    team_remain_p2=team_start_p2[~team_start_p2['name'].isin(pkmn_dead_p2)]
-    
-    return team_remain_p2
 
 def mean_spe_start(dataset) -> pd.DataFrame: #feature
     pkmn_database = open_pkmn_database_csv()
@@ -1690,67 +1547,8 @@ def p2_max_debuff_received(dataset) -> pd.DataFrame: #feature
     return pd.DataFrame({'p2_max_debuff_received': max_debuff_list})
 
 
-def extract_types_from_team_p1(game)-> pd.DataFrame:
 
-    pkmn_database=open_pkmn_database_csv()
-    p1_team=extract_p1_team_from_game_start(game).to_frame()
-    p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
-    p1_team=p1_team[['name','types']]
-
-    types=pd.DataFrame([type.split(",") for pokemon in p1_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
-    p1_team_types=p1_team.drop('types',axis=1)
-    p1_team_types['type_1']=types[0]
-    p1_team_types['type_2']=types[1]
-  
-    return p1_team_types
-
-def extract_types_from_team_p1_last (game)-> pd.DataFrame:
-
-    pkmn_database=open_pkmn_database_csv()
-    p1_team=extract_p1_team_from_game_last(game).to_frame()
-    if len(p1_team)!=0:
-        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
-        p1_team=p1_team[['name','types']]
-
-        types=pd.DataFrame([type.split(",") for pokemon in p1_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
-        p1_team_types=p1_team.drop('types',axis=1)
-        p1_team_types['type_1']=types[0]
-        p1_team_types['type_2']=types[1]
-    
-        return p1_team_types
-    return pd.DataFrame()
-
-def extract_types_from_team_p2(game)-> pd.DataFrame:
-
-    pkmn_database=open_pkmn_database_csv()
-    p2_team=extract_p2_team_from_game_start(game).to_frame()
-    p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
-    p2_team=p2_team[['name','types']]
-
-    types=pd.DataFrame([type.split(",") for pokemon in p2_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
-    p2_team_types=p2_team.drop('types',axis=1)
-    p2_team_types['type_1']=types[0]
-    p2_team_types['type_2']=types[1]
-  
-    return p2_team_types
-
-def extract_types_from_team_p2_last(game)-> pd.DataFrame:
-
-    pkmn_database=open_pkmn_database_csv()
-    p2_team=extract_p2_team_from_game_last(game).to_frame()
-    if len(p2_team)!=0:
-        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
-        p2_team=p2_team[['name','types']]
-
-        types=pd.DataFrame([type.split(",") for pokemon in p2_team['types'] for type in [pokemon.strip("[]").replace("'","").replace(" ","")]])
-        p2_team_types=p2_team.drop('types',axis=1)
-        p2_team_types['type_1']=types[0]
-        p2_team_types['type_2']=types[1]
-    
-        return p2_team_types
-    return pd.DataFrame()
-
-def p1_psy_pkmn(dataset)-> pd.DataFrame:
+def p1_psy_pkmn(dataset)-> pd.DataFrame: #feature
     p1_count=[]
     for game in dataset:
         p1_team=extract_types_from_team_p1_last(game)
@@ -1761,7 +1559,7 @@ def p1_psy_pkmn(dataset)-> pd.DataFrame:
             p1_count.append(0)
     return pd.DataFrame({'p1_psychic_pkmn_last':p1_count})
 
-def p2_psy_pkmn(dataset)-> pd.DataFrame:
+def p2_psy_pkmn(dataset)-> pd.DataFrame: #feature
     p2_count=[]
     for game in dataset:
         p2_team=extract_types_from_team_p2_last(game)
@@ -1772,27 +1570,6 @@ def p2_psy_pkmn(dataset)-> pd.DataFrame:
             p2_count.append(0)
     return pd.DataFrame({'p2_psychic_pkmn_last':p2_count})
 
-
-def calc_weakness(type_1,type_2)->pd.DataFrame:
-    type_chart=open_type_chart_json()
-    weaknesses=pd.DataFrame([])
-
-    if type_1=='notype' and type_2!='notype':
-            type_col=type_chart[type_2].copy()
-            weaknesses=type_col[type_col>=2]
-
-    elif type_1!='notype' and type_2=='notype':
-            type_col=type_chart[type_1].copy()
-            weaknesses=type_col[type_col>=2]
-
-    elif type_1!='notype' and type_2!='notype':
-            type_col=type_chart[[type_1,type_2]].copy()
-            type_col['total']=type_col.prod(axis=1)
-            #type=[elem for elem in type if elem[1]>=2]
-            weaknesses=type_col[type_col['total']>=2]
-            weaknesses=weaknesses['total']
-
-    return weaknesses
 
 def weakness_teams_not_opt(dataset) -> pd.DataFrame: #---> DONT USE <---
     weak_games_p1,weak_games_p2=[],[]
@@ -1821,7 +1598,7 @@ def weakness_teams_not_opt(dataset) -> pd.DataFrame: #---> DONT USE <---
     
     return pd.DataFrame({'weakness_start_p1':weak_games_p1,'weakness_start_p2':weak_games_p2})
 
-def weakness_teams(dataset) ->pd.DataFrame:
+def weakness_teams(dataset) ->pd.DataFrame: #feature
     pkmn_db_weak=open_pkmn_database_weak_csv()
     pkmn_db_weak=pd.DataFrame(pkmn_db_weak[['name','weaknesses']])
     pkmn_db_weak['weaknesses']=pkmn_db_weak['weaknesses'].apply(lambda x: x.strip("[] ").replace("'","").replace(" ","").split(","))
@@ -2200,24 +1977,10 @@ def p1_moved_first_count(dataset) -> pd.DataFrame: #feature
 
 
 def p2_moved_first_count(dataset) -> pd.DataFrame: #feature
-    """
+    '''
     Conta il numero di turni in cui P2 ha attaccato per primo.
-    Usa la stessa logica di p1_moved_first_count.--Feature Utility Code------------------------
-    # ottieni i coefficienti
-    #coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
-
-    # ordina per importanza
-    coefficients = coefficients.abs().sort_values(ascending=False)
-
-    #print("Most useful features:")
-    print(coefficients)
-
-
-    print(train_df.corr())
-    #print("Best CV score:", grid.best_score_)
-    #print("Best params:", grid.best_params_)
-
-    """
+    Usa la stessa logica di p1_moved_first_count.
+    '''
     pkmn_database = open_pkmn_database_csv()
     first_move_counts = []
     
