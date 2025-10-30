@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_auc_score
 
 class ModelTrainer:
     """Classe per addestrare e valutare modelli"""
@@ -36,6 +36,7 @@ class ModelTrainer:
         print("MODEL EVALUATION")
         print("="*50)
         print(f"\nAccuracy: {accuracy_score(y, y_pred):.4f}")
+        print(f"\nROC-AUC Score:, {roc_auc_score(y, y_pred):.4f}")
         
         print("\nConfusion Matrix:")
         cm = confusion_matrix(y, y_pred)
