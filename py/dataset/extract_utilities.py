@@ -1,5 +1,8 @@
 import pandas as pd
-from dataset.csv_utilities import *
+import numpy as np
+
+import dataset.csv_utilities as csv_u
+
 
 def extract_all_pokemon_p1_teams(dataset) -> pd.DataFrame:
     '''
@@ -156,7 +159,7 @@ def extract_types_from_team_p1(game)-> pd.DataFrame:
     Extracts all types from the teams of p1 at the start
     and returns it along pkmn infos as a dataframe
     '''
-    pkmn_database=open_pkmn_database_csv()
+    pkmn_database=csv_u.open_pkmn_database_csv()
     p1_team=extract_p1_team_from_game_start(game).to_frame()
     p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
     p1_team=p1_team[['name','types']]
@@ -173,7 +176,7 @@ def extract_types_from_team_p1_last (game)-> pd.DataFrame:
     Extracts all types from the teams of p1 at the end of the 30 turns
     and returns it along pkmn infos as a dataframe
     '''
-    pkmn_database=open_pkmn_database_csv()
+    pkmn_database=csv_u.open_pkmn_database_csv()
     p1_team=extract_p1_team_from_game_last(game).to_frame()
     if len(p1_team)!=0:
         p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
@@ -192,7 +195,7 @@ def extract_types_from_team_p2(game)-> pd.DataFrame:
     Extracts all types from the teams of p2 at the start
     and returns it along pkmn infos as a dataframe
     '''
-    pkmn_database=open_pkmn_database_csv()
+    pkmn_database=csv_u.open_pkmn_database_csv()
     p2_team=extract_p2_team_from_game_start(game).to_frame()
     p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
     p2_team=p2_team[['name','types']]
@@ -209,7 +212,7 @@ def extract_types_from_team_p2_last(game)-> pd.DataFrame:
     Extracts all types from the teams of p2 after the 30 turns
     and returns it along pkmn infos as a dataframe
     '''
-    pkmn_database=open_pkmn_database_csv()
+    pkmn_database=csv_u.open_pkmn_database_csv()
     p2_team=extract_p2_team_from_game_last(game).to_frame()
     if len(p2_team)!=0:
         p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
@@ -231,7 +234,7 @@ def calc_weakness(type_1,type_2)->pd.DataFrame:
     of the single tipes. A type is a weakness if the multipliers 
     is >2. 
     '''
-    type_chart=open_type_chart_json()
+    type_chart=csv_u.open_type_chart_json()
     weaknesses=pd.DataFrame([])
 
 
@@ -276,7 +279,7 @@ def pkmn_weak_database():
     Creates the database of pokemons (including weaknesses) from all species seen
     in the train, then it saves it in csv format
     '''
-    db_pkmn=open_pkmn_database_csv()
+    db_pkmn=csv_u.open_pkmn_database_csv()
     weaknesses=[]
     for index,row in db_pkmn.iterrows(): # for every pokemon (row) calc the weaknesses and then append into a list
         weak=calc_weakness(row["type_1"],row["type_2"]).reset_index().rename(columns={'index':'type'})['type'].to_list()
@@ -286,3 +289,35 @@ def pkmn_weak_database():
     db_weak=pd.DataFrame({"weaknesses":weaknesses}) 
     db_pkmn_weak=pd.concat([db_pkmn,db_weak],axis=1)
     pd.DataFrame.to_csv(db_pkmn_weak,"../data/pkmn_database_weaknesses.csv")
+
+
+def mean_hp_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_hp'])
+
+def mean_atk_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_atk'])
+
+def mean_def_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_def'])
+
+def mean_spa_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_spa'])
+
+def mean_spd_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_spd'])
+
+def mean_spe_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_spe'])
+
+def mean_total_database(pkmn_database) -> float:
+    pkmn_database['total']=np.sum(pkmn_database[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+    return np.mean(pkmn_database['total'])
+
+def mean_crit_database(pkmn_database) -> float:
+    return np.mean(pkmn_database['base_spe']/512)
+
+def all_pokemon_round(player: int,json):
+    if player==1:
+        return set([elem['p1_pokemon_state']['name'] for elem in json['battle_timeline']])
+    elif player==2:
+        return set([elem['p2_pokemon_state']['name'] for elem in json['battle_timeline']])

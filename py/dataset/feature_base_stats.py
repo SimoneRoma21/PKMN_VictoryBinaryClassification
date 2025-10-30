@@ -1,0 +1,1428 @@
+
+import numpy as np
+import pandas as pd
+
+import dataset.extract_utilities as ext_u
+import dataset.csv_utilities as csv_u
+
+
+#----Feature Base Stats HP----#
+def p1_mean_hp_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean base hp for the team of p1 at the start of the game for all games.
+    Since we might not know all pokemons in a team, we used a standardized global mean.
+    So for the pokemons we know, we'll use the sum of its base hp, for the ones we
+    don't know, we add a global mean hp calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean hp. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+    #opening databases
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_hp=ext_u.mean_hp_database(pkmn_database)
+    p1_mean_hp=[]
+
+    for game in dataset:
+        p1_team=ext_u.extract_p1_team_from_game_start(game) #taking p1 team
+        p1_known=len(p1_team)    
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_team=p1_team[['name','base_hp']] #getting stats
+        #calculating and appending mean hp
+        p1_mean_hp.append((np.sum(p1_team['base_hp'])+ mean_hp*(6-p1_known))/6)
+
+    mean_hp_start=pd.DataFrame({'p1_mean_hp_start':p1_mean_hp})
+    return mean_hp_start
+
+def p2_mean_hp_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean base hp for the team of p2 at the start of the game for all games.
+    Since we might not know all pokemons in a team, we used a standardized global mean.
+    So for the pokemons we know, we'll use the sum of its base hp, for the ones we
+    don't know, we add a global mean hp calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean hp. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+    #opening databases
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_hp=ext_u.mean_hp_database(pkmn_database)
+    p2_mean_hp=[]
+    for game in dataset:
+        p2_team=ext_u.extract_p2_team_from_game_start(game)  #taking p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_hp']] #getting stats
+        #calculating and appending mean hp
+        p2_mean_hp.append((np.sum(p2_team['base_hp'])+ mean_hp*(6-len(p2_team)))/6)
+    mean_hp_start=pd.DataFrame({'p2_mean_hp_start':p2_mean_hp})
+    return mean_hp_start
+
+def mean_hp_difference_start(dataset)-> pd.DataFrame: #feature
+    '''
+    Calculate the difference between the mean hp of the teams of p1 and p2 at the start
+    of the turns for all games. Results will be returned in a dataframe.
+    '''
+    pkmn_database = csv_u.open_pkmn_database_csv()
+
+    mean_hp_p1=p1_mean_hp_start(dataset) #taking mean hp for p1
+    mean_hp_p2=p2_mean_hp_start(dataset) #taking mean hp for p2
+
+    mean_hp_difference=pd.concat([mean_hp_p1,mean_hp_p2],axis=1)
+    #calculating difference
+    mean_hp_difference['mean_hp_difference']=np.subtract.reduce(mean_hp_difference[['p1_mean_hp_start','p2_mean_hp_start']],axis=1)
+
+    return mean_hp_difference['mean_hp_difference']
+
+def mean_hp_last(dataset): #feature
+    '''
+    Calculate the mean base hp for the team of p1 and p2, and the difference
+    between the two after the 30 turns for all games.
+    Since we might not know all pokemons in a team, we used a standardized global mean.
+    So for the pokemons we know, we'll use the sum of its base hp, for the ones we
+    don't know, we add a global mean hp calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean hp. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_hp=ext_u.mean_hp_database(pkmn_database)
+    p1_mean_hp=[]
+    p2_mean_hp=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last(game)
+        p2_team=ext_u.extract_p2_team_from_game_last(game)
+
+        #calculating the mean hp for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_hp']]
+        p1_mean_hp.append((np.sum(p1_team['base_hp'])+ mean_hp*(6-p1_known))/6)
+
+        #calculating the mean hp for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_hp']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_mean_hp.append((np.sum(p2_team['base_hp'])+ mean_hp*(6-p2_known))/6)
+
+    mean_hp_last=pd.DataFrame({'p1_mean_hp_last':p1_mean_hp,'p2_mean_hp_last':p2_mean_hp})
+    #calculating the difference between the two means
+    mean_hp_last['mean_hp_last_difference']=np.subtract.reduce(mean_hp_last[['p1_mean_hp_last','p2_mean_hp_last']],axis=1)
+    mean_hp_last=mean_hp_last.fillna(value=0)
+    return mean_hp_last
+
+def p1_mean_hp_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean hp for the team of p1 after the 30 turns in a Dataframe-
+    '''
+    return mean_hp_last(dataset)['p1_mean_hp_last']
+
+def p2_mean_hp_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean hp for the team of p2 after the 30 turns in a Dataframe-
+    '''
+    return mean_hp_last(dataset)['p2_mean_hp_last']
+
+def mean_hp_last_difference(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean hps of the team p1 and p2
+    after the 30 turns. Result are returned in a Dataframe.
+    '''
+    return mean_hp_last(dataset)['mean_hp_last_difference']
+
+def p1_final_team_hp(dataset) -> pd.DataFrame: #feature
+    """
+    Calculate the mean total remaining HP of team P1 at the end of the battle (30 turns).
+    Adds the HP_pct of all the Pokémon still alive multiplied by their base_hp.
+    (hp_pct*base_hp) then does the mean. Results are returned in a Dataframe.
+    """
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    final_hp = []
+    
+    for game in dataset:
+        # taking the last turn
+        last_turn = game['battle_timeline'][-1]
+        
+        # Find all alive pokemons
+        all_turns = pd.DataFrame([turn['p1_pokemon_state'] for turn in game['battle_timeline']])
+        alive_pokemon = []
+        
+        # For each pokemon find the last state
+        for pkmn in game['p1_team_details']:
+            pkmn_name = pkmn['name']
+            pkmn_turns = all_turns[all_turns['name'] == pkmn_name]
+            
+            if len(pkmn_turns) > 0:
+                last_state = pkmn_turns.iloc[-1]
+                if last_state['status'] != 'fnt':
+                    # Calculate remaining HP: hp_pct * base_hp
+                    hp_remaining = last_state['hp_pct'] * pkmn['base_hp']
+                    alive_pokemon.append(hp_remaining)
+        
+        #Calculating the mean hp
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        hp_team_known=sum(alive_pokemon) if alive_pokemon else 0
+        final_hp.append(hp_team_known+(ext_u.mean_hp_database(pkmn_database)*(6-p1_known)))
+    
+    return pd.DataFrame({'p1_final_team_hp': final_hp})
+
+
+def p2_final_team_hp(dataset) -> pd.DataFrame: #feature
+    """
+    Calculate the mean total remaining HP of team P2 at the end of the battle (30 turns).
+    Adds the HP_pct of all the Pokémon still alive multiplied by their base_hp.
+    (hp_pct*base_hp) then does the mean. Results are returned in a Dataframe.
+    """
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    final_hp = []
+    
+    for game in dataset:
+        # find all p2 pokemon seen in battle
+        all_turns = pd.DataFrame([turn['p2_pokemon_state'] for turn in game['battle_timeline']])
+        alive_pokemon = []
+        
+        # for each p2 pokemon, take its last state
+        unique_pokemon = all_turns['name'].unique()
+        
+        for pkmn_name in unique_pokemon:
+            pkmn_turns = all_turns[all_turns['name'] == pkmn_name]
+            last_state = pkmn_turns.iloc[-1]
+            
+            if last_state['status'] != 'fnt':
+                # get base hp from database
+                pkmn_info = pkmn_database[pkmn_database['name'] == pkmn_name]
+                if len(pkmn_info) > 0:
+                    base_hp = pkmn_info.iloc[0]['base_hp']
+                    #calculate hp
+                    hp_remaining = last_state['hp_pct'] * base_hp
+                    alive_pokemon.append(hp_remaining)
+        
+        #Calculating the mean hp
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        hp_team_known=sum(alive_pokemon) if alive_pokemon else 0
+        final_hp.append(hp_team_known+(ext_u.mean_hp_database(pkmn_database)*(6-p2_known)))
+
+    return pd.DataFrame({'p2_final_team_hp': final_hp})
+
+
+def final_team_hp_difference(dataset) -> pd.DataFrame: #feature
+    """
+    Difference between the final mean hp (not percentage or base) of the teams 
+    of p1 and p2 after the 30 turns. Results returned in a dataframe
+    """
+    p1_hp = p1_final_team_hp(dataset) # taking p1 final mean hp
+    p2_hp = p2_final_team_hp(dataset) #taking p2 final mean hp
+    
+    #calculating the difference
+    diff = p1_hp['p1_final_team_hp'] - p2_hp['p2_final_team_hp']
+    
+    return pd.DataFrame({'final_team_hp_difference': diff})
+
+
+#----Feature Base Stats Speed----#
+def lead_spd(dataset) -> pd.DataFrame: # feature
+    '''
+    Calculate the lead pokemon which will start between p1 and p2.
+    For this the two base speed will be compared and the higher will
+    decide which starts. Result will be returned in a dataframe
+    '''
+    #extract all pokemon leads for p1
+    p1_lead=pd.DataFrame([game['p1_team_details'][0] for game in dataset])
+    p1_lead=p1_lead[['name','base_spd']]
+
+    #extracts all pokemon leads for p2
+    p2_lead=ext_u.extract_all_pokemon_p2_lead(dataset,True)
+    p2_lead=p2_lead[['name','base_spd']]
+
+    #deciding which one star
+    strt_player=pd.DataFrame([],columns=['spd_adv'])
+    strt_player['spd_adv']=(p1_lead['base_spd']<p2_lead['base_spd']).astype(int)
+
+    #check=pd.concat([p1_lead,p2_lead,str_player],axis=1)
+   
+    return strt_player
+
+    
+def mean_spe_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean speed and the difference between them for the team of 
+    p1 and p2 at the start of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spe,
+    for the ones we don't know, we add a global mean spe calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spe. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spe=ext_u.mean_spe_database(pkmn_database)
+    p1_mean_spe=[]
+    p2_mean_spe=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_start(game)
+        p2_team=ext_u.extract_p2_team_from_game_start(game)
+
+        #calculating the mean spe for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_spe']]
+        p1_mean_spe.append((np.sum(p1_team['base_spe'])+ (mean_spe*(6-p1_known)))/6)
+
+        #calculating the mean spe for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_spe']]
+        p2_mean_spe.append((np.sum(p2_team['base_spe'])+ (mean_spe*(6-p2_known)))/6)
+
+    mean_spe_start=pd.DataFrame({'p1_mean_spe_start':p1_mean_spe,'p2_mean_spe_start':p2_mean_spe})
+    #calculating the difference between the two means
+    mean_spe_start['mean_spe_start_difference']=np.subtract.reduce(mean_spe_start[['p1_mean_spe_start','p2_mean_spe_start']],axis=1)
+    return mean_spe_start
+
+def p1_mean_spe_start(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean spe for the team of p1 at the start in a Dataframe.
+    '''
+    return mean_spe_start(dataset)['p1_mean_spe_start']
+
+def p2_mean_spe_start(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean spe for the team of p2 at the start in a Dataframe.
+    '''
+    return mean_spe_start(dataset)['p2_mean_spe_start']
+
+def mean_spe_start_difference(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean spe of the team p1 and p2
+    at the start. Result are returned in a Dataframe.
+    '''
+    return mean_spe_start(dataset)['mean_spe_start_difference']
+
+
+def mean_spe_last(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean speed and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spe,
+    for the ones we don't know, we add a global mean spe calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spe. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spe=ext_u.mean_spe_database(pkmn_database)
+    p1_mean_spe=[]
+    p2_mean_spe=[]
+
+    #multipliers for boosts
+    multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
+    
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #getting information for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spe','boosts','status']]
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p1_team['total']=p1_team['base_spe']*multipliers[p1_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p1_team['status']]
+            val=np.sum(p1_team['total'])
+             #calculating and appending the mean
+            p1_mean_spe.append((val)+ (mean_spe*(6-p1_known))/6)
+        else:
+            p1_mean_spe.append(0)#0 if pokemon are all exausted
+       
+        #getting information for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_team=p2_team[['name','base_spe','boosts','status']]
+        #checking if p2 team is not fully exausted
+        if(len(p2_team)!=0):
+            p2_team['total']=p2_team['base_spe']*multipliers[p2_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p2_team['status']]
+            val=np.sum(p2_team['total'])
+            #calculate the spe applying eventually the boosts and debuffs
+            p2_mean_spe.append(val+(mean_spe*(6-p2_known))/6)
+        else:
+            p2_mean_spe.append(0) #0 if pokemon are all exausted
+
+    mean_spe_last=pd.DataFrame({'p1_mean_spe_last':p1_mean_spe,'p2_mean_spe_last':p2_mean_spe})
+    #calculating the difference between the two means
+    mean_spe_last['mean_spe_last_difference']=np.subtract.reduce(mean_spe_last[['p1_mean_spe_last','p2_mean_spe_last']],axis=1)
+    mean_spe_last=mean_spe_last.fillna(value=0)
+    return mean_spe_last 
+
+def mean_spe_last_2(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean speed and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spe,
+    for the ones we don't know, we add a global mean spe calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spe. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spe=ext_u.mean_spe_database(pkmn_database)
+    p1_mean_spe=[]
+    p2_mean_spe=[]
+
+    #multipliers for boosts
+    multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
+    
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #getting information for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spe','boosts','status']]
+
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p1_team['total']=p1_team['base_spe']*multipliers[p1_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p1_team['status']]
+            val=np.sum(p1_team['total'])
+
+            #calculating and appending the mean
+            p1_mean_spe.append((val+ (mean_spe*(6-p1_known)))/6)
+            #p1_mean_spe.append(val+ (mean_spe*(6-p1_known))/6)
+        else:
+            p1_mean_spe.append(0) #0 if pokemon are all exausted
+       
+        #getting information for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_team=p2_team[['name','base_spe','boosts','status']]
+
+        #checking if p2 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p2_team['total']=p2_team['base_spe']*multipliers[p2_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p2_team['status']]
+            val=np.sum(p2_team['total'])
+
+            #calculating and appending the mean
+            p2_mean_spe.append((val+(mean_spe*(6-p2_known)))/6)
+            #p2_mean_spe.append(val+(mean_spe*(6-p2_known))/6)
+    
+        else:
+            p2_mean_spe.append(0) #0 if pokemon are all exausted
+
+
+    mean_spe_last=pd.DataFrame({'p1_mean_spe_last':p1_mean_spe,'p2_mean_spe_last':p2_mean_spe})
+    #calculating the difference between the two means
+    mean_spe_last['mean_spe_last_difference']=np.subtract.reduce(mean_spe_last[['p1_mean_spe_last','p2_mean_spe_last']],axis=1)
+    mean_spe_last=mean_spe_last.fillna(value=0)
+    return mean_spe_last 
+
+def p1_mean_spe_last(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean spe for the team of p1 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_spe_last(dataset)['p1_mean_spe_last']
+
+def p2_mean_spe_last(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean spe for the team of p2 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_spe_last(dataset)['p2_mean_spe_last']
+
+def mean_spe_last_difference(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean spe of the team p1 and p2
+    after the 30 turns. Result are returned in a Dataframe.
+    '''
+    return mean_spe_last(dataset)['mean_spe_last_difference']
+
+#----Feature Base Start atk----#
+def mean_atk_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean attack and the difference between them for the team of 
+    p1 and p2 at the start of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base atk,
+    for the ones we don't know, we add a global mean atk calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean atk. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_atk=ext_u.mean_atk_database(pkmn_database)
+    p1_mean_atk=[]
+    p2_mean_atk=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_start(game)
+        p2_team=ext_u.extract_p2_team_from_game_start(game)
+        
+        #getting information for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_atk']]
+        #calculating and appending the mean
+        p1_mean_atk.append((np.sum(p1_team['base_atk'])+ (mean_atk*(6-p1_known)))/6)
+
+        #getting information for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_atk']]
+        #calculating and appending the mean
+        p2_mean_atk.append((np.sum(p2_team['base_atk'])+ mean_atk*(6-p2_known))/6)
+
+    mean_atk_start=pd.DataFrame({'p1_mean_atk_start':p1_mean_atk,'p2_mean_atk_start':p2_mean_atk})
+    #calculating the difference between the two means
+    mean_atk_start['mean_atk_start_difference']=np.subtract.reduce(mean_atk_start[['p1_mean_atk_start','p2_mean_atk_start']],axis=1)
+    return mean_atk_start
+
+def mean_atk_start_difference(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean atk of the team p1 and p2
+    at the start. Result are returned in a Dataframe.
+    '''
+    return mean_atk_start(dataset)['mean_atk_start_difference']
+
+def mean_atk_last(dataset): #feature
+    '''
+    Calculate the mean attack and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base atk,
+    for the ones we don't know, we add a global mean atk calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean atk. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_atk=ext_u.mean_atk_database(pkmn_database)
+    p1_mean_atk=[]
+    p2_mean_atk=[]
+
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #calculating the mean atk for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_atk','boosts','status']]
+        p1_mean_atk.append((np.sum(p1_team['base_atk']*[1 if elem!='brn' else 0.5 for elem in p1_team['status']])+ mean_atk*(6-p1_known))/6)
+        
+        #calculating the mean atk for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_team=p2_team[['name','base_atk','boosts','status']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_mean_atk.append((np.sum(p2_team['base_atk']*[1 if elem!='brn' else 0.5 for elem in p2_team['status']])+ mean_atk*(6-p2_known))/6)
+        
+
+    mean_atk_last=pd.DataFrame({'p1_mean_atk_last':p1_mean_atk,'p2_mean_atk_last':p2_mean_atk})
+    #calculating the difference between the two means
+    mean_atk_last['mean_atk_last_difference']=np.subtract.reduce(mean_atk_last[['p1_mean_atk_last','p2_mean_atk_last']],axis=1)
+    mean_atk_last=mean_atk_last.fillna(value=0)
+    return mean_atk_last
+
+def mean_atk_last_2(dataset): #feature 
+    '''
+    Calculate the mean attack and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base atk,
+    for the ones we don't know, we add a global mean atk calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean atk. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_atk=ext_u.mean_atk_database(pkmn_database)
+    p1_mean_atk=[]
+    p2_mean_atk=[]
+
+    #multipliers for boosts
+    multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
+    
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #calculating the mean atk for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_atk','boosts','status']]
+        
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p1_team['total']=p1_team['base_atk']*[1 if elem!='brn' else 0.5 for elem in p1_team['status']]#*multipliers[p1_team['boosts'][0]['atk']]
+            val=np.sum(p1_team['total'])
+
+            #calculating and appending the mean
+            p1_mean_atk.append((val+ (mean_atk*(6-p1_known)))/6)
+        else:
+            p1_mean_atk.append(0) #0 if pokemon are all exausted
+             
+        #calculating the mean atk for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_team=p2_team[['name','base_atk','boosts','status']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+             
+        #checking if p1 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p2_team['total']=p2_team['base_atk']*[1 if elem!='brn' else 0.5 for elem in p2_team['status']]#*multipliers[p2_team['boosts'][0]['atk']]
+            val=np.sum(p2_team['total'])
+            #calculating and appending the mean
+            p2_mean_atk.append((val+(mean_atk*(6-p2_known)))/6)
+    
+        else:
+            p2_mean_atk.append(0) #0 if pokemon are all exausted
+
+        
+    mean_atk_last=pd.DataFrame({'p1_mean_atk_last':p1_mean_atk,'p2_mean_atk_last':p2_mean_atk})
+    #calculating the difference between the two means
+    mean_atk_last['mean_atk_last_difference']=np.subtract.reduce(mean_atk_last[['p1_mean_atk_last','p2_mean_atk_last']],axis=1)
+    mean_atk_last=mean_atk_last.fillna(value=0)
+    return mean_atk_last
+
+def p1_mean_atk_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean atk for the team of p1 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_atk_last(dataset)['p1_mean_atk_last']
+
+def p2_mean_atk_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean atk for the team of p2 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_atk_last(dataset)['p2_mean_atk_last']
+
+def mean_atk_last_difference(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean spe of the team p1 and p2
+    after the 30 turns. Result are returned in a Dataframe.
+    '''
+    return mean_atk_last(dataset)['mean_atk_last_difference']
+
+
+#----Feature base Stats def----#
+def mean_def_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean defense and the difference between them for the team of 
+    p1 and p2 at the start of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base def,
+    for the ones we don't know, we add a global mean def calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean def. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_def=ext_u.mean_def_database(pkmn_database)
+    p1_mean_def=[]
+    p2_mean_def=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_start(game)
+        p2_team=ext_u.extract_p2_team_from_game_start(game)
+
+        #getting information for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_def']]
+        #calculating and appending the mean
+        p1_mean_def.append((np.sum(p1_team['base_def'])+ (mean_def*(6-p1_known)))/6)
+
+        #getting information for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_def']]
+        #calculating and appending the mean
+        p2_mean_def.append((np.sum(p2_team['base_def'])+ mean_def*(6-p2_known))/6)
+
+    mean_def_start=pd.DataFrame({'p1_mean_def_start':p1_mean_def,'p2_mean_def_start':p2_mean_def})
+    #calculating the difference between the two means
+    mean_def_start['mean_def_start_difference']=np.subtract.reduce(mean_def_start[['p1_mean_def_start','p2_mean_def_start']],axis=1)
+    return mean_def_start
+
+def mean_def_last(dataset): #feature
+    '''
+    Calculate the mean defense and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base def,
+    for the ones we don't know, we add a global mean def calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean def. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_def=ext_u.mean_def_database(pkmn_database)
+    p1_mean_def=[]
+    p2_mean_def=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last(game)
+        p2_team=ext_u.extract_p2_team_from_game_last(game)
+
+        #calculating the mean def for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_def']]
+        p1_mean_def.append((np.sum(p1_team['base_def'])+ mean_def*(6-p1_known))/6)
+
+        #calculating the mean def for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_def']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_mean_def.append((np.sum(p2_team['base_def'])+ mean_def*(6-p2_known))/6)
+
+    mean_def_last=pd.DataFrame({'p1_mean_def_last':p1_mean_def,'p2_mean_def_last':p2_mean_def})
+    #calculating the difference between the two means
+    mean_def_last['mean_def_last_difference']=np.subtract.reduce(mean_def_last[['p1_mean_def_last','p2_mean_def_last']],axis=1)
+    mean_def_last=mean_def_last.fillna(value=0)
+    return mean_def_last
+
+def mean_def_last_2(dataset): #feature
+    '''
+    Calculate the mean defense and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base def,
+    for the ones we don't know, we add a global mean def calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean def. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_def=ext_u.mean_def_database(pkmn_database)
+    p1_mean_def=[]
+    p2_mean_def=[]
+
+    #multipliers for boosts
+    multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
+    
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #calculating the mean def for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_def','boosts','status']]
+
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p1_team['total']=p1_team['base_def']#*multipliers[p1_team['boosts'][0]['def']]
+            val=np.sum(p1_team['total'])
+
+            #calculating and appending the mean
+            p1_mean_def.append((val+ (mean_def*(6-p1_known)))/6)
+        else:
+            p1_mean_def.append(0) #0 if pokemon are all exausted
+          
+        #calculating the mean def for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_team=p2_team[['name','base_def','boosts','status']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+    
+        #checking if p1 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p2_team['total']=p2_team['base_def']#*multipliers[p2_team['boosts'][0]['def']]
+            val=np.sum(p2_team['total'])
+            #calculating and appending the mean
+            p2_mean_def.append((val+(mean_def*(6-p2_known)))/6)
+            
+        else:
+            p2_mean_def.append(0) #0 if pokemon are all exausted
+
+    mean_def_last=pd.DataFrame({'p1_mean_def_last':p1_mean_def,'p2_mean_def_last':p2_mean_def})
+    #calculating the difference between the two means
+    mean_def_last['mean_def_last_difference']=np.subtract.reduce(mean_def_last[['p1_mean_def_last','p2_mean_def_last']],axis=1)
+    mean_def_last=mean_def_last.fillna(value=0)
+    return mean_def_last
+
+def p1_mean_def_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean def for the team of p1 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_def_last(dataset)['p1_mean_def_last']
+
+def p2_mean_def_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean def for the team of p2 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_def_last(dataset)['p2_mean_def_last']
+
+def mean_def_last_difference(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean def of the team p1 and p2
+    after the 30 turns. Result are returned in a Dataframe.
+    '''
+    return mean_def_last(dataset)['mean_def_last_difference']
+
+
+#----Feature Base Stats spa----#
+def mean_spa_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean special attack and the difference between them for the team of 
+    p1 and p2 at the start of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spa,
+    for the ones we don't know, we add a global mean spa calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spa. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spa=ext_u.mean_spa_database(pkmn_database)
+    p1_mean_spa=[]
+    p2_mean_spa=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_start(game)
+        p2_team=ext_u.extract_p2_team_from_game_start(game)
+
+        #calculating the mean spa for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_spa']]
+        #calculating and appending the mean
+        p1_mean_spa.append((np.sum(p1_team['base_spa'])+ (mean_spa*(6-p1_known)))/6)
+
+        #calculating the mean spa for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_spa']]
+        #calculating and appending the mean
+        p2_mean_spa.append((np.sum(p2_team['base_spa'])+ mean_spa*(6-p2_known))/6)
+
+    mean_spa_start=pd.DataFrame({'p1_mean_spa_start':p1_mean_spa,'p2_mean_spa_start':p2_mean_spa})
+    #calculating the difference between the two means
+    mean_spa_start['mean_spa_start_difference']=np.subtract.reduce(mean_spa_start[['p1_mean_spa_start','p2_mean_spa_start']],axis=1)
+    return mean_spa_start
+
+def mean_spa_start_difference(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean spe of the team p1 and p2
+    at the start. Result are returned in a Dataframe.
+    '''
+    return mean_spa_start(dataset)['mean_spa_start_difference']
+
+def mean_spa_last(dataset): #feature
+    '''
+    Calculate the mean special attack and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spa,
+    for the ones we don't know, we add a global mean spa calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spa. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spa=ext_u.mean_spa_database(pkmn_database)
+    p1_mean_spa=[]
+    p2_mean_spa=[]
+
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last(game)
+        p2_team=ext_u.extract_p2_team_from_game_last(game)
+
+        #calculating the mean spa for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spa']]
+        p1_mean_spa.append((np.sum(p1_team['base_spa'])+ mean_spa*(6-p1_known))/6)
+
+        #calculating the mean spa for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_spa']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_mean_spa.append((np.sum(p2_team['base_spa'])+ mean_spa*(6-p2_known))/6)
+
+    mean_spa_last=pd.DataFrame({'p1_mean_spa_last':p1_mean_spa,'p2_mean_spa_last':p2_mean_spa})
+    #calculating the difference between the two means
+    mean_spa_last['mean_spa_last_difference']=np.subtract.reduce(mean_spa_last[['p1_mean_spa_last','p2_mean_spa_last']],axis=1)
+    mean_spa_last=mean_spa_last.fillna(value=0)
+    return mean_spa_last
+
+def mean_spa_last_2(dataset): #feature
+    '''
+    Calculate the mean special attack and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spa,
+    for the ones we don't know, we add a global mean spa calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spa. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spa=ext_u.mean_spa_database(pkmn_database)
+    p1_mean_spa=[]
+    p2_mean_spa=[]
+
+    #multipliers for boosts
+    multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
+    
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #calculating the mean spa for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spa','boosts','status']]
+
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p1_team['total']=p1_team['base_spa']#*multipliers[p1_team['boosts'][0]['spa']]
+            val=np.sum(p1_team['total'])
+
+            #calculating and appending the mean
+            p1_mean_spa.append((val+ (mean_spa*(6-p1_known)))/6)
+        else:
+            p1_mean_spa.append(0) #0 if pokemon are all exausted
+          
+        #calculating the mean spa for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_team=p2_team[['name','base_spa','boosts','status']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        
+        #checking if p1 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p2_team['total']=p2_team['base_spa']#*multipliers[p2_team['boosts'][0]['spa']]
+            val=np.sum(p2_team['total'])
+            #calculating and appending the mean
+            p2_mean_spa.append((val+(mean_spa*(6-p2_known)))/6)
+            
+        else:
+            p2_mean_spa.append(0) #0 if pokemon are all exausted
+
+    mean_spa_last=pd.DataFrame({'p1_mean_spa_last':p1_mean_spa,'p2_mean_spa_last':p2_mean_spa})
+    #calculating the difference between the two means
+    mean_spa_last['mean_spa_last_difference']=np.subtract.reduce(mean_spa_last[['p1_mean_spa_last','p2_mean_spa_last']],axis=1)
+    mean_spa_last=mean_spa_last.fillna(value=0)
+    return mean_spa_last
+
+def p1_mean_spa_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean spa for the team of p1 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_spa_last(dataset)['p1_mean_spa_last']
+
+def p2_mean_spa_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean spa for the team of p2 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_spa_last(dataset)['p2_mean_spa_last']
+
+def mean_spa_last_difference(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean spa of the team p1 and p2
+    after the 30 turns. Result are returned in a Dataframe.
+    '''
+    return mean_spa_last(dataset)['mean_spa_last_difference']
+
+#----Feature Base Stats spd----#
+def mean_spd_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean special defense and the difference between them for the team of 
+    p1 and p2 at the start of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spd,
+    for the ones we don't know, we add a global mean spd calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spd. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spd=ext_u.mean_spd_database(pkmn_database)
+    p1_mean_spd=[]
+    p2_mean_spd=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_start(game)
+        p2_team=ext_u.extract_p2_team_from_game_start(game)
+
+        #calculating the mean spd for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(p1_team)
+        p1_team=p1_team[['name','base_spd']]
+        #calculating and appending the mean
+        p1_mean_spd.append((np.sum(p1_team['base_spd'])+ mean_spd*(6-p1_known))/6)
+
+        #calculating the mean spd for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_known=len(p2_team)
+        p2_team=p2_team[['name','base_spd']]
+        #calculating and appending the mean
+        p2_mean_spd.append((np.sum(p2_team['base_spd'])+ mean_spd*(6-p2_known))/6)
+
+    mean_spd_start=pd.DataFrame({'p1_mean_spd_start':p1_mean_spd,'p2_mean_spd_start':p2_mean_spd})
+    #calculating the difference between the two means
+    mean_spd_start['mean_spd_start_difference']=np.subtract.reduce(mean_spd_start[['p1_mean_spd_start','p2_mean_spd_start']],axis=1)
+    return mean_spd_start
+
+def mean_spd_last(dataset): #feature
+    '''
+    Calculate the mean special defense and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spd,
+    for the ones we don't know, we add a global mean spd calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spd. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spd=ext_u.mean_spd_database(pkmn_database)
+    p1_mean_spd=[]
+    p2_mean_spd=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last(game)
+        p2_team=ext_u.extract_p2_team_from_game_last(game)
+
+        #calculating the mean spa for p1 team
+        p1_team=pkmn_database[pkmn_database['name'].isin(p1_team)]
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spd']]
+        p1_mean_spd.append((np.sum(p1_team['base_spd'])+ mean_spd*(6-p1_known))/6)
+
+        #calculating the mean spd for p2 team
+        p2_team=pkmn_database[pkmn_database['name'].isin(p2_team)]
+        p2_team=p2_team[['name','base_spd']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_mean_spd.append((np.sum(p2_team['base_spd'])+ mean_spd*(6-p2_known))/6)
+
+    mean_spd_last=pd.DataFrame({'p1_mean_spd_last':p1_mean_spd,'p2_mean_spd_last':p2_mean_spd})
+    #calculating the difference between the two means
+    mean_spd_last['mean_spd_last_difference']=np.subtract.reduce(mean_spd_last[['p1_mean_spd_last','p2_mean_spd_last']],axis=1)
+    mean_spd_last=mean_spd_last.fillna(value=0)
+    return mean_spd_last
+
+def mean_spd_last_2(dataset): #feature
+    '''
+    Calculate the mean special defense and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its base spd,
+    for the ones we don't know, we add a global mean spd calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean spd. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spd=ext_u.mean_spd_database(pkmn_database)
+    p1_mean_spd=[]
+    p2_mean_spd=[]
+
+    #multipliers for boosts
+    multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
+    
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #calculating the mean spa for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spd','boosts','status']]
+
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            #calculate the spd applying eventually the boosts and debuffs
+            p1_team['total']=p1_team['base_spd']#*multipliers[p1_team['boosts'][0]['spd']]
+            val=np.sum(p1_team['total'])
+
+            #calculating and appending the mean
+            p1_mean_spd.append((val+ (mean_spd*(6-p1_known)))/6)
+        else:
+            p1_mean_spd.append(0) #0 if pokemon are all exausted
+          
+        #calculating the mean spd for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_team=p2_team[['name','base_spd','boosts','status']]
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        
+        #checking if p1 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculate the spe applying eventually the boosts and debuffs
+            p2_team['total']=p2_team['base_spd']#*multipliers[p2_team['boosts'][0]['spd']]
+            val=np.sum(p2_team['total'])
+            #calculating and appending the mean
+            p2_mean_spd.append((val+(mean_spd*(6-p2_known)))/6)
+            
+        else:
+            p2_mean_spd.append(0) #0 if pokemon are all exausted
+
+    mean_spd_last=pd.DataFrame({'p1_mean_spd_last':p1_mean_spd,'p2_mean_spd_last':p2_mean_spd})
+    #calculating the difference between the two means
+    mean_spd_last['mean_spd_last_difference']=np.subtract.reduce(mean_spd_last[['p1_mean_spd_last','p2_mean_spd_last']],axis=1)
+    mean_spd_last=mean_spd_last.fillna(value=0)
+    return mean_spd_last
+
+def p1_mean_spd_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean spd for the team of p1 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_spd_last(dataset)['p1_mean_spd_last']
+
+def p2_mean_spd_last(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the mean spd for the team of p2 after of the 30 turn.
+    Results are returned in a Dataframe.
+    '''
+    return mean_spd_last(dataset)['p2_mean_spd_last']
+
+def mean_spd_last_difference(dataset)->pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean spd of the team p1 and p2
+    after the 30 turns. Result are returned in a Dataframe.
+    '''
+    return mean_spd_last(dataset)['mean_spd_last_difference']
+
+
+#----Feature Total Base Stats----#
+def mean_stats_start(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean of all stats summed and the difference between them for the team of 
+    p1 and p2 at the start of the game for all games. Since we might not know all pokemons in a team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its total stats,
+    for the ones we don't know, we add a global mean total calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean total. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_total=ext_u.mean_total_database(pkmn_database)
+    p1_mean_stats=[]
+    p2_mean_stats=[]
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_start(game).to_frame()
+        p2_team=ext_u.extract_p2_team_from_game_start(game).to_frame()
+
+        #calculating the mean total for p1 team
+        p1_team=p1_team.merge(pkmn_database,how='inner',on='name')
+        p1_known=len(p1_team)
+        p1_team['total']=np.sum(p1_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+        p1_team=p1_team[['name','total']]
+        
+        p1_mean_stats.append((np.sum(p1_team['total'])+ ((mean_total*(6-p1_known))))/6)
+
+        #calculating the mean total for p2 team
+        p2_team=p2_team.merge(pkmn_database,how='inner',on='name')
+        p2_known=len(p2_team)
+        p2_team['total']=np.sum(p2_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+        p2_team=p2_team[['name','total']]
+        p2_mean_stats.append((np.sum(p2_team['total'])+ (mean_total*(6-p2_known)))/6)
+
+    mean_stats=pd.DataFrame({'p1_mean_stats_start':p1_mean_stats,'p2_mean_stats_start':p2_mean_stats})
+    #calculating the difference between the two means
+    mean_stats['mean_stats_start_difference']=np.subtract.reduce(mean_stats[['p1_mean_stats_start','p2_mean_stats_start']],axis=1)
+    return mean_stats
+
+def p1_mean_stats_start(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean total stats for the team of p1 at the start in a Dataframe.
+    '''
+    return mean_stats_last(dataset)['p1_mean_stats_start']
+
+def p2_mean_stats_start(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean total stats for the team of p2 at the start in a Dataframe.
+    '''
+    return mean_stats_last(dataset)['p2_mean_stats_start']
+
+def difference_mean_stats_start(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean total stats of the team p1 and p2
+    at the start. Result are returned in a Dataframe.
+    '''
+    return mean_stats_last(dataset)['mean_stats_start_difference']
+
+def mean_stats_last(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean of all stats summed and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons of the team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its total stats,
+    for the ones we don't know, we add a global mean total calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean total. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_total=ext_u.mean_total_database(pkmn_database)
+    p1_mean_stats=[]
+    p2_mean_stats=[]
+
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last(game).to_frame()
+        p2_team=ext_u.extract_p2_team_from_game_last(game).to_frame()
+
+        #getting information for p1 team
+        p1_team=p1_team.merge(pkmn_database,how='inner',on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team['total']=np.sum(p1_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+        p1_team=p1_team[['name','total']]
+        p1_mean_stats.append((np.sum(p1_team['total'])+ (mean_total*(6-p1_known)))/6)
+
+        #getting information for p2 team
+        p2_team=p2_team.merge(pkmn_database,how='inner',on='name')
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_team['total']=np.sum(p2_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+        p2_team=p2_team[['name','total']]
+        p2_mean_stats.append((np.sum(p2_team['total'])+ mean_total*(6-p2_known))/6)
+
+    mean_stats=pd.DataFrame({'p1_mean_stats_last':p1_mean_stats,'p2_mean_stats_last':p2_mean_stats})
+    #calculating the difference between the two means
+    mean_stats['mean_stats_last_difference']=np.subtract.reduce(mean_stats[['p1_mean_stats_last','p2_mean_stats_last']],axis=1)
+    return mean_stats
+
+def mean_stats_last_2(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean of all stats summed and the difference between them for the team of 
+    p1 and p2 after the 30 turns of the game for all games. Since we might not know all pokemons of the team, 
+    we used a standardized global mean. So for the pokemons we know, we'll use the sum of its total stats,
+    for the ones we don't know, we add a global mean total calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean total. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_total=ext_u.mean_total_database(pkmn_database)
+    p1_mean_stats=[]
+    p2_mean_stats=[]
+
+    #multipliers for boosts
+    multipliers={-6: 2/8, -5: 2/7, -4: 2/6, -3: 2/5, -2:2/4, -1: 2/3, 0:1, +1: 3/2, 2: 4/2, 3: 5/2, 4: 6/2, 5: 7/2, 6: 8/2 }
+    
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #getting information for p1 team
+        p1_team=p1_team.merge(pkmn_database,how='inner',on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_hp','base_atk','base_def','base_spa','base_spd','base_spe','boosts','status']]
+        
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            #calculate the total stats applying eventually the boosts and debuffs
+            #p1_team['base_atk']=p1_team['base_atk']*multipliers[p1_team['boosts'][0]['atk']]*[1 if elem!='brn' else 0.5 for elem in p1_team['status']]
+            #p1_team['base_def']=p1_team['base_def']*multipliers[p1_team['boosts'][0]['def']]
+            #p1_team['base_spa']=p1_team['base_spa']*multipliers[p1_team['boosts'][0]['spa']]
+            #p1_team['base_spd']=p1_team['base_spd']*multipliers[p1_team['boosts'][0]['spd']]
+            #p1_team['base_spe']=p1_team['base_spe']*multipliers[p1_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p1_team['status']]
+           
+            p1_team['total']=np.sum(p1_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+            p1_team=p1_team[['name','total']]
+            #calculating and appending the mean
+            p1_mean_stats.append((np.sum(p1_team['total'])+ (mean_total*(6-p1_known)))/6)
+        else:
+            p1_mean_stats.append(0) #0 if pokemon are all exausted
+             
+
+        #getting information for p2 team
+        p2_team=p2_team.merge(pkmn_database,how='inner',on='name')
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_team=p2_team[['name','base_hp','base_atk','base_def','base_spa','base_spd','base_spe','boosts','status']]
+        
+        #checking if p2 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculate the total stats applying eventually the boosts and debuffs
+            #p2_team['base_atk']=p2_team['base_atk']*multipliers[p2_team['boosts'][0]['atk']]*[1 if elem!='brn' else 0.5 for elem in p2_team['status']]
+            #p2_team['base_def']=p2_team['base_def']*multipliers[p2_team['boosts'][0]['def']]
+            #p2_team['base_spa']=p2_team['base_spa']*multipliers[p2_team['boosts'][0]['spa']]
+            #p2_team['base_spd']=p2_team['base_spd']*multipliers[p2_team['boosts'][0]['spd']]
+            #p2_team['base_spe']=p2_team['base_spe']*multipliers[p2_team['boosts'][0]['spe']]*[1 if elem!='par' else 0.25 for elem in p2_team['status']]
+           
+            p2_team['total']=np.sum(p2_team[['base_hp','base_atk','base_def','base_spa','base_spd','base_spe']],axis=1)
+            p2_team=p2_team[['name','total']]
+            #calculating and appending the mean
+            p2_mean_stats.append((np.sum(p2_team['total'])+ (mean_total*(6-p2_known)))/6)
+        else:
+            p2_mean_stats.append(0) #0 if pokemon are all exausted
+    mean_stats=pd.DataFrame({'p1_mean_stats_last':p1_mean_stats,'p2_mean_stats_last':p2_mean_stats})
+    #calculating the difference between the two means
+    mean_stats['mean_stats_last_difference']=np.subtract.reduce(mean_stats[['p1_mean_stats_last','p2_mean_stats_last']],axis=1)
+    return mean_stats
+
+def p1_mean_stats_last(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean total stats for the team of p1 after of the 30 turns.
+    Results are returned in a Dataframe.
+    '''
+    return mean_stats_last(dataset)['p1_mean_stats_last']
+
+def p2_mean_stats_last(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the mean total stats for the team of p2 after of the 30 turns.
+    Results are returned in a Dataframe.
+    '''
+    return mean_stats_last(dataset)['p2_mean_stats_last']
+
+def difference_mean_stats_last(dataset)-> pd.DataFrame: #feature
+    '''
+    Returns the difference between the mean total stats of the team p1 and p2
+    after the 30 turns. Result are returned in a Dataframe.
+    '''
+    return mean_stats_last(dataset)['mean_stats_last_difference']
+
+#----Feature Crit----#
+def mean_crit(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean crit chance for the team p1 and p2 at the end of the 30 turns for all games. 
+    The crit chance is calculated with base_spe/512, so we first divide all base_spe of pokemons in a team
+    by 512 and the calculate the mean. Since we might not know all pokemons of the team, we used a standardized global mean. 
+    So for the pokemons we know, we'll use the sum of its base crit chance, for the ones we don't know,
+    we add a global mean spe calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean crit. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_crit=ext_u.mean_crit_database(pkmn_database)
+    p1_mean_crit=[]
+    p2_mean_crit=[]
+
+    for game in dataset:
+        #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #getting information for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        p1_team=p1_team[['name','base_spe','boosts','status']]
+        #checking if p1 team is not fully exausted
+        if(len(p1_team)!=0):
+            p1_team['total']=p1_team['base_spe']/512
+            val=np.sum(p1_team['total'])
+            #calculating and appending the mean
+            p1_mean_crit.append((val)+( mean_crit*(6-p1_known))/6)
+        else:
+            p1_mean_crit.append(0) #0 if all pokemons are exausted
+       
+        #getting information for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_team=p2_team[['name','base_spe','boosts','status']]
+        #checking if p2 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculating and appending the mean
+            p2_team['total']=p2_team['base_spe']/512
+            val=np.sum(p2_team['total'])
+            p2_mean_crit.append((val)+(mean_crit*(6-p2_known))/6)
+        else:
+            p2_mean_crit.append(0) #0 if all pokemons are exausted
+
+    mean_crit=pd.DataFrame({'p1_mean_crit':p1_mean_crit,'p2_mean_crit':p2_mean_crit})
+    mean_crit=mean_crit.fillna(value=0)
+    return mean_crit
+
+def mean_crit_2(dataset) -> pd.DataFrame: #feature
+    '''
+    Calculate the mean crit chance for the team p1 and p2 at the end of the 30 turns for all games. 
+    The crit chance is calculated with base_spe/512, so we first divide all base_spe of pokemons in a team
+    by 512 and the calculate the mean. Since we might not know all pokemons of the team, we used a standardized global mean. 
+    So for the pokemons we know, we'll use the sum of its base crit chance, for the ones we don't know,
+    we add a global mean spe calculated from all pokemons species in the train.
+    So if we don't know 2 pokemon, we add 2 times the global mean crit. Doing this
+    we can calculated the mean by 6 without having imbalances.
+    Results are returned in a dataframe.
+    '''
+
+    #opening databases and taking the global mean
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_crit=ext_u.mean_crit_database(pkmn_database)
+    p1_mean_crit=[]
+    p2_mean_crit=[]
+
+    for game in dataset:
+         #taking teams for p1 and p2
+        p1_team=ext_u.extract_p1_team_from_game_last_with_stats(game)
+        p2_team=ext_u.extract_p2_team_from_game_last_with_stats(game)
+
+        #getting information for p1 team
+        p1_team=p1_team.merge(pkmn_database, how='inner', on='name')
+        p1_known=len(ext_u.extract_p1_team_from_game_start(game))
+        #checking if p1 team is not fully exausted
+        p1_team=p1_team[['name','base_spe','boosts','status']]
+        if(len(p1_team)!=0):
+            #calculating and appending the mean
+            p1_team['total']=p1_team['base_spe']/512
+            val=np.sum(p1_team['total'])
+            #p1_mean_crit.append((val+( mean_crit*(6-p1_known)))/6)
+            p1_mean_crit.append(val+( mean_crit*(6-p1_known))/6)
+        else:
+            p1_mean_crit.append(0) #0 if all pokemons are exausted
+       
+        #getting information for p2 team
+        p2_team=p2_team.merge(pkmn_database, how='inner', on='name')
+        p2_known=len(ext_u.extract_p2_team_from_game_start(game))
+        p2_team=p2_team[['name','base_spe','boosts','status']]
+        #checking if p2 team is not fully exausted
+        if(len(p2_team)!=0):
+            #calculating and appending the mean
+            p2_team['total']=p2_team['base_spe']/512
+            val=np.sum(p2_team['total'])
+            #p2_mean_crit.append((val+(mean_crit*(6-p2_known)))/6)
+            p2_mean_crit.append((val+(mean_crit*(6-p2_known)))/6)
+        else:
+            p2_mean_crit.append(0) #0 if all pokemons are exausted
+
+    mean_crit=pd.DataFrame({'p1_mean_crit':p1_mean_crit,'p2_mean_crit':p2_mean_crit})
+    mean_crit=mean_crit.fillna(value=0)
+    return mean_crit

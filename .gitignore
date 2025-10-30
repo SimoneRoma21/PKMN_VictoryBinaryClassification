@@ -3,6 +3,5 @@ data/train.jsonl
 venv
 __pycache__/
 *.priv*
-py/predict_csv
 other
 *feature_cache/
