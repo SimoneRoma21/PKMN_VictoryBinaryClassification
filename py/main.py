@@ -51,6 +51,29 @@ def main():
         Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
+        
+        # Sum versions of mean_*_last features
+        Feature.SUM_HP_LAST,
+        Feature.P1_SUM_HP_LAST,
+        Feature.P2_SUM_HP_LAST,
+        Feature.SUM_SPE_LAST,
+        Feature.P1_SUM_SPE_LAST,
+        Feature.P2_SUM_SPE_LAST,
+        Feature.SUM_ATK_LAST,
+        Feature.P1_SUM_ATK_LAST,
+        Feature.P2_SUM_ATK_LAST,
+        Feature.SUM_DEF_LAST,
+        Feature.P1_SUM_DEF_LAST,
+        Feature.P2_SUM_DEF_LAST,
+        Feature.SUM_SPA_LAST,
+        Feature.P1_SUM_SPA_LAST,
+        Feature.P2_SUM_SPA_LAST,
+        Feature.SUM_SPD_LAST,
+        Feature.P1_SUM_SPD_LAST,
+        Feature.P2_SUM_SPD_LAST,
+        Feature.SUM_STATS_LAST,
+        Feature.P1_SUM_STATS_LAST,
+        Feature.P2_SUM_STATS_LAST,
 
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
