@@ -144,7 +144,7 @@ class FeatureRegistry:
         #self._extractors[Feature.P1_MEAN_SPE_START]= fbs.p1_mean_spe_start 
         #self._extractors[Feature.P2_MEAN_SPE_START]= fbs.p2_mean_spe_start 
         #self._extractors[Feature.MEAN_SPE_DIFFERENCE_START]= fbs.mean_spe_start_difference
-        self._extractors[Feature.MEAN_SPE_LAST] = fbs.mean_spe_last
+        self._extractors[Feature.MEAN_SPE_LAST] = fbs.mean_spe_last_2
         #self._extractors[Feature.P1_MEAN_SPE_LAST]= fbs.p1_mean_spe_last
         #self._extractors[Feature.P2_MEAN_HP_LAST]= fbs.p2_mean_spe_last
         #self._extractors[Feature.MEAN_SPE_DIFFERENCE_LAST]= fbs.mean_spe_last_difference
@@ -155,13 +155,13 @@ class FeatureRegistry:
         self._extractors[Feature.P1_FINAL_TEAM_HP] = fbs.p1_final_team_hp
         self._extractors[Feature.P2_FINAL_TEAM_HP] = fbs.p2_final_team_hp
         self._extractors[Feature.FINAL_TEAM_HP_DIFFERENCE] = fbs.final_team_hp_difference
-        self._extractors[Feature.MEAN_ATK_LAST] = fbs.mean_atk_last
-        self._extractors[Feature.MEAN_DEF_LAST] = fbs.mean_def_last
-        self._extractors[Feature.MEAN_SPA_LAST] = fbs.mean_spa_last
-        self._extractors[Feature.MEAN_SPD_LAST] = fbs.mean_spd_last
+        self._extractors[Feature.MEAN_ATK_LAST] = fbs.mean_atk_last_2
+        self._extractors[Feature.MEAN_DEF_LAST] = fbs.mean_def_last_2
+        self._extractors[Feature.MEAN_SPA_LAST] = fbs.mean_spa_last_2
+        self._extractors[Feature.MEAN_SPD_LAST] = fbs.mean_spd_last_2
         self._extractors[Feature.MEAN_STATS_START] = fbs.mean_stats_start
-        self._extractors[Feature.MEAN_STATS_LAST] = fbs.mean_stats_last
-        self._extractors[Feature.MEAN_CRIT]= fbs.mean_crit
+        self._extractors[Feature.MEAN_STATS_LAST] = fbs.mean_stats_last_2
+        self._extractors[Feature.MEAN_CRIT]= fbs.mean_crit_2
 
         #----Feature Infos During Battle ----#
         self._extractors[Feature.P1_ALIVE_PKMN] = fdb.p1_alive_pkmn
