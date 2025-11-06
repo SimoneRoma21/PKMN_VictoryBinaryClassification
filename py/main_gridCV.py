@@ -18,7 +18,7 @@ def main():
     selected_features = [
 
         #----Feature Base Stats Pokemon----#
-        Feature.P1_MEAN_HP_START, #*
+        #Feature.P1_MEAN_HP_START, #*
         #Feature.P2_MEAN_HP_START, 
         #Feature.MEAN_HP_DIFFERENCE_START,
         #Feature.LEAD_SPD,
@@ -41,23 +41,23 @@ def main():
         #Feature.MEAN_HP_DIFFERENCE_LAST,
         Feature.P1_FINAL_TEAM_HP, #*
         Feature.P2_FINAL_TEAM_HP, #*
-        Feature.FINAL_TEAM_HP_DIFFERENCE, #*
+        #Feature.FINAL_TEAM_HP_DIFFERENCE, #*
         Feature.MEAN_ATK_LAST, #* 
         Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
         Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
-        Feature.MEAN_CRIT, #*
+        Feature.MEAN_CRIT, #* #('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',C=100)) #*
 
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
-        Feature.ALIVE_PKMN_DIFFERENCE, #*
+        #Feature.ALIVE_PKMN_DIFFERENCE, #*
         #Feature.P1_PKMN_STAB, 
         #Feature.P2_PKMN_STAB, 
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-        Feature.SWITCHES_DIFFERENCE, #*
+        #Feature.SWITCHES_DIFFERENCE, #*
         #Feature.P1_STATUS_INFLICTED, 
         #Feature.P2_STATUS_INFLICTED, 
         #Feature.STATUS_INFLICTED_DIFFERENCE, 
@@ -65,8 +65,8 @@ def main():
         #Feature.P1_FIRST_FAINT_TURN,
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
-        #Feature.P1_MAX_DEBUFF_RECEIVED,
-        #Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P1_MAX_DEBUFF_RECEIVED,
+        Feature.P2_MAX_DEBUFF_RECEIVED,
         Feature.P1_AVG_MOVE_POWER, #*
         Feature.P2_AVG_MOVE_POWER, #*
         Feature.AVG_MOVE_POWER_DIFFERENCE, #*
@@ -150,12 +150,16 @@ def main():
     y_train = train_df['player_won']
 
     X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
     
     # Pipeline with scaler and model
     print("\nCreating pipeline with StandardScaler and LogisticRegression...")
     pipeline = Pipeline([
         ('scaler',StandardScaler()), #Better
+        #('scaler',MinMaxScaler()),
         ('classifier', LogisticRegression(random_state=42, max_iter=2000)),
+        #('classifier', LogisticRegression(random_state=210978, max_iter=2000))
     ])
 
     #Grid Search for Logistic Regression 

@@ -4,21 +4,24 @@ from dataset.dataset_construction import Feature, FeaturePipeline
 from dataset.csv_utilities import *
 from dataset.extract_utilities import *
 from ModelTrainer import ModelTrainer
+from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 #from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
         #----Feature Base Stats Pokemon----#
-        Feature.P1_MEAN_HP_START, #*
+        #Feature.P1_MEAN_HP_START, #*
         #Feature.P2_MEAN_HP_START, 
         #Feature.MEAN_HP_DIFFERENCE_START,
         #Feature.LEAD_SPD,
@@ -41,23 +44,46 @@ def main():
         #Feature.MEAN_HP_DIFFERENCE_LAST,
         Feature.P1_FINAL_TEAM_HP, #*
         Feature.P2_FINAL_TEAM_HP, #*
-        Feature.FINAL_TEAM_HP_DIFFERENCE, #*
+        #Feature.FINAL_TEAM_HP_DIFFERENCE, #*
         Feature.MEAN_ATK_LAST, #* 
         Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
         Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
+        
+        # Sum versions of mean_*_last features
+        Feature.SUM_HP_LAST,
+        Feature.P1_SUM_HP_LAST,
+        Feature.P2_SUM_HP_LAST,
+        Feature.SUM_SPE_LAST,
+        Feature.P1_SUM_SPE_LAST,
+        Feature.P2_SUM_SPE_LAST,
+        Feature.SUM_ATK_LAST,
+        Feature.P1_SUM_ATK_LAST,
+        Feature.P2_SUM_ATK_LAST,
+        Feature.SUM_DEF_LAST,
+        Feature.P1_SUM_DEF_LAST,
+        Feature.P2_SUM_DEF_LAST,
+        Feature.SUM_SPA_LAST,
+        Feature.P1_SUM_SPA_LAST,
+        Feature.P2_SUM_SPA_LAST,
+        Feature.SUM_SPD_LAST,
+        Feature.P1_SUM_SPD_LAST,
+        Feature.P2_SUM_SPD_LAST,
+        Feature.SUM_STATS_LAST,
+        Feature.P1_SUM_STATS_LAST,
+        Feature.P2_SUM_STATS_LAST,
 
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
-        Feature.ALIVE_PKMN_DIFFERENCE, #*
+        #Feature.ALIVE_PKMN_DIFFERENCE, #*
         #Feature.P1_PKMN_STAB, 
         #Feature.P2_PKMN_STAB, 
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-        Feature.SWITCHES_DIFFERENCE, #*
+        #Feature.SWITCHES_DIFFERENCE, #*
         #Feature.P1_STATUS_INFLICTED, 
         #Feature.P2_STATUS_INFLICTED, 
         #Feature.STATUS_INFLICTED_DIFFERENCE, 
@@ -65,8 +91,8 @@ def main():
         #Feature.P1_FIRST_FAINT_TURN,
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
-        #Feature.P1_MAX_DEBUFF_RECEIVED,
-        #Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P1_MAX_DEBUFF_RECEIVED,
+        Feature.P2_MAX_DEBUFF_RECEIVED,
         Feature.P1_AVG_MOVE_POWER, #*
         Feature.P2_AVG_MOVE_POWER, #*
         Feature.AVG_MOVE_POWER_DIFFERENCE, #*
@@ -75,8 +101,7 @@ def main():
         Feature.OFFENSIVE_RATIO_DIFFERENCE, #*
         Feature.P1_MOVED_FIRST_COUNT, #*
         Feature.P2_MOVED_FIRST_COUNT, #*
-        Feature.SPEED_ADVANTAGE_RATIO, #*
-
+        Feature.SPEED_ADVANTAGE_RATIO, #
        
         
         #----Feature Status of Pokemons----#
@@ -156,30 +181,50 @@ def main():
 
 
     X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
-    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
     
     # Crea una pipeline con normalizzazione e modello
     print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
     pipeline = Pipeline([
-        ('scaler', MinMaxScaler()),
+        ('scaler', MinMaxScaler()),#
         #('scaler',StandardScaler()),
         #('scaler',RobustScaler()),
+        #('pca', PCA(n_components=0.95)),
         #('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',C=100)) #*
-        #('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',Cs=100))
-        ('classifier', LogisticRegressionCV(random_state=210978, max_iter=1000,penalty='l2',solver='liblinear',Cs=100))
+        #('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l1',solver='liblinear',C=100)) #*
+        #('classifier', LogisticRegressionCV(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',Cs=100)) 
+        ('classifier', LogisticRegression(random_state=42, max_iter=1000, penalty='l1',solver='liblinear',C=10))
+        #('classifier', LogisticRegressionCV(random_state=210978, max_iter=1000,penalty='l2',solver='liblinear',Cs=100))
+        #('classifier',RandomForestClassifier(n_estimators=50))
+        #('classifier', LogisticRegression(random_state=210978, max_iter=1000,penalty='l1',solver='liblinear',C=10))
+        #('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l1',solver='liblinear',C=10))
+        #('classifier', LogisticRegressionCV(random_state=42, max_iter=1000, penalty='l2',solver='liblinear',Cs=1))
         #('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier',LogisticRegressionCV(random_state=42, max_iter=2000)),
+        #('classifier',KNeighborsClassifier(n_neighbors=30,p=1,weights='distance'))
+        #('classifier',RandomForestClassifier(max_depth=4,random_state=42))
     ])
 
 
     # Addestra e valuta
     #Grid Search per Logistic Regression 
+    
     params={
-         'classifier__Cs':[0.01,0.1,1,10,100],
+         'classifier__C':[0.01,0.1,1,10,100],
+         'classifier__penalty':['l1','l2'],
          'classifier__solver':['liblinear','saga'],
          'classifier__max_iter':[1000,2000]
     }
-    #grid=GridSearchCV(pipeline,params,cv=5)
+    
+
+    '''
+    params= {
+    'classifier__n_neighbors': range(1, 31),
+    'classifier__weights': ['uniform', 'distance'],
+    'classifier__p': [1, 2]
+}
+    '''
+    grid=GridSearchCV(pipeline,params,cv=5)
 
     # Pipeline with XGBoost
     # pipeline = Pipeline([
@@ -227,14 +272,14 @@ def main():
 
     # #---------------Feature Utility Code------------------------
     # # ottieni i coefficienti
-    coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+    #coefficients = pd.Series(pipeline.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
 
     # # ordina per importanza
-    coefficients = coefficients.abs().sort_values(ascending=False)
+    #coefficients = coefficients.abs().sort_values(ascending=False)
 
     #print("Most useful features:")
-    pd.set_option('display.max_rows', None)
-    print(coefficients)
+    #pd.set_option('display.max_rows', None)
+    #print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------
 
@@ -243,22 +288,33 @@ def main():
     #---------------Feature Utility Code GRID------------------------
 
     # # ottieni il classificatore addestrato dal grid search
-    # best_model = grid.best_estimator_.named_steps['classifier']
+    #best_model = grid.best_estimator_.named_steps['classifier']
 
-    # # ottieni l'importanza delle feature
-    # importances = pd.Series(best_model.feature_importances_, index=train_df.columns[2::])
+    # ottieni l'importanza delle feature
+    #importances = pd.Series(best_model.coef_[0], index=train_df.columns[2::])
 
     # # ordina per importanza
-    # importances = importances.sort_values(ascending=False)
+    #importances = importances.sort_values(ascending=False)
 
     # print("Most useful features:")
-    # pd.set_option('display.max_rows', None)
-    # print(importances)
+    pd.set_option('display.max_rows', None)
+    #print(importances)
 
-    # print(train_df.corr())
     #print("Best CV score:", grid.best_score_)
     #print("Best params:", grid.best_params_)
 
+    # -------------- Correlation matrix -------------
+    #corr=train_df.corr()
+    
+    #print(corr)
+
+    #mask = corr.abs() > 0.70
+    #filtered=corr.where(mask).dropna(axis=0,how='all').dropna(axis=1,how='all')
+    #plt.figure(figsize=(12, 12))
+    #sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)
+    #plt.title("Feature Correlation Matrix", fontsize=14)
+    #plt.show()
+    
     # ------------------ Feature selection -----------------
 
     #

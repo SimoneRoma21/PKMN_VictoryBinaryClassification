@@ -46,6 +46,29 @@ class Feature(Enum):
     MEAN_STATS_START= "mean_stats_start"
     MEAN_STATS_LAST= "mean_stats_last"
     MEAN_CRIT= "mean_crit"
+    
+    # Sum versions of mean_*_last features
+    SUM_HP_LAST = "sum_hp_last"
+    P1_SUM_HP_LAST = "p1_sum_hp_last"
+    P2_SUM_HP_LAST = "p2_sum_hp_last"
+    SUM_SPE_LAST = "sum_spe_last"
+    P1_SUM_SPE_LAST = "p1_sum_spe_last"
+    P2_SUM_SPE_LAST = "p2_sum_spe_last"
+    SUM_ATK_LAST = "sum_atk_last"
+    P1_SUM_ATK_LAST = "p1_sum_atk_last"
+    P2_SUM_ATK_LAST = "p2_sum_atk_last"
+    SUM_DEF_LAST = "sum_def_last"
+    P1_SUM_DEF_LAST = "p1_sum_def_last"
+    P2_SUM_DEF_LAST = "p2_sum_def_last"
+    SUM_SPA_LAST = "sum_spa_last"
+    P1_SUM_SPA_LAST = "p1_sum_spa_last"
+    P2_SUM_SPA_LAST = "p2_sum_spa_last"
+    SUM_SPD_LAST = "sum_spd_last"
+    P1_SUM_SPD_LAST = "p1_sum_spd_last"
+    P2_SUM_SPD_LAST = "p2_sum_spd_last"
+    SUM_STATS_LAST = "sum_stats_last"
+    P1_SUM_STATS_LAST = "p1_sum_stats_last"
+    P2_SUM_STATS_LAST = "p2_sum_stats_last"
 
     #----Feature Infos During Battle ----#
     P1_ALIVE_PKMN = "p1_alive_pkmn"
@@ -144,7 +167,7 @@ class FeatureRegistry:
         #self._extractors[Feature.P1_MEAN_SPE_START]= fbs.p1_mean_spe_start 
         #self._extractors[Feature.P2_MEAN_SPE_START]= fbs.p2_mean_spe_start 
         #self._extractors[Feature.MEAN_SPE_DIFFERENCE_START]= fbs.mean_spe_start_difference
-        self._extractors[Feature.MEAN_SPE_LAST] = fbs.mean_spe_last
+        self._extractors[Feature.MEAN_SPE_LAST] = fbs.mean_spe_last_2
         #self._extractors[Feature.P1_MEAN_SPE_LAST]= fbs.p1_mean_spe_last
         #self._extractors[Feature.P2_MEAN_HP_LAST]= fbs.p2_mean_spe_last
         #self._extractors[Feature.MEAN_SPE_DIFFERENCE_LAST]= fbs.mean_spe_last_difference
@@ -155,13 +178,36 @@ class FeatureRegistry:
         self._extractors[Feature.P1_FINAL_TEAM_HP] = fbs.p1_final_team_hp
         self._extractors[Feature.P2_FINAL_TEAM_HP] = fbs.p2_final_team_hp
         self._extractors[Feature.FINAL_TEAM_HP_DIFFERENCE] = fbs.final_team_hp_difference
-        self._extractors[Feature.MEAN_ATK_LAST] = fbs.mean_atk_last
-        self._extractors[Feature.MEAN_DEF_LAST] = fbs.mean_def_last
-        self._extractors[Feature.MEAN_SPA_LAST] = fbs.mean_spa_last
-        self._extractors[Feature.MEAN_SPD_LAST] = fbs.mean_spd_last
+        self._extractors[Feature.MEAN_ATK_LAST] = fbs.mean_atk_last_2
+        self._extractors[Feature.MEAN_DEF_LAST] = fbs.mean_def_last_2
+        self._extractors[Feature.MEAN_SPA_LAST] = fbs.mean_spa_last_2
+        self._extractors[Feature.MEAN_SPD_LAST] = fbs.mean_spd_last_2
         self._extractors[Feature.MEAN_STATS_START] = fbs.mean_stats_start
-        self._extractors[Feature.MEAN_STATS_LAST] = fbs.mean_stats_last
-        self._extractors[Feature.MEAN_CRIT]= fbs.mean_crit
+        self._extractors[Feature.MEAN_STATS_LAST] = fbs.mean_stats_last_2
+        self._extractors[Feature.MEAN_CRIT]= fbs.mean_crit_2
+        
+        # Sum versions of mean_*_last features
+        self._extractors[Feature.SUM_HP_LAST] = fbs.sum_hp_last
+        self._extractors[Feature.P1_SUM_HP_LAST] = fbs.p1_sum_hp_last
+        self._extractors[Feature.P2_SUM_HP_LAST] = fbs.p2_sum_hp_last
+        self._extractors[Feature.SUM_SPE_LAST] = fbs.sum_spe_last_2
+        self._extractors[Feature.P1_SUM_SPE_LAST] = fbs.p1_sum_spe_last
+        self._extractors[Feature.P2_SUM_SPE_LAST] = fbs.p2_sum_spe_last
+        self._extractors[Feature.SUM_ATK_LAST] = fbs.sum_atk_last_2
+        self._extractors[Feature.P1_SUM_ATK_LAST] = fbs.p1_sum_atk_last
+        self._extractors[Feature.P2_SUM_ATK_LAST] = fbs.p2_sum_atk_last
+        self._extractors[Feature.SUM_DEF_LAST] = fbs.sum_def_last_2
+        self._extractors[Feature.P1_SUM_DEF_LAST] = fbs.p1_sum_def_last
+        self._extractors[Feature.P2_SUM_DEF_LAST] = fbs.p2_sum_def_last
+        self._extractors[Feature.SUM_SPA_LAST] = fbs.sum_spa_last_2
+        self._extractors[Feature.P1_SUM_SPA_LAST] = fbs.p1_sum_spa_last
+        self._extractors[Feature.P2_SUM_SPA_LAST] = fbs.p2_sum_spa_last
+        self._extractors[Feature.SUM_SPD_LAST] = fbs.sum_spd_last_2
+        self._extractors[Feature.P1_SUM_SPD_LAST] = fbs.p1_sum_spd_last
+        self._extractors[Feature.P2_SUM_SPD_LAST] = fbs.p2_sum_spd_last
+        self._extractors[Feature.SUM_STATS_LAST] = fbs.sum_stats_last_2
+        self._extractors[Feature.P1_SUM_STATS_LAST] = fbs.p1_sum_stats_last
+        self._extractors[Feature.P2_SUM_STATS_LAST] = fbs.p2_sum_stats_last
 
         #----Feature Infos During Battle ----#
         self._extractors[Feature.P1_ALIVE_PKMN] = fdb.p1_alive_pkmn
