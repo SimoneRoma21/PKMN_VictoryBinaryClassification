@@ -7,11 +7,11 @@ from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
+#from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
-
+from sklearn.svm import SVC
 
 def main():
     #---------------Feature Extraction Code------------------------
@@ -142,6 +142,7 @@ def main():
     train_df.to_csv(train_out_path, index=False)
 
     #---------------Model Training and Evaluation Code------------------------
+    
     # Remove row 4877 from the train dataset
     train_df = train_df.drop(index=4877)
 
@@ -150,71 +151,56 @@ def main():
 
     X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     
-    # Pipeline with XGBoost
+    # Pipeline with scaler and model
+    print("\nCreating pipeline ...")
     pipeline = Pipeline([
-    ('classifier', XGBClassifier(eval_metric='logloss', random_state=42, use_label_encoder = False))
+        ('scaler',StandardScaler()), #Better
+        ('classifier', SVC(probability=True,kernel='rbf')),
     ])
-    # Grid Search for XGBoost
-    # param_grid = { # Too many hyperparameters
-    # 'classifier__n_estimators': [200, 400, 600],
-    # 'classifier__learning_rate': [0.01, 0.05, 0.1],
-    # 'classifier__max_depth': [3, 5, 7],
-    # 'classifier__min_child_weight': [1, 3, 5],
-    # 'classifier__gamma': [0, 0.1, 0.3],
-    # 'classifier__subsample': [0.7, 0.8, 1.0],
-    # 'classifier__colsample_bytree': [0.7, 0.8, 1.0],
-    # 'classifier__reg_alpha': [0, 0.1, 0.5],
-    # 'classifier__reg_lambda': [1, 2, 3],
-    # }
 
-    param_grid = {
-    'classifier__n_estimators': [200,400,600],
-    'classifier__learning_rate': [0.05, 0.1],
-    'classifier__max_depth': [3, 6],
-    'classifier__min_child_weight': [1, 5],
-    'classifier__gamma': [0, 0.3],
-    'classifier__subsample': [0.8, 1.0],
-    'classifier__colsample_bytree': [0.8, 1.0],
-    'classifier__reg_alpha': [0, 0.1],
-    'classifier__reg_lambda': [1, 2],
+    param_grid= {
+        'classifier__C': [0.1, 1, 10, 100],
+        'classifier__gamma': ['scale', 0.1, 0.01, 0.001]
     }
 
-    grid = GridSearchCV(
-    estimator=pipeline,
-    param_grid=param_grid,
-    scoring='roc_auc',
-    # scoring='accuracy',
-    cv=5, 
-    verbose=2,
-    n_jobs=-1
+
+    
+    grid_logreg = GridSearchCV(
+        estimator=pipeline,
+        param_grid=param_grid,
+        scoring='roc_auc',
+        # scoring='accuracy',
+        n_jobs=-1,  
+        cv=5,            # 5-fold cross-validation, more on this later
+        refit=True,      # retrain the best model on the full training set
+        return_train_score=True
     )
 
-    trainer = ModelTrainer(grid)
+
+
+    trainer = ModelTrainer(grid_logreg)
     trainer.train(X_tr, y_tr)
     trainer.evaluate(X_val, y_val)
 
-    #---------------Feature Utility Code GRID------------------------
+    print("Best CV score:", grid_logreg.best_score_)
+    print("Best params:", grid_logreg.best_params_)
+    
 
-    # Get the best model
-    best_model = grid.best_estimator_.named_steps['classifier']
+    # #---------------Feature Utility Code------------------------
+    # # Get the coefficients
+    # coefficients = pd.Series(grid_logreg.best_estimator_.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
 
-    # Get the coefficients
-    importances = pd.Series(best_model.feature_importances_, index=train_df.columns[2::])
+    # # Sort by importance
+    # coefficients = coefficients.abs().sort_values(ascending=False)
 
-    # Sort by importance
-    importances = importances.sort_values(ascending=False)
-
-    print("Most useful features:")
-    pd.set_option('display.max_rows', None)
-    print(importances)
-
-    print(train_df.corr())
-    print("Best CV score:", grid.best_score_)
-    print("Best params:", grid.best_params_)
+    # #print("Most useful features:")
+    # pd.set_option('display.max_rows', None)
+    # print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------
 
     evaluate_test_set(trainer, selected_features, test_file_path)
+
 
 def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):
 
@@ -226,22 +212,22 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
         for line in f:
             test_data.append(json.loads(line))
 
-    # Estrai le feature del test_set
+    # Extract features from test set
     print("\nExtracting features from test data...")
     test_df = feature_pipeline.extract_features(test_data, show_progress=True)
 
     X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
 
-    # Predici sul test set
+    # Predict on test set
     predictions = trainer.predict(X_test)
 
     submission = pd.DataFrame({
         'battle_id': test_df['battle_id'],
         'player_won': predictions
     })
-    submission.to_csv('predict_csv/predictions_XGBoost.csv', index=False)
+    submission.to_csv('predict_csv/predictions_SVM.csv', index=False)
 
 if __name__ == "__main__":
     main()
 
-    #Best params: {'classifier__colsample_bytree': 0.8, 'classifier__gamma': 0, 'classifier__learning_rate': 0.05, 'classifier__max_depth': 3, 'classifier__min_child_weight': 5, 'classifier__n_estimators': 600, 'classifier__reg_alpha': 0, 'classifier__reg_lambda': 2, 'classifier__subsample': 0.8}
+    # Best params: {'classifier__C': 10, 'classifier__gamma': 0.001}

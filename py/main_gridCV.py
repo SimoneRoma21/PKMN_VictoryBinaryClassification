@@ -152,7 +152,7 @@ def main():
     X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     
     # Pipeline with scaler and model
-    print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
+    print("\nCreating pipeline with StandardScaler and LogisticRegression...")
     pipeline = Pipeline([
         ('scaler',StandardScaler()), #Better
         ('classifier', LogisticRegression(random_state=42, max_iter=2000)),
@@ -176,6 +176,8 @@ def main():
         refit=True,      # retrain the best model on the full training set
         return_train_score=True
     )
+
+
 
     trainer = ModelTrainer(grid_logreg)
     trainer.train(X_tr, y_tr)
@@ -228,3 +230,5 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
 
 if __name__ == "__main__":
     main()
+
+    # Best params: {'classifier__C': 1, 'classifier__max_iter': 2000, 'classifier__penalty': 'l1', 'classifier__solver': 'saga'}
