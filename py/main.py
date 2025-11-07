@@ -174,7 +174,6 @@ def main():
     # Rimuovi la riga 4877 dal dataset
     train_df = train_df.drop(index=4877)
     # test_df = pd.read_csv(test_out_path)
-
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
     # X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')

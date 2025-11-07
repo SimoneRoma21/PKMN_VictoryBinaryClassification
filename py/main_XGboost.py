@@ -18,30 +18,13 @@ def main():
     selected_features = [
 
         #----Feature Base Stats Pokemon----#
-        Feature.P1_MEAN_HP_START, #*
-        #Feature.P2_MEAN_HP_START, 
-        #Feature.MEAN_HP_DIFFERENCE_START,
-        #Feature.LEAD_SPD,
-        #Feature.MEAN_SPE_START,  
-        #Feature.MEAN_ATK_START,  
-        #Feature.MEAN_DEF_START,  
-        #Feature.MEAN_SPA_START,  
-        #Feature.MEAN_SPD_START,  
-        #Feature.P1_MEAN_SPE_START,
-        #Feature.P2_MEAN_SPE_START,
-        #Feature.MEAN_SPE_DIFFERENCE_START,
-        #Feature.MEAN_STATS_START, 
         Feature.MEAN_SPE_LAST, #*
-        #Feature.P1_MEAN_SPE_LAST,
-        #Feature.P2_MEAN_SPE_LAST,
-        #Feature.MEAN_SPE_DIFFERENCE_LAST,
+        
         Feature.MEAN_HP_LAST, #*
-        #Feature.P1_MEAN_HP_LAST,
-        #Feature.P2_MEAN_HP_LAST,
-        #Feature.MEAN_HP_DIFFERENCE_LAST,
+       
         Feature.P1_FINAL_TEAM_HP, #*
         Feature.P2_FINAL_TEAM_HP, #*
-        Feature.FINAL_TEAM_HP_DIFFERENCE, #*
+
         Feature.MEAN_ATK_LAST, #* 
         Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
@@ -52,21 +35,13 @@ def main():
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
-        Feature.ALIVE_PKMN_DIFFERENCE, #*
-        #Feature.P1_PKMN_STAB, 
-        #Feature.P2_PKMN_STAB, 
+        
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-        Feature.SWITCHES_DIFFERENCE, #*
-        #Feature.P1_STATUS_INFLICTED, 
-        #Feature.P2_STATUS_INFLICTED, 
-        #Feature.STATUS_INFLICTED_DIFFERENCE, 
-        
-        #Feature.P1_FIRST_FAINT_TURN,
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
-        #Feature.P1_MAX_DEBUFF_RECEIVED,
-        #Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P1_MAX_DEBUFF_RECEIVED,
+        Feature.P2_MAX_DEBUFF_RECEIVED,
         Feature.P1_AVG_MOVE_POWER, #*
         Feature.P2_AVG_MOVE_POWER, #*
         Feature.AVG_MOVE_POWER_DIFFERENCE, #*
@@ -106,10 +81,7 @@ def main():
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
         Feature.P2_PKMN_FIRESPIN, #*
-        #Feature.P1_REFLECT_RATIO,
-        #Feature.P2_REFLECT_RATIO,
-        #Feature.P1_LIGHTSCREEN_RATIO,
-        #Feature.P2_LIGHTSCREEN_RATIO,
+        
         
 
         #----Feature Weaknesses of Teams / Team Composition----#
@@ -153,6 +125,8 @@ def main():
     # Pipeline with XGBoost
     pipeline = Pipeline([
     ('classifier', XGBClassifier(eval_metric='logloss', random_state=42, use_label_encoder = False))
+    # ('classifier', XGBClassifier(eval_metric='logloss',random_state=42, colsample_bytree= 0.8, gamma = 0, 
+    #                       learning_rate=0.05, max_depth=3, min_child_weight=5, n_estimators=600, reg_alpha=0, reg_lambda=2, subsample=0.8)),
     ])
     # Grid Search for XGBoost
     # param_grid = { # Too many hyperparameters
@@ -190,27 +164,28 @@ def main():
     )
 
     trainer = ModelTrainer(grid)
+    # trainer = ModelTrainer(pipeline)
     trainer.train(X_tr, y_tr)
     trainer.evaluate(X_val, y_val)
 
     #---------------Feature Utility Code GRID------------------------
 
-    # Get the best model
-    best_model = grid.best_estimator_.named_steps['classifier']
+    # # Get the best model
+    # best_model = grid.best_estimator_.named_steps['classifier']
 
-    # Get the coefficients
-    importances = pd.Series(best_model.feature_importances_, index=train_df.columns[2::])
+    # # Get the coefficients
+    # importances = pd.Series(best_model.feature_importances_, index=train_df.columns[2::])
 
-    # Sort by importance
-    importances = importances.sort_values(ascending=False)
+    # # Sort by importance
+    # importances = importances.sort_values(ascending=False)
 
-    print("Most useful features:")
-    pd.set_option('display.max_rows', None)
-    print(importances)
+    # print("Most useful features:")
+    # pd.set_option('display.max_rows', None)
+    # print(importances)
 
-    print(train_df.corr())
-    print("Best CV score:", grid.best_score_)
-    print("Best params:", grid.best_params_)
+    # print(train_df.corr())
+    # print("Best CV score:", grid.best_score_)
+    # print("Best params:", grid.best_params_)
 
     # ------------------ Evaluate on Test Set -----------------
 

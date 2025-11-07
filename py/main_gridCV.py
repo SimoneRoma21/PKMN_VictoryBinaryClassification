@@ -17,52 +17,29 @@ def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
-        #----Feature Base Stats Pokemon----#
-        #Feature.P1_MEAN_HP_START, #*
-        #Feature.P2_MEAN_HP_START, 
-        #Feature.MEAN_HP_DIFFERENCE_START,
-        #Feature.LEAD_SPD,
-        #Feature.MEAN_SPE_START,  
-        #Feature.MEAN_ATK_START,  
-        #Feature.MEAN_DEF_START,  
-        #Feature.MEAN_SPA_START,  
-        #Feature.MEAN_SPD_START,  
-        #Feature.P1_MEAN_SPE_START,
-        #Feature.P2_MEAN_SPE_START,
-        #Feature.MEAN_SPE_DIFFERENCE_START,
-        #Feature.MEAN_STATS_START, 
         Feature.MEAN_SPE_LAST, #*
-        #Feature.P1_MEAN_SPE_LAST,
-        #Feature.P2_MEAN_SPE_LAST,
-        #Feature.MEAN_SPE_DIFFERENCE_LAST,
+        
         Feature.MEAN_HP_LAST, #*
-        #Feature.P1_MEAN_HP_LAST,
-        #Feature.P2_MEAN_HP_LAST,
-        #Feature.MEAN_HP_DIFFERENCE_LAST,
+       
         Feature.P1_FINAL_TEAM_HP, #*
         Feature.P2_FINAL_TEAM_HP, #*
-        #Feature.FINAL_TEAM_HP_DIFFERENCE, #*
+
         Feature.MEAN_ATK_LAST, #* 
         Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
         Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
-        Feature.MEAN_CRIT, #* #('classifier', LogisticRegression(random_state=42, max_iter=1000,penalty='l2',solver='liblinear',C=100)) #*
+        Feature.MEAN_CRIT, #*
 
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
-        #Feature.ALIVE_PKMN_DIFFERENCE, #*
-        #Feature.P1_PKMN_STAB, 
-        #Feature.P2_PKMN_STAB, 
+        
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-        #Feature.SWITCHES_DIFFERENCE, #*
-        #Feature.P1_STATUS_INFLICTED, 
-        #Feature.P2_STATUS_INFLICTED, 
-        #Feature.STATUS_INFLICTED_DIFFERENCE, 
+    
         
-        #Feature.P1_FIRST_FAINT_TURN,
+        
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
         Feature.P1_MAX_DEBUFF_RECEIVED,
@@ -106,19 +83,6 @@ def main():
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
         Feature.P2_PKMN_FIRESPIN, #*
-        #Feature.P1_REFLECT_RATIO,
-        #Feature.P2_REFLECT_RATIO,
-        #Feature.P1_LIGHTSCREEN_RATIO,
-        #Feature.P2_LIGHTSCREEN_RATIO,
-        
-
-        #----Feature Weaknesses of Teams / Team Composition----#
-        #Feature.WEAKNESS_TEAMS_START, 
-        #Feature.WEAKNESS_TEAMS_LAST, 
-        #Feature.ADVANTAGE_WEAK_START, 
-        #Feature.ADVANTAGE_WEAK_LAST, 
-        #Feature.P1_PSY_PKMN,
-        #Feature.P2_PSY_PKMN
        
 ]
     feature_pipeline = FeaturePipeline(selected_features)
