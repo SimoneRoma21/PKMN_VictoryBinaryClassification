@@ -19,6 +19,41 @@ import seaborn as sns
 def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
+        
+        Feature.HP_BULK_RATIO,
+        Feature.SPE_ATK_RATIO,
+        Feature.OFF_DEF_RATIO,
+
+        # Feature.OFFENSE_SPEED_PRODUCT,
+        # --- HP Trend ---
+        # Feature.P1_HP_TREND,
+        # Feature.P2_HP_TREND,
+        Feature.HP_TREND_DIFF,
+
+        # --- ATK Trend ---
+        # Feature.P1_ATK_TREND,
+        # Feature.P2_ATK_TREND,
+        Feature.ATK_TREND_DIFF,
+
+        # --- DEF Trend ---
+        # Feature.P1_DEF_TREND,
+        # Feature.P2_DEF_TREND,
+        Feature.DEF_TREND_DIFF,
+
+        # --- SPA Trend ---
+        # Feature.P1_SPA_TREND,
+        # Feature.P2_SPA_TREND,
+        Feature.SPA_TREND_DIFF,
+
+        # --- SPD Trend ---
+        # Feature.P1_SPD_TREND,
+        # Feature.P2_SPD_TREND,
+        Feature.SPD_TREND_DIFF,
+
+        # --- SPE Trend ---
+        # Feature.P1_SPE_TREND,
+        # Feature.P2_SPE_TREND,
+        Feature.SPE_TREND_DIFF,
 
         #----Feature Base Stats Pokemon----#
         #Feature.P1_MEAN_HP_START, #*
@@ -34,11 +69,11 @@ def main():
         #Feature.P2_MEAN_SPE_START,
         #Feature.MEAN_SPE_DIFFERENCE_START,
         #Feature.MEAN_STATS_START, 
-        #Feature.MEAN_SPE_LAST, #*
+        Feature.MEAN_SPE_LAST, #*
         #Feature.P1_MEAN_SPE_LAST,
         #Feature.P2_MEAN_SPE_LAST,
         #Feature.MEAN_SPE_DIFFERENCE_LAST,
-        #Feature.MEAN_HP_LAST, #*
+        Feature.MEAN_HP_LAST, #*
         #Feature.P1_MEAN_HP_LAST,
         #Feature.P2_MEAN_HP_LAST,
         #Feature.MEAN_HP_DIFFERENCE_LAST,
@@ -46,9 +81,9 @@ def main():
         Feature.P2_FINAL_TEAM_HP, #*
         #Feature.FINAL_TEAM_HP_DIFFERENCE, #*
         Feature.MEAN_ATK_LAST, #* 
-        #Feature.MEAN_DEF_LAST, #*
+        Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
-        #Feature.MEAN_SPD_LAST, #*
+        Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
         
@@ -76,8 +111,8 @@ def main():
         #Feature.P2_SUM_STATS_LAST,
 
         #---Feature Infos During Battle----#
-        #Feature.P1_ALIVE_PKMN, #*
-        #Feature.P2_ALIVE_PKMN, #*
+        Feature.P1_ALIVE_PKMN, #*
+        Feature.P2_ALIVE_PKMN, #*
         #Feature.ALIVE_PKMN_DIFFERENCE, #*
         #Feature.P1_PKMN_STAB, 
         #Feature.P2_PKMN_STAB, 
@@ -179,8 +214,8 @@ def main():
     # X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
 
 
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
-    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     
     # Crea una pipeline con normalizzazione e modello
     print("\nCreating pipeline with MinMaxScaler and LogisticRegression...")
@@ -307,7 +342,7 @@ def main():
     
     #print(corr)
 
-    mask = corr.abs() > 0.5
+    mask = corr.abs() > 0.75
     filtered=corr.where(mask).dropna(axis=0,how='all').dropna(axis=1,how='all')
     plt.figure(figsize=(12, 12))
     sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)

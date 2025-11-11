@@ -174,6 +174,14 @@ class Feature(Enum):
     P1_PSY_PKMN= "p1_psy_pkmn"    
     P2_PSY_PKMN= "p2_psy_pkmn"
 
+    #-----------------------------------------------
+    HP_BULK_RATIO="hp_bulk_ratio"
+    SPE_ATK_RATIO="spe_atk_ratio"
+    OFF_DEF_RATIO="off_def_ratio"
+    OFF_SPAD_RATIO="off_spad_ratio"
+    CRIT_AGGR_RATIO="crit_aggr_ratio"
+
+
 class FeatureRegistry:
     """
     Registry che mappa ogni feature alla sua funzione di estrazione.
@@ -198,7 +206,7 @@ class FeatureRegistry:
         self._extractors[Feature.P1_HP_TREND] = fbs.hp_trend
         self._extractors[Feature.P2_HP_TREND] = fbs.hp_trend
         self._extractors[Feature.HP_TREND_DIFF] = fbs.hp_trend
-
+        
         # --- ATK Trend ---
         self._extractors[Feature.P1_ATK_TREND] = fbs.atk_trend
         self._extractors[Feature.P2_ATK_TREND] = fbs.atk_trend
@@ -350,6 +358,12 @@ class FeatureRegistry:
         self._extractors[Feature.P2_PSY_PKMN] =  fw.p2_psy_pkmn
 
 
+        #--------------------------------------
+        self._extractors[Feature.HP_BULK_RATIO] = fbs.hp_bulk_ratio
+        self._extractors[Feature.SPE_ATK_RATIO] = fbs.spe_atk_ratio
+        self._extractors[Feature.OFF_DEF_RATIO] =  fbs.off_def_ratio
+        self._extractors[Feature.OFF_SPAD_RATIO] =  fbs.off_spad_ratio
+        self._extractors[Feature.CRIT_AGGR_RATIO] =  fbs.crit_aggressive
 
 if __name__=="__main__":
     dataset=csv_u.open_train_json()

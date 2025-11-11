@@ -4,8 +4,38 @@ import pandas as pd
 
 import dataset.extract_utilities as ext_u
 import dataset.csv_utilities as csv_u
+import dataset.feature_during_battle as fdb
 
 
+def off_def_ratio(dataset) -> pd.DataFrame:
+
+    atks=mean_atk_last_2(dataset)
+    defs=mean_def_last_2(dataset)
+    return pd.DataFrame({'p1_off_def_ratio':atks['p1_mean_atk_last']/(defs['p1_mean_def_last']+1),'p2_off_def_ratio':atks['p2_mean_atk_last']/(defs['p2_mean_def_last']+1)})
+
+def off_spad_ratio(dataset) -> pd.DataFrame:
+
+    atks=mean_spa_last_2(dataset)
+    defs=mean_spd_last_2(dataset)
+    return pd.DataFrame({'p1_off_spad_ratio':atks['p1_mean_spa_last']/(defs['p1_mean_spd_last']+1),'p2_off_spad_ratio':atks['p2_mean_spa_last']/(defs['p2_mean_spd_last']+1)})
+    
+
+def spe_atk_ratio(dataset) -> pd.DataFrame:
+
+    spes=mean_spe_last_2(dataset)
+    atks=mean_atk_last_2(dataset)
+   
+    return pd.DataFrame({'p1_spe_atk_ratio':spes['p1_mean_spe_last']/(atks['p1_mean_atk_last']+1),'p2_spe_atk_ratio':spes['p2_mean_spe_last']/(atks['p2_mean_atk_last']+1)})
+ 
+
+def hp_bulk_ratio(dataset) -> pd.DataFrame:
+
+    hps=mean_hp_last(dataset)
+    defs=mean_def_last_2(dataset)
+    defd=mean_spd_last_2(dataset)
+
+    return pd.DataFrame({'p1_hp_bulk_ratio':hps['p1_mean_hp_last']/((defs['p1_mean_def_last']+defd['p1_mean_spd_last'])/2 +1),'p2_hp_bulk_ratio':hps['p2_mean_hp_last']/((defs['p2_mean_def_last']+defd['p2_mean_spd_last'])/2 +1)})
+ 
 # Offense-speed product
 def atk_spe_prod(dataset) -> pd.DataFrame:
     """
@@ -2438,3 +2468,24 @@ def mean_crit_2(dataset) -> pd.DataFrame: #feature
     mean_crit=pd.DataFrame({'p1_mean_crit':p1_mean_crit,'p2_mean_crit':p2_mean_crit})
     mean_crit=mean_crit.fillna(value=0)
     return mean_crit
+
+
+def crit_aggressive(dataset) -> pd.DataFrame:
+    """
+    Combines critical hit frequency with offensive aggressiveness.
+    High value means that the player who effectively leverages critical hits in an offensive way.
+    """
+    mean_crit_df = mean_crit(dataset)
+    p1_offensive_ratio_df = fdb.p1_offensive_ratio(dataset)
+    p2_offensive_ratio_df = fdb.p2_offensive_ratio(dataset)
+
+    p1_crit_aggr = mean_crit_df['p1_mean_crit'] * p1_offensive_ratio_df['p1_offensive_ratio']
+    p2_crit_aggr = mean_crit_df['p2_mean_crit'] * p2_offensive_ratio_df['p2_offensive_ratio']
+    diff = p1_crit_aggr - p2_crit_aggr
+
+    return pd.DataFrame({
+        'p1_crit_aggressive': p1_crit_aggr,
+        'p2_crit_aggressive': p2_crit_aggr,
+        'crit_aggressive_diff': diff
+    }).fillna(0)
+

@@ -11,11 +11,19 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
+        
+        Feature.HP_BULK_RATIO,
+        Feature.SPE_ATK_RATIO,
+        Feature.OFF_DEF_RATIO,
+        Feature.OFF_SPAD_RATIO,
+        Feature.CRIT_AGGR_RATIO,
 
         # Feature.OFFENSE_SPEED_PRODUCT,
         # --- HP Trend ---
@@ -31,7 +39,7 @@ def main():
         # --- DEF Trend ---
         # Feature.P1_DEF_TREND,
         # Feature.P2_DEF_TREND,
-        Feature.DEF_TREND_DIFF,
+        #Feature.DEF_TREND_DIFF,
 
         # --- SPA Trend ---
         # Feature.P1_SPA_TREND,
@@ -41,7 +49,7 @@ def main():
         # --- SPD Trend ---
         # Feature.P1_SPD_TREND,
         # Feature.P2_SPD_TREND,
-        Feature.SPD_TREND_DIFF,
+        #Feature.SPD_TREND_DIFF,
 
         # --- SPE Trend ---
         # Feature.P1_SPE_TREND,
@@ -57,9 +65,9 @@ def main():
         Feature.P2_FINAL_TEAM_HP, #*
 
         Feature.MEAN_ATK_LAST, #* 
-        Feature.MEAN_DEF_LAST, #*
+        #Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
-        Feature.MEAN_SPD_LAST, #*
+        #Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
 
@@ -70,7 +78,6 @@ def main():
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
     
-        
         
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
@@ -147,15 +154,15 @@ def main():
 
 
 
-    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
     #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
     
     # Pipeline with scaler and model
     print("\nCreating pipeline with StandardScaler and LogisticRegression...")
     pipeline = Pipeline([
-        #('scaler',StandardScaler()), #Better
-        ('scaler',MinMaxScaler()),
+        ('scaler',StandardScaler()), #Better
+        #('scaler',MinMaxScaler()),
         ('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier', LogisticRegression(random_state=210978, max_iter=2000))
     ])
@@ -204,6 +211,18 @@ def main():
 
     evaluate_test_set(trainer, selected_features, test_file_path)
 
+    # -------------- Correlation matrix -------------
+    corr=train_df.corr()
+    
+    #print(corr)
+
+    mask = corr.abs() > 0.75
+    filtered=corr.where(mask).dropna(axis=0,how='all').dropna(axis=1,how='all')
+    plt.figure(figsize=(12, 12))
+    sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)
+    plt.title("Feature Correlation Matrix", fontsize=14)
+    plt.show()
+    
 
 def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):
 
