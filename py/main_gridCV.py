@@ -17,6 +17,38 @@ def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
+        # Feature.OFFENSE_SPEED_PRODUCT,
+        # --- HP Trend ---
+        # Feature.P1_HP_TREND,
+        # Feature.P2_HP_TREND,
+        Feature.HP_TREND_DIFF,
+
+        # --- ATK Trend ---
+        # Feature.P1_ATK_TREND,
+        # Feature.P2_ATK_TREND,
+        Feature.ATK_TREND_DIFF,
+
+        # --- DEF Trend ---
+        # Feature.P1_DEF_TREND,
+        # Feature.P2_DEF_TREND,
+        Feature.DEF_TREND_DIFF,
+
+        # --- SPA Trend ---
+        # Feature.P1_SPA_TREND,
+        # Feature.P2_SPA_TREND,
+        Feature.SPA_TREND_DIFF,
+
+        # --- SPD Trend ---
+        # Feature.P1_SPD_TREND,
+        # Feature.P2_SPD_TREND,
+        Feature.SPD_TREND_DIFF,
+
+        # --- SPE Trend ---
+        # Feature.P1_SPE_TREND,
+        # Feature.P2_SPE_TREND,
+        Feature.SPE_TREND_DIFF,
+
+        
         Feature.MEAN_SPE_LAST, #*
         
         Feature.MEAN_HP_LAST, #*
@@ -82,9 +114,10 @@ def main():
         Feature.P1_PKMN_TOXIC, #*
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
-        Feature.P2_PKMN_FIRESPIN, #*
-       
-]
+        Feature.P2_PKMN_FIRESPIN, #*           
+    ]
+    
+
     feature_pipeline = FeaturePipeline(selected_features)
 
     train_file_path = '../data/train.jsonl'
@@ -109,9 +142,10 @@ def main():
     
     # Remove row 4877 from the train dataset
     train_df = train_df.drop(index=4877)
-
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
+
+
 
     X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)

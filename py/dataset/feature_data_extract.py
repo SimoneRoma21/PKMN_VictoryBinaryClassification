@@ -15,6 +15,43 @@ import dataset.feature_weakness as fw
 class Feature(Enum):
     """Enum con tutte le feature disponibili"""
 
+
+    OFFENSE_SPEED_PRODUCT = "atk_spe_prod"
+    
+    # Features Trend
+
+    # --- HP Trend ---
+    P1_HP_TREND = "p1_hp_trend"
+    P2_HP_TREND = "p2_hp_trend"
+    HP_TREND_DIFF = "hp_trend_diff"
+
+    # --- ATK Trend ---
+    P1_ATK_TREND = "p1_atk_trend"
+    P2_ATK_TREND = "p2_atk_trend"
+    ATK_TREND_DIFF = "atk_trend_diff"
+
+    # --- DEF Trend ---
+    P1_DEF_TREND = "p1_def_trend"
+    P2_DEF_TREND = "p2_def_trend"
+    DEF_TREND_DIFF = "def_trend_diff"
+
+    # --- SPA Trend ---
+    P1_SPA_TREND = "p1_spa_trend"
+    P2_SPA_TREND = "p2_spa_trend"
+    SPA_TREND_DIFF = "spa_trend_diff"
+
+    # --- SPD Trend ---
+    P1_SPD_TREND = "p1_spd_trend"
+    P2_SPD_TREND = "p2_spd_trend"
+    SPD_TREND_DIFF = "spd_trend_diff"
+
+    # --- SPE Trend ---
+    P1_SPE_TREND = "p1_spe_trend"
+    P2_SPE_TREND = "p2_spe_trend"
+    SPE_TREND_DIFF = "spe_trend_diff"
+
+
+
     #----Feature Base Stats Pokemon----#
     P1_MEAN_HP_START = "p1_mean_hp_start"
     P2_MEAN_HP_START = "p2_mean_hp_start"
@@ -153,8 +190,44 @@ class FeatureRegistry:
     
     def _register_all_extractors(self):
         """Registra tutti gli extractor disponibili"""
+
+        self._extractors[Feature.OFFENSE_SPEED_PRODUCT] = fbs.atk_spe_prod
         
-         #----Feature Base Stats Pokemon----#
+        # Features Trend
+        # --- Trend ---
+        self._extractors[Feature.P1_HP_TREND] = fbs.hp_trend
+        self._extractors[Feature.P2_HP_TREND] = fbs.hp_trend
+        self._extractors[Feature.HP_TREND_DIFF] = fbs.hp_trend
+
+        # --- ATK Trend ---
+        self._extractors[Feature.P1_ATK_TREND] = fbs.atk_trend
+        self._extractors[Feature.P2_ATK_TREND] = fbs.atk_trend
+        self._extractors[Feature.ATK_TREND_DIFF] = fbs.atk_trend
+
+        # --- DEF Trend ---
+        self._extractors[Feature.P1_DEF_TREND] = fbs.def_trend
+        self._extractors[Feature.P2_DEF_TREND] = fbs.def_trend
+        self._extractors[Feature.DEF_TREND_DIFF] = fbs.def_trend
+
+        # --- SPA Trend ---
+        self._extractors[Feature.P1_SPA_TREND] = fbs.spa_trend
+        self._extractors[Feature.P2_SPA_TREND] = fbs.spa_trend
+        self._extractors[Feature.SPA_TREND_DIFF] = fbs.spa_trend
+
+        # --- SPD Trend ---
+        self._extractors[Feature.P1_SPD_TREND] = fbs.spd_trend
+        self._extractors[Feature.P2_SPD_TREND] = fbs.spd_trend
+        self._extractors[Feature.SPD_TREND_DIFF] = fbs.spd_trend
+
+        # --- SPE Trend ---
+        self._extractors[Feature.P1_SPE_TREND] = fbs.spe_trend
+        self._extractors[Feature.P2_SPE_TREND] = fbs.spe_trend
+        self._extractors[Feature.SPE_TREND_DIFF] = fbs.spe_trend
+
+        
+        
+
+        #----Feature Base Stats Pokemon----#
         self._extractors[Feature.P1_MEAN_HP_START] = fbs.p1_mean_hp_start
         self._extractors[Feature.P2_MEAN_HP_START] = fbs.p2_mean_hp_start
         self._extractors[Feature.MEAN_HP_DIFFERENCE_START]= fbs.mean_hp_difference_start

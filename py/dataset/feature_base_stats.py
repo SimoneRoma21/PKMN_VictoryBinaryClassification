@@ -6,6 +6,287 @@ import dataset.extract_utilities as ext_u
 import dataset.csv_utilities as csv_u
 
 
+# Offense-speed product
+def atk_spe_prod(dataset) -> pd.DataFrame:
+    """
+    OFFENSE_SPEED_PRODUCT:
+    Combina la potenza offensiva (ATK) con la velocità (SPE).
+    Un valore alto indica una squadra più aggressiva e veloce.
+    """
+    # Calcola le feature di base
+    mean_atk_df = mean_atk_last(dataset)
+    mean_spe_df = mean_spe_last(dataset)
+
+    # Calcolo del prodotto per p1 e p2
+    p1_offense_speed = mean_atk_df['p1_mean_atk_last'] * mean_spe_df['p1_mean_spe_last']
+    p2_offense_speed = mean_atk_df['p2_mean_atk_last'] * mean_spe_df['p2_mean_spe_last']
+
+    # Differenza
+    offense_speed_diff = p1_offense_speed - p2_offense_speed
+
+    # Costruzione DataFrame finale
+    df = pd.DataFrame({
+        'p1_offense_speed_product': p1_offense_speed,
+        'p2_offense_speed_product': p2_offense_speed,
+        'offense_speed_product_diff': offense_speed_diff
+    }).fillna(0)
+
+    return df
+
+# def crit_agg_ratio(dataset) -> pd.DataFrame:
+#     critM = mean_crit(dataset)
+    
+
+
+
+
+
+# Feature Trend
+def hp_trend(dataset) -> pd.DataFrame:
+    """
+    Calculate the HP trend for both players between the start and the last state of the game.
+    P1_HP_TREND = mean_hp_last - mean_hp_start
+    P2_HP_TREND = mean_hp_last - mean_hp_start
+    HP_TREND_DIFF = P1_HP_TREND - P2_HP_TREND
+    """
+    p1_start_df = p1_mean_hp_start(dataset)
+    p2_start_df = p2_mean_hp_start(dataset)
+    mean_last_df = mean_hp_last(dataset)
+
+    p1_hp_trend = mean_last_df['p1_mean_hp_last'] - p1_start_df['p1_mean_hp_start']
+    p2_hp_trend = mean_last_df['p2_mean_hp_last'] - p2_start_df['p2_mean_hp_start']
+    hp_trend_diff = p1_hp_trend - p2_hp_trend
+
+    df = pd.DataFrame({
+        'p1_hp_trend': p1_hp_trend,
+        'p2_hp_trend': p2_hp_trend,
+        'hp_trend_diff': hp_trend_diff
+    }).fillna(0)
+    return df
+
+
+def atk_trend(dataset) -> pd.DataFrame:
+    p1_start_df = p1_mean_atk_start(dataset)
+    p2_start_df = p2_mean_atk_start(dataset)
+    mean_last_df = mean_atk_last(dataset)
+
+    p1_atk_trend = mean_last_df['p1_mean_atk_last'] - p1_start_df['p1_mean_atk_start']
+    p2_atk_trend = mean_last_df['p2_mean_atk_last'] - p2_start_df['p2_mean_atk_start']
+    atk_trend_diff = p1_atk_trend - p2_atk_trend
+
+    df = pd.DataFrame({
+        'p1_atk_trend': p1_atk_trend,
+        'p2_atk_trend': p2_atk_trend,
+        'atk_trend_diff': atk_trend_diff
+    }).fillna(0)
+    return df
+
+
+def def_trend(dataset) -> pd.DataFrame:
+    p1_start_df = p1_mean_def_start(dataset)
+    p2_start_df = p2_mean_def_start(dataset)
+    mean_last_df = mean_def_last(dataset)
+
+    p1_def_trend = mean_last_df['p1_mean_def_last'] - p1_start_df['p1_mean_def_start']
+    p2_def_trend = mean_last_df['p2_mean_def_last'] - p2_start_df['p2_mean_def_start']
+    def_trend_diff = p1_def_trend - p2_def_trend
+
+    df = pd.DataFrame({
+        'p1_def_trend': p1_def_trend,
+        'p2_def_trend': p2_def_trend,
+        'def_trend_diff': def_trend_diff
+    }).fillna(0)
+    return df
+
+
+def spa_trend(dataset) -> pd.DataFrame:
+    p1_start_df = p1_mean_spa_start(dataset)
+    p2_start_df = p2_mean_spa_start(dataset)
+    mean_last_df = mean_spa_last(dataset)
+
+    p1_spa_trend = mean_last_df['p1_mean_spa_last'] - p1_start_df['p1_mean_spa_start']
+    p2_spa_trend = mean_last_df['p2_mean_spa_last'] - p2_start_df['p2_mean_spa_start']
+    spa_trend_diff = p1_spa_trend - p2_spa_trend
+
+    df = pd.DataFrame({
+        'p1_spa_trend': p1_spa_trend,
+        'p2_spa_trend': p2_spa_trend,
+        'spa_trend_diff': spa_trend_diff
+    }).fillna(0)
+    return df
+
+
+def spd_trend(dataset) -> pd.DataFrame:
+    p1_start_df = p1_mean_spd_start(dataset)
+    p2_start_df = p2_mean_spd_start(dataset)
+    mean_last_df = mean_spd_last(dataset)
+
+    p1_spd_trend = mean_last_df['p1_mean_spd_last'] - p1_start_df['p1_mean_spd_start']
+    p2_spd_trend = mean_last_df['p2_mean_spd_last'] - p2_start_df['p2_mean_spd_start']
+    spd_trend_diff = p1_spd_trend - p2_spd_trend
+
+    df = pd.DataFrame({
+        'p1_spd_trend': p1_spd_trend,
+        'p2_spd_trend': p2_spd_trend,
+        'spd_trend_diff': spd_trend_diff
+    }).fillna(0)
+    return df
+
+
+def spe_trend(dataset) -> pd.DataFrame:
+    p1_start_df = p1_mean_spe_start(dataset)
+    p2_start_df = p2_mean_spe_start(dataset)
+    mean_last_df = mean_spe_last(dataset)
+
+    p1_spe_trend = mean_last_df['p1_mean_spe_last'] - p1_start_df['p1_mean_spe_start']
+    p2_spe_trend = mean_last_df['p2_mean_spe_last'] - p2_start_df['p2_mean_spe_start']
+    spe_trend_diff = p1_spe_trend - p2_spe_trend
+
+    df = pd.DataFrame({
+        'p1_spe_trend': p1_spe_trend,
+        'p2_spe_trend': p2_spe_trend,
+        'spe_trend_diff': spe_trend_diff
+    }).fillna(0)
+    return df
+
+def p1_mean_atk_start(dataset) -> pd.DataFrame:
+    '''
+    Calculate the mean base attack for the team of p1 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base attack.
+    '''
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_atk = ext_u.mean_atk_database(pkmn_database)
+    p1_mean_atk = []
+
+    for game in dataset:
+        p1_team = ext_u.extract_p1_team_from_game_start(game)
+        p1_known = len(p1_team)
+        p1_team = pkmn_database[pkmn_database['name'].isin(p1_team)][['name', 'base_atk']]
+        p1_mean_atk.append((np.sum(p1_team['base_atk']) + mean_atk * (6 - p1_known)) / 6)
+
+    return pd.DataFrame({'p1_mean_atk_start': p1_mean_atk})
+
+
+def p2_mean_atk_start(dataset) -> pd.DataFrame:
+    '''
+    Calculate the mean base attack for the team of p2 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base attack.
+    '''
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_atk = ext_u.mean_atk_database(pkmn_database)
+    p2_mean_atk = []
+
+    for game in dataset:
+        p2_team = ext_u.extract_p2_team_from_game_start(game)
+        p2_team = pkmn_database[pkmn_database['name'].isin(p2_team)][['name', 'base_atk']]
+        p2_mean_atk.append((np.sum(p2_team['base_atk']) + mean_atk * (6 - len(p2_team))) / 6)
+
+    return pd.DataFrame({'p2_mean_atk_start': p2_mean_atk})
+
+def p1_mean_def_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_def = ext_u.mean_def_database(pkmn_database)
+    p1_mean_def = []
+
+    for game in dataset:
+        p1_team = ext_u.extract_p1_team_from_game_start(game)
+        p1_known = len(p1_team)
+        p1_team = pkmn_database[pkmn_database['name'].isin(p1_team)][['name', 'base_def']]
+        p1_mean_def.append((np.sum(p1_team['base_def']) + mean_def * (6 - p1_known)) / 6)
+
+    return pd.DataFrame({'p1_mean_def_start': p1_mean_def})
+
+
+def p2_mean_def_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_def = ext_u.mean_def_database(pkmn_database)
+    p2_mean_def = []
+
+    for game in dataset:
+        p2_team = ext_u.extract_p2_team_from_game_start(game)
+        p2_team = pkmn_database[pkmn_database['name'].isin(p2_team)][['name', 'base_def']]
+        p2_mean_def.append((np.sum(p2_team['base_def']) + mean_def * (6 - len(p2_team))) / 6)
+
+    return pd.DataFrame({'p2_mean_def_start': p2_mean_def})
+def p1_mean_spa_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spa = ext_u.mean_spa_database(pkmn_database)
+    p1_mean_spa = []
+
+    for game in dataset:
+        p1_team = ext_u.extract_p1_team_from_game_start(game)
+        p1_known = len(p1_team)
+        p1_team = pkmn_database[pkmn_database['name'].isin(p1_team)][['name', 'base_spa']]
+        p1_mean_spa.append((np.sum(p1_team['base_spa']) + mean_spa * (6 - p1_known)) / 6)
+
+    return pd.DataFrame({'p1_mean_spa_start': p1_mean_spa})
+
+
+def p2_mean_spa_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spa = ext_u.mean_spa_database(pkmn_database)
+    p2_mean_spa = []
+
+    for game in dataset:
+        p2_team = ext_u.extract_p2_team_from_game_start(game)
+        p2_team = pkmn_database[pkmn_database['name'].isin(p2_team)][['name', 'base_spa']]
+        p2_mean_spa.append((np.sum(p2_team['base_spa']) + mean_spa * (6 - len(p2_team))) / 6)
+
+    return pd.DataFrame({'p2_mean_spa_start': p2_mean_spa})
+def p1_mean_spd_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spd = ext_u.mean_spd_database(pkmn_database)
+    p1_mean_spd = []
+
+    for game in dataset:
+        p1_team = ext_u.extract_p1_team_from_game_start(game)
+        p1_known = len(p1_team)
+        p1_team = pkmn_database[pkmn_database['name'].isin(p1_team)][['name', 'base_spd']]
+        p1_mean_spd.append((np.sum(p1_team['base_spd']) + mean_spd * (6 - p1_known)) / 6)
+
+    return pd.DataFrame({'p1_mean_spd_start': p1_mean_spd})
+
+
+def p2_mean_spd_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spd = ext_u.mean_spd_database(pkmn_database)
+    p2_mean_spd = []
+
+    for game in dataset:
+        p2_team = ext_u.extract_p2_team_from_game_start(game)
+        p2_team = pkmn_database[pkmn_database['name'].isin(p2_team)][['name', 'base_spd']]
+        p2_mean_spd.append((np.sum(p2_team['base_spd']) + mean_spd * (6 - len(p2_team))) / 6)
+
+    return pd.DataFrame({'p2_mean_spd_start': p2_mean_spd})
+def p1_mean_spe_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spe = ext_u.mean_spe_database(pkmn_database)
+    p1_mean_spe = []
+
+    for game in dataset:
+        p1_team = ext_u.extract_p1_team_from_game_start(game)
+        p1_known = len(p1_team)
+        p1_team = pkmn_database[pkmn_database['name'].isin(p1_team)][['name', 'base_spe']]
+        p1_mean_spe.append((np.sum(p1_team['base_spe']) + mean_spe * (6 - p1_known)) / 6)
+
+    return pd.DataFrame({'p1_mean_spe_start': p1_mean_spe})
+
+
+def p2_mean_spe_start(dataset) -> pd.DataFrame:
+    pkmn_database = csv_u.open_pkmn_database_csv()
+    mean_spe = ext_u.mean_spe_database(pkmn_database)
+    p2_mean_spe = []
+
+    for game in dataset:
+        p2_team = ext_u.extract_p2_team_from_game_start(game)
+        p2_team = pkmn_database[pkmn_database['name'].isin(p2_team)][['name', 'base_spe']]
+        p2_mean_spe.append((np.sum(p2_team['base_spe']) + mean_spe * (6 - len(p2_team))) / 6)
+
+    return pd.DataFrame({'p2_mean_spe_start': p2_mean_spe})
+
+
+
+
 #----Feature Base Stats HP----#
 def p1_mean_hp_start(dataset) -> pd.DataFrame: #feature
     '''
@@ -329,17 +610,17 @@ def mean_spe_start(dataset) -> pd.DataFrame: #feature
     mean_spe_start['mean_spe_start_difference']=np.subtract.reduce(mean_spe_start[['p1_mean_spe_start','p2_mean_spe_start']],axis=1)
     return mean_spe_start
 
-def p1_mean_spe_start(dataset)-> pd.DataFrame: #feature
-    '''
-    Returns the mean spe for the team of p1 at the start in a Dataframe.
-    '''
-    return mean_spe_start(dataset)['p1_mean_spe_start']
+# def p1_mean_spe_start(dataset)-> pd.DataFrame: #feature
+#     '''
+#     Returns the mean spe for the team of p1 at the start in a Dataframe.
+#     '''
+#     return mean_spe_start(dataset)['p1_mean_spe_start']
 
-def p2_mean_spe_start(dataset)-> pd.DataFrame: #feature
-    '''
-    Returns the mean spe for the team of p2 at the start in a Dataframe.
-    '''
-    return mean_spe_start(dataset)['p2_mean_spe_start']
+# def p2_mean_spe_start(dataset)-> pd.DataFrame: #feature
+#     '''
+#     Returns the mean spe for the team of p2 at the start in a Dataframe.
+#     '''
+#     return mean_spe_start(dataset)['p2_mean_spe_start']
 
 def mean_spe_start_difference(dataset)-> pd.DataFrame: #feature
     '''
