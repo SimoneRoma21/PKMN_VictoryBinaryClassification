@@ -12,6 +12,9 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, Po
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
 from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import RidgeClassifier, SGDClassifier, PassiveAggressiveClassifier, Perceptron
+
 
 
 def main():
@@ -129,9 +132,18 @@ def main():
     ('lr', LogisticRegression(max_iter=2000,C=1,penalty='l1',solver='saga',random_state=42)),
     ('xgb', XGBClassifier(eval_metric='logloss',random_state=42, colsample_bytree= 0.8, gamma = 0, 
                           learning_rate=0.05, max_depth=3, min_child_weight=5, n_estimators=600, reg_alpha=0, reg_lambda=2, subsample=0.8)),
-    # ('rf', RandomForestClassifier(random_state=42,bootstrap=False,max_depth=None,max_features='sqrt',min_samples_leaf=2,min_samples_split=5,n_estimators=400)),
+    ('rf', RandomForestClassifier(random_state=42,bootstrap=False,max_depth=None,max_features='sqrt',min_samples_leaf=2,min_samples_split=5,n_estimators=400)),
+    ('sgd', SGDClassifier(loss='log_loss', penalty='l2', max_iter=2000, random_state=42))
     # ('svm', SVC(probability=True, kernel='rbf',C=10,gamma=0.001,random_state=42))
     ]
+
+    # base_estimators = [
+    # ('lr', LogisticRegression(max_iter=2000,C=1,penalty='l1',solver='saga',random_state=42)),
+    # ('tree', DecisionTreeClassifier(max_depth=None, random_state=42)),
+    # ('svm', SVC(probability=True, kernel='rbf',C=10,gamma=0.001,random_state=42))
+    # ]
+
+    
 
     meta_model = LogisticRegression(max_iter=2000,random_state=42)
     # meta_model = XGBClassifier(

@@ -4,6 +4,7 @@ import numpy as np
 from dataset.csv_utilities import *
 
 
+
 def p1_alive_pkmn(dataset)->pd.DataFrame: #feature
     '''
     Counts the number of pokemon alive after the 30 turns of the 
