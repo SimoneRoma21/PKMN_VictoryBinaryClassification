@@ -18,6 +18,22 @@ def main():
     selected_features = [
 
         #----Feature Base Stats Pokemon----#
+<<<<<<< Updated upstream
+=======
+        #Feature.P1_MEAN_HP_START, #*
+        #Feature.P2_MEAN_HP_START, 
+        #Feature.MEAN_HP_DIFFERENCE_START,
+        #Feature.LEAD_SPD,
+        #Feature.MEAN_SPE_START,  
+        #Feature.MEAN_ATK_START,  
+        #Feature.MEAN_DEF_START,  
+        #Feature.MEAN_SPA_START,  
+        #Feature.MEAN_SPD_START,  
+        #Feature.P1_MEAN_SPE_START,
+        #Feature.P2_MEAN_SPE_START,
+        #Feature.MEAN_SPE_DIFFERENCE_START,
+        #Feature.MEAN_STATS_START, 
+>>>>>>> Stashed changes
         Feature.MEAN_SPE_LAST, #*
         
         Feature.MEAN_HP_LAST, #*
@@ -35,9 +51,23 @@ def main():
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
+<<<<<<< Updated upstream
         
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
+=======
+        #Feature.ALIVE_PKMN_DIFFERENCE, #*
+        #Feature.P1_PKMN_STAB, 
+        #Feature.P2_PKMN_STAB, 
+        Feature.P1_SWITCHES_COUNT, #*
+        Feature.P2_SWITCHES_COUNT, #*
+        #Feature.SWITCHES_DIFFERENCE, #*
+        #Feature.P1_STATUS_INFLICTED, 
+        #Feature.P2_STATUS_INFLICTED, 
+        #Feature.STATUS_INFLICTED_DIFFERENCE, 
+        
+        #Feature.P1_FIRST_FAINT_TURN,
+>>>>>>> Stashed changes
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
         Feature.P1_MAX_DEBUFF_RECEIVED,

@@ -113,15 +113,15 @@ def main():
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
 
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
     #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
     
     # Pipeline with scaler and model
     print("\nCreating pipeline with StandardScaler and LogisticRegression...")
     pipeline = Pipeline([
-        ('scaler',StandardScaler()), #Better
-        #('scaler',MinMaxScaler()),
+        #('scaler',StandardScaler()), #Better
+        ('scaler',MinMaxScaler()),
         ('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier', LogisticRegression(random_state=210978, max_iter=2000))
     ])

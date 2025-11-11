@@ -34,11 +34,11 @@ def main():
         #Feature.P2_MEAN_SPE_START,
         #Feature.MEAN_SPE_DIFFERENCE_START,
         #Feature.MEAN_STATS_START, 
-        Feature.MEAN_SPE_LAST, #*
+        #Feature.MEAN_SPE_LAST, #*
         #Feature.P1_MEAN_SPE_LAST,
         #Feature.P2_MEAN_SPE_LAST,
         #Feature.MEAN_SPE_DIFFERENCE_LAST,
-        Feature.MEAN_HP_LAST, #*
+        #Feature.MEAN_HP_LAST, #*
         #Feature.P1_MEAN_HP_LAST,
         #Feature.P2_MEAN_HP_LAST,
         #Feature.MEAN_HP_DIFFERENCE_LAST,
@@ -46,38 +46,38 @@ def main():
         Feature.P2_FINAL_TEAM_HP, #*
         #Feature.FINAL_TEAM_HP_DIFFERENCE, #*
         Feature.MEAN_ATK_LAST, #* 
-        Feature.MEAN_DEF_LAST, #*
+        #Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
-        Feature.MEAN_SPD_LAST, #*
+        #Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
         
         # Sum versions of mean_*_last features
-        Feature.SUM_HP_LAST,
-        Feature.P1_SUM_HP_LAST,
-        Feature.P2_SUM_HP_LAST,
-        Feature.SUM_SPE_LAST,
-        Feature.P1_SUM_SPE_LAST,
-        Feature.P2_SUM_SPE_LAST,
-        Feature.SUM_ATK_LAST,
-        Feature.P1_SUM_ATK_LAST,
-        Feature.P2_SUM_ATK_LAST,
-        Feature.SUM_DEF_LAST,
-        Feature.P1_SUM_DEF_LAST,
-        Feature.P2_SUM_DEF_LAST,
-        Feature.SUM_SPA_LAST,
-        Feature.P1_SUM_SPA_LAST,
-        Feature.P2_SUM_SPA_LAST,
-        Feature.SUM_SPD_LAST,
-        Feature.P1_SUM_SPD_LAST,
-        Feature.P2_SUM_SPD_LAST,
-        Feature.SUM_STATS_LAST,
-        Feature.P1_SUM_STATS_LAST,
-        Feature.P2_SUM_STATS_LAST,
+        #Feature.SUM_HP_LAST,
+        #Feature.P1_SUM_HP_LAST,
+        #Feature.P2_SUM_HP_LAST,
+        #Feature.SUM_SPE_LAST,
+        #Feature.P1_SUM_SPE_LAST,
+        #Feature.P2_SUM_SPE_LAST,
+        #Feature.SUM_ATK_LAST,
+        #Feature.P1_SUM_ATK_LAST,
+        #Feature.P2_SUM_ATK_LAST,
+        #Feature.SUM_DEF_LAST,
+        #Feature.P1_SUM_DEF_LAST,
+        #Feature.P2_SUM_DEF_LAST,
+        #Feature.SUM_SPA_LAST,
+        #Feature.P1_SUM_SPA_LAST,
+        #Feature.P2_SUM_SPA_LAST,
+        #Feature.SUM_SPD_LAST,
+        #Feature.P1_SUM_SPD_LAST,
+        #Feature.P2_SUM_SPD_LAST,
+        #Feature.SUM_STATS_LAST,
+        #Feature.P1_SUM_STATS_LAST,
+        #Feature.P2_SUM_STATS_LAST,
 
         #---Feature Infos During Battle----#
-        Feature.P1_ALIVE_PKMN, #*
-        Feature.P2_ALIVE_PKMN, #*
+        #Feature.P1_ALIVE_PKMN, #*
+        #Feature.P2_ALIVE_PKMN, #*
         #Feature.ALIVE_PKMN_DIFFERENCE, #*
         #Feature.P1_PKMN_STAB, 
         #Feature.P2_PKMN_STAB, 
@@ -303,16 +303,16 @@ def main():
     #print("Best params:", grid.best_params_)
 
     # -------------- Correlation matrix -------------
-    #corr=train_df.corr()
+    corr=train_df.corr()
     
     #print(corr)
 
-    #mask = corr.abs() > 0.70
-    #filtered=corr.where(mask).dropna(axis=0,how='all').dropna(axis=1,how='all')
-    #plt.figure(figsize=(12, 12))
-    #sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)
-    #plt.title("Feature Correlation Matrix", fontsize=14)
-    #plt.show()
+    mask = corr.abs() > 0.5
+    filtered=corr.where(mask).dropna(axis=0,how='all').dropna(axis=1,how='all')
+    plt.figure(figsize=(12, 12))
+    sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)
+    plt.title("Feature Correlation Matrix", fontsize=14)
+    plt.show()
     
     # ------------------ Feature selection -----------------
 
