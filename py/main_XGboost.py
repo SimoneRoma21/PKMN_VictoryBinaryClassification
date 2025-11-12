@@ -1,9 +1,9 @@
 import json
 import pandas as pd
-from dataset.dataset_construction import Feature, FeaturePipeline
-from dataset.csv_utilities import *
-from dataset.extract_utilities import *
-from ModelTrainer import ModelTrainer
+from py.dataset.dataset_construction import Feature, FeaturePipeline
+from py.dataset.csv_utilities import *
+from py.dataset.extract_utilities import *
+from py.ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
@@ -17,57 +17,7 @@ def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
-        #----Feature Base Stats Pokemon----#
-<<<<<<< Updated upstream
-=======
-        #Feature.P1_MEAN_HP_START, #*
-        #Feature.P2_MEAN_HP_START, 
-        #Feature.MEAN_HP_DIFFERENCE_START,
-        #Feature.LEAD_SPD,
-        #Feature.MEAN_SPE_START,  
-        #Feature.MEAN_ATK_START,  
-        #Feature.MEAN_DEF_START,  
-        #Feature.MEAN_SPA_START,  
-        #Feature.MEAN_SPD_START,  
-        #Feature.P1_MEAN_SPE_START,
-        #Feature.P2_MEAN_SPE_START,
-        #Feature.MEAN_SPE_DIFFERENCE_START,
-        #Feature.MEAN_STATS_START, 
->>>>>>> Stashed changes
-        Feature.MEAN_SPE_LAST, #*
-        
-        Feature.MEAN_HP_LAST, #*
-       
-        Feature.P1_FINAL_TEAM_HP, #*
-        Feature.P2_FINAL_TEAM_HP, #*
-
-        Feature.MEAN_ATK_LAST, #* 
-        Feature.MEAN_DEF_LAST, #*
-        Feature.MEAN_SPA_LAST, #*
-        Feature.MEAN_SPD_LAST, #*
-        Feature.MEAN_STATS_LAST, #*
-        Feature.MEAN_CRIT, #*
-
-        #---Feature Infos During Battle----#
-        Feature.P1_ALIVE_PKMN, #*
-        Feature.P2_ALIVE_PKMN, #*
-<<<<<<< Updated upstream
-        
-        Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-=======
-        #Feature.ALIVE_PKMN_DIFFERENCE, #*
-        #Feature.P1_PKMN_STAB, 
-        #Feature.P2_PKMN_STAB, 
-        Feature.P1_SWITCHES_COUNT, #*
-        Feature.P2_SWITCHES_COUNT, #*
-        #Feature.SWITCHES_DIFFERENCE, #*
-        #Feature.P1_STATUS_INFLICTED, 
-        #Feature.P2_STATUS_INFLICTED, 
-        #Feature.STATUS_INFLICTED_DIFFERENCE, 
-        
-        #Feature.P1_FIRST_FAINT_TURN,
->>>>>>> Stashed changes
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
         Feature.P1_MAX_DEBUFF_RECEIVED,
@@ -80,23 +30,8 @@ def main():
         Feature.OFFENSIVE_RATIO_DIFFERENCE, #*
         Feature.P1_MOVED_FIRST_COUNT, #*
         Feature.P2_MOVED_FIRST_COUNT, #*
-        Feature.SPEED_ADVANTAGE_RATIO, #*
-
-       
-        
-        #----Feature Status of Pokemons----#
-        Feature.P1_FROZEN_PKMN, #*
-        Feature.P2_FROZEN_PKMN, #*
-        Feature.P1_PARALIZED_PKMN, #*
-        Feature.P2_PARALIZED_PKMN, #*
-        Feature.P1_SLEEP_PKMN, #*
-        Feature.P2_SLEEP_PKMN, #*
-        Feature.P1_POISON_PKMN, #*
-        Feature.P2_POISON_PKMN, #* 
-        Feature.P1_BURNED_PKMN, #*
-        Feature.P2_BURNED_PKMN, #*
-        
-        #----Feature Pokemon Moves----#
+        Feature.P1_SWITCHES_COUNT, #*
+        Feature.P2_SWITCHES_COUNT, #*
         Feature.P1_PKMN_REFLECT, #*
         Feature.P2_PKMN_REFLECT, #*
         Feature.P1_PKMN_REST, #*

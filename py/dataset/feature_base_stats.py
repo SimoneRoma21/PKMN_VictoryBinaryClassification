@@ -2,9 +2,9 @@
 import numpy as np
 import pandas as pd
 
-import dataset.extract_utilities as ext_u
-import dataset.csv_utilities as csv_u
-import dataset.feature_during_battle as fdb
+from . import extract_utilities as ext_u
+from . import csv_utilities as csv_u
+from . import feature_during_battle as fdb
 
 
 def off_def_ratio(dataset) -> pd.DataFrame:

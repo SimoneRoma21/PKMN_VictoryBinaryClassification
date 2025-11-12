@@ -1,6 +1,6 @@
 import pandas as pd
 
-import dataset.extract_utilities as ext_u
+from . import extract_utilities as ext_u
 
 def p1_frozen_pkmn(dataset)-> pd.DataFrame: #feature
     '''

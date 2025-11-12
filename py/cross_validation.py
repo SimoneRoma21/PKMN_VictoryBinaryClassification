@@ -1,7 +1,7 @@
 import json
 import pandas as pd
-from dataset.dataset_construction import Feature, FeaturePipeline
-from ModelTrainer import ModelTrainer
+from py.dataset.dataset_construction import Feature, FeaturePipeline
+from py.ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split, GridSearchCV, KFold, cross_val_predict
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier

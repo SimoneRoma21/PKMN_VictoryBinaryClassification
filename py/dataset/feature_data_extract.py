@@ -4,13 +4,13 @@ import numpy as np
 from typing import List, Dict, Callable
 from enum import Enum
 
-import dataset.csv_utilities as csv_u
-import dataset.extract_utilities as ext_u
-import dataset.feature_base_stats as fbs
-import dataset.feature_during_battle as fdb
-import dataset.feature_moves as fm
-import dataset.feature_status as fs
-import dataset.feature_weakness as fw
+from . import csv_utilities as csv_u
+from . import extract_utilities as ext_u
+from . import feature_base_stats as fbs
+from . import feature_during_battle as fdb
+from . import feature_moves as fm
+from . import feature_status as fs
+from . import feature_weakness as fw
 
 class Feature(Enum):
     """Enum con tutte le feature disponibili"""

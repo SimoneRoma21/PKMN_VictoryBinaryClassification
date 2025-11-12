@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-import dataset.csv_utilities as csv_u
-import dataset.extract_utilities as ext_u
+from . import csv_utilities as csv_u
+from . import extract_utilities as ext_u
 
 # to remove, not used, not good
 def weakness_teams_not_opt(dataset) -> pd.DataFrame: #---> DONT USE <---

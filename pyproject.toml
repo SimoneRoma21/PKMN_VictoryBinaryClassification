@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py"
+version = "0.1.0"
+description = "Utility for FDS Challenge"
+authors = [{ name = "Sal8" }]
+requires-python = ">=3.8"
+
+[tool.setuptools]
+packages = ["py"]
