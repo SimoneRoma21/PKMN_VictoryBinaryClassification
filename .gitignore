@@ -4,7 +4,6 @@ venv
 __pycache__/
 *.priv*
 other
-*feature_cache/
 __pycache__/
 py.egg-info/
 *.env*
