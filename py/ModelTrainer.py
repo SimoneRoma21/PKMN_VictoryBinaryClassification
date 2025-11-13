@@ -4,14 +4,14 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_auc_score
 
 class ModelTrainer:
-    """Classe per addestrare e valutare modelli"""
+    """Class for training and evaluating models"""
     
     def __init__(self, model=None):
         self.model = model or RandomForestClassifier(n_estimators=100, random_state=42)
         self.feature_importance = None
     
     def train(self, X: pd.DataFrame, y: pd.Series):
-        """Addestra il modello"""
+        """Train the model"""
         print("Training model...")
         self.model.fit(X, y)
         
@@ -29,7 +29,7 @@ class ModelTrainer:
         return self
     
     def evaluate(self, X: pd.DataFrame, y: pd.Series):
-        """Valuta il modello"""
+        """Evaluate the model"""
         y_pred = self.model.predict(X)
         
         print("\n" + "="*50)
@@ -54,5 +54,5 @@ class ModelTrainer:
         return y_pred
     
     def predict(self, X: pd.DataFrame):
-        """Fa predizioni"""
+        """Make predictions"""
         return self.model.predict(X)

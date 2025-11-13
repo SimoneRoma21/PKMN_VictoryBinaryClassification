@@ -8,20 +8,56 @@ from . import feature_during_battle as fdb
 
 
 def off_def_ratio(dataset) -> pd.DataFrame:
-
+    """
+    Calculate the offense-to-defense ratio for both players.
+    This metric helps identify aggressive vs defensive team compositions.
+    A higher ratio indicates a more offensive-oriented team.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_off_def_ratio: Player 1's attack/defense ratio
+            - p2_off_def_ratio: Player 2's attack/defense ratio
+    """
     atks=mean_atk_last_2(dataset)
     defs=mean_def_last_2(dataset)
     return pd.DataFrame({'p1_off_def_ratio':atks['p1_mean_atk_last']/(defs['p1_mean_def_last']+1),'p2_off_def_ratio':atks['p2_mean_atk_last']/(defs['p2_mean_def_last']+1)})
 
 def off_spad_ratio(dataset) -> pd.DataFrame:
-
+    """
+    Calculate the special attack-to-special defense ratio for both players.
+    This metric helps identify special offensive vs special defensive team compositions.
+    A higher ratio indicates a more special-attack-oriented team.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_off_spad_ratio: Player 1's special attack/special defense ratio
+            - p2_off_spad_ratio: Player 2's special attack/special defense ratio
+    """
     atks=mean_spa_last_2(dataset)
     defs=mean_spd_last_2(dataset)
     return pd.DataFrame({'p1_off_spad_ratio':atks['p1_mean_spa_last']/(defs['p1_mean_spd_last']+1),'p2_off_spad_ratio':atks['p2_mean_spa_last']/(defs['p2_mean_spd_last']+1)})
     
 
 def spe_atk_ratio(dataset) -> pd.DataFrame:
-
+    """
+    Calculate the speed-to-attack ratio for both players.
+    This metric helps identify fast vs powerful team compositions.
+    A higher ratio indicates a more speed-focused team relative to attack power.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_spe_atk_ratio: Player 1's speed/attack ratio
+            - p2_spe_atk_ratio: Player 2's speed/attack ratio
+    """
     spes=mean_spe_last_2(dataset)
     atks=mean_atk_last_2(dataset)
    
@@ -29,7 +65,20 @@ def spe_atk_ratio(dataset) -> pd.DataFrame:
  
 
 def hp_bulk_ratio(dataset) -> pd.DataFrame:
-
+    """
+    Calculate the HP-to-bulk ratio for both players.
+    Bulk is defined as the average of defense and special defense.
+    This metric measures overall defensive capability combining HP with defensive stats.
+    A higher ratio indicates better defensive survivability.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_hp_bulk_ratio: Player 1's HP/average defense ratio
+            - p2_hp_bulk_ratio: Player 2's HP/average defense ratio
+    """
     hps=mean_hp_last(dataset)
     defs=mean_def_last_2(dataset)
     defd=mean_spd_last_2(dataset)
@@ -39,9 +88,18 @@ def hp_bulk_ratio(dataset) -> pd.DataFrame:
 # Offense-speed product
 def atk_spe_prod(dataset) -> pd.DataFrame:
     """
-    OFFENSE_SPEED_PRODUCT:
-    Combina la potenza offensiva (ATK) con la velocità (SPE).
-    Un valore alto indica una squadra più aggressiva e veloce.
+    Calculate the offense-speed product for both players.
+    Combines offensive power (ATK) with speed (SPE).
+    A high value indicates a more aggressive and fast team composition.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_offense_speed_product: Player 1's attack × speed
+            - p2_offense_speed_product: Player 2's attack × speed
+            - offense_speed_product_diff: Difference between players
     """
     # Calcola le feature di base
     mean_atk_df = mean_atk_last(dataset)
@@ -96,6 +154,21 @@ def hp_trend(dataset) -> pd.DataFrame:
 
 
 def atk_trend(dataset) -> pd.DataFrame:
+    """
+    Calculate the attack trend for both players between the start and the last state of the game.
+    P1_ATK_TREND = mean_atk_last - mean_atk_start
+    P2_ATK_TREND = mean_atk_last - mean_atk_start
+    ATK_TREND_DIFF = P1_ATK_TREND - P2_ATK_TREND
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_atk_trend: Player 1's attack change over the battle
+            - p2_atk_trend: Player 2's attack change over the battle
+            - atk_trend_diff: Difference between players' attack trends
+    """
     p1_start_df = p1_mean_atk_start(dataset)
     p2_start_df = p2_mean_atk_start(dataset)
     mean_last_df = mean_atk_last(dataset)
@@ -113,6 +186,21 @@ def atk_trend(dataset) -> pd.DataFrame:
 
 
 def def_trend(dataset) -> pd.DataFrame:
+    """
+    Calculate the defense trend for both players between the start and the last state of the game.
+    P1_DEF_TREND = mean_def_last - mean_def_start
+    P2_DEF_TREND = mean_def_last - mean_def_start
+    DEF_TREND_DIFF = P1_DEF_TREND - P2_DEF_TREND
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_def_trend: Player 1's defense change over the battle
+            - p2_def_trend: Player 2's defense change over the battle
+            - def_trend_diff: Difference between players' defense trends
+    """
     p1_start_df = p1_mean_def_start(dataset)
     p2_start_df = p2_mean_def_start(dataset)
     mean_last_df = mean_def_last(dataset)
@@ -130,6 +218,21 @@ def def_trend(dataset) -> pd.DataFrame:
 
 
 def spa_trend(dataset) -> pd.DataFrame:
+    """
+    Calculate the special attack trend for both players between the start and the last state of the game.
+    P1_SPA_TREND = mean_spa_last - mean_spa_start
+    P2_SPA_TREND = mean_spa_last - mean_spa_start
+    SPA_TREND_DIFF = P1_SPA_TREND - P2_SPA_TREND
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_spa_trend: Player 1's special attack change over the battle
+            - p2_spa_trend: Player 2's special attack change over the battle
+            - spa_trend_diff: Difference between players' special attack trends
+    """
     p1_start_df = p1_mean_spa_start(dataset)
     p2_start_df = p2_mean_spa_start(dataset)
     mean_last_df = mean_spa_last(dataset)
@@ -147,6 +250,21 @@ def spa_trend(dataset) -> pd.DataFrame:
 
 
 def spd_trend(dataset) -> pd.DataFrame:
+    """
+    Calculate the special defense trend for both players between the start and the last state of the game.
+    P1_SPD_TREND = mean_spd_last - mean_spd_start
+    P2_SPD_TREND = mean_spd_last - mean_spd_start
+    SPD_TREND_DIFF = P1_SPD_TREND - P2_SPD_TREND
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_spd_trend: Player 1's special defense change over the battle
+            - p2_spd_trend: Player 2's special defense change over the battle
+            - spd_trend_diff: Difference between players' special defense trends
+    """
     p1_start_df = p1_mean_spd_start(dataset)
     p2_start_df = p2_mean_spd_start(dataset)
     mean_last_df = mean_spd_last(dataset)
@@ -164,6 +282,21 @@ def spd_trend(dataset) -> pd.DataFrame:
 
 
 def spe_trend(dataset) -> pd.DataFrame:
+    """
+    Calculate the speed trend for both players between the start and the last state of the game.
+    P1_SPE_TREND = mean_spe_last - mean_spe_start
+    P2_SPE_TREND = mean_spe_last - mean_spe_start
+    SPE_TREND_DIFF = P1_SPE_TREND - P2_SPE_TREND
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_spe_trend: Player 1's speed change over the battle
+            - p2_spe_trend: Player 2's speed change over the battle
+            - spe_trend_diff: Difference between players' speed trends
+    """
     p1_start_df = p1_mean_spe_start(dataset)
     p2_start_df = p2_mean_spe_start(dataset)
     mean_last_df = mean_spe_last(dataset)
@@ -201,6 +334,13 @@ def p2_mean_atk_start(dataset) -> pd.DataFrame:
     '''
     Calculate the mean base attack for the team of p2 at the start of the game for all games.
     Unknown pokemons are replaced by the global mean base attack.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p2_mean_atk_start: Player 2's mean attack at battle start
     '''
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_atk = ext_u.mean_atk_database(pkmn_database)
@@ -214,6 +354,17 @@ def p2_mean_atk_start(dataset) -> pd.DataFrame:
     return pd.DataFrame({'p2_mean_atk_start': p2_mean_atk})
 
 def p1_mean_def_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base defense for the team of p1 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base defense.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p1_mean_def_start: Player 1's mean defense at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_def = ext_u.mean_def_database(pkmn_database)
     p1_mean_def = []
@@ -228,6 +379,17 @@ def p1_mean_def_start(dataset) -> pd.DataFrame:
 
 
 def p2_mean_def_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base defense for the team of p2 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base defense.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p2_mean_def_start: Player 2's mean defense at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_def = ext_u.mean_def_database(pkmn_database)
     p2_mean_def = []
@@ -239,6 +401,17 @@ def p2_mean_def_start(dataset) -> pd.DataFrame:
 
     return pd.DataFrame({'p2_mean_def_start': p2_mean_def})
 def p1_mean_spa_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base special attack for the team of p1 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base special attack.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p1_mean_spa_start: Player 1's mean special attack at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_spa = ext_u.mean_spa_database(pkmn_database)
     p1_mean_spa = []
@@ -253,6 +426,17 @@ def p1_mean_spa_start(dataset) -> pd.DataFrame:
 
 
 def p2_mean_spa_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base special attack for the team of p2 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base special attack.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p2_mean_spa_start: Player 2's mean special attack at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_spa = ext_u.mean_spa_database(pkmn_database)
     p2_mean_spa = []
@@ -264,6 +448,17 @@ def p2_mean_spa_start(dataset) -> pd.DataFrame:
 
     return pd.DataFrame({'p2_mean_spa_start': p2_mean_spa})
 def p1_mean_spd_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base special defense for the team of p1 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base special defense.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p1_mean_spd_start: Player 1's mean special defense at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_spd = ext_u.mean_spd_database(pkmn_database)
     p1_mean_spd = []
@@ -278,6 +473,17 @@ def p1_mean_spd_start(dataset) -> pd.DataFrame:
 
 
 def p2_mean_spd_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base special defense for the team of p2 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base special defense.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p2_mean_spd_start: Player 2's mean special defense at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_spd = ext_u.mean_spd_database(pkmn_database)
     p2_mean_spd = []
@@ -289,6 +495,17 @@ def p2_mean_spd_start(dataset) -> pd.DataFrame:
 
     return pd.DataFrame({'p2_mean_spd_start': p2_mean_spd})
 def p1_mean_spe_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base speed for the team of p1 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base speed.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p1_mean_spe_start: Player 1's mean speed at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_spe = ext_u.mean_spe_database(pkmn_database)
     p1_mean_spe = []
@@ -303,6 +520,17 @@ def p1_mean_spe_start(dataset) -> pd.DataFrame:
 
 
 def p2_mean_spe_start(dataset) -> pd.DataFrame:
+    """
+    Calculate the mean base speed for the team of p2 at the start of the game for all games.
+    Unknown pokemons are replaced by the global mean base speed.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with column:
+            - p2_mean_spe_start: Player 2's mean speed at battle start
+    """
     pkmn_database = csv_u.open_pkmn_database_csv()
     mean_spe = ext_u.mean_spe_database(pkmn_database)
     p2_mean_spe = []
@@ -2473,7 +2701,16 @@ def mean_crit_2(dataset) -> pd.DataFrame: #feature
 def crit_aggressive(dataset) -> pd.DataFrame:
     """
     Combines critical hit frequency with offensive aggressiveness.
-    High value means that the player who effectively leverages critical hits in an offensive way.
+    High value means that the player effectively leverages critical hits in an offensive way.
+    
+    Args:
+        dataset: List of battle dictionaries
+        
+    Returns:
+        DataFrame with columns:
+            - p1_crit_aggressive: Player 1's critical × offensive ratio
+            - p2_crit_aggressive: Player 2's critical × offensive ratio
+            - crit_aggressive_diff: Difference between players
     """
     mean_crit_df = mean_crit(dataset)
     p1_offensive_ratio_df = fdb.p1_offensive_ratio(dataset)

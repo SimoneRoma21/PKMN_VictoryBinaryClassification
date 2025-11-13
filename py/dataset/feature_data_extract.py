@@ -13,7 +13,7 @@ from . import feature_status as fs
 from . import feature_weakness as fw
 
 class Feature(Enum):
-    """Enum con tutte le feature disponibili"""
+    """Enum with all available features"""
 
 
     OFFENSE_SPEED_PRODUCT = "atk_spe_prod"
@@ -184,8 +184,8 @@ class Feature(Enum):
 
 class FeatureRegistry:
     """
-    Registry che mappa ogni feature alla sua funzione di estrazione.
-    Gestisce automaticamente le dipendenze tra feature.
+    Registry that maps each feature to its extraction function.
+    Automatically handles dependencies between features.
     """
     
     def __init__(self):
@@ -193,11 +193,11 @@ class FeatureRegistry:
         self._register_all_extractors()
 
     def get_extractor(self, feature: Feature) -> Callable:
-        """Ritorna l'extractor per una feature"""
+        """Returns the extractor for a feature"""
         return self._extractors.get(feature)
     
     def _register_all_extractors(self):
-        """Registra tutti gli extractor disponibili"""
+        """Registers all available extractors"""
 
         self._extractors[Feature.OFFENSE_SPEED_PRODUCT] = fbs.atk_spe_prod
         
@@ -367,72 +367,4 @@ class FeatureRegistry:
 
 if __name__=="__main__":
     dataset=csv_u.open_train_json()
-    # pkmn_database=open_pkmn_database_csv()
-    #print(dataset[0]['battle_timeline'])
-    #extract_lead_velocity(dataset)
-    #print(pkmn_database(dataset))
-    #print(extract_all_pokemon_p2_seen(dataset))
-    #pkmn_database(dataset)
-
-    #open_pkmn_database_csv()
-
-    #
-
-    #print(pd.concat([extract_mean_spd_start(dataset,pkmn_database),extract_mean_spd_last(dataset,pkmn_database)],axis=1))
     
-    #print(extract_mean_hp_start(dataset,pkmn_database))
-    #print(extract_mean_hp_last(dataset,pkmn_database))
-
-    #print(pd.concat([extract_mean_hp_start(dataset,pkmn_database),extract_mean_hp_last(dataset,pkmn_database)],axis=1))
-    #print(pd.concat([p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),p1_mean_hp_start(dataset),p2_mean_hp_start(dataset),mean_hp_last(dataset),mean_spd_start(dataset),mean_spd_last(dataset)],axis=1))
-    #mhl=pd.concat([mean_hp_last(dataset),p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),pd.DataFrame({"player_won":[game['player_won'] for game in dataset]})],axis=1)
-    #print(mhl.iloc[4877])
-    #print(p1_alive_pkmn(dataset).iloc[4877:4880],"\n",p2_alive_pkmn(dataset).iloc[4877:4880])
-    #print(p1_alive_pkmn_try(dataset))
-    pd.set_option('display.max_colwidth',None)
-    #pd.set_option('display.max_rows',None)
-    #msl=mean_spd_last(dataset)
-    #print(msl.iloc[58])
-
-    #print(p2_mean_hp_start(dataset))
-    
-    #print(pd.concat([p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),mean_spe_start(dataset),mean_spe_last(dataset),mean_stats_start(dataset)],axis=1))
-    #print(mean_stats_start(dataset))
-
-    #print(pd.concat([p1_final_team_hp(dataset),p2_final_team_hp(dataset),final_team_hp_difference(dataset)],axis=1))
-    
-
-    #print(extract_types_from_team_p1(dataset[0]),"\n",extract_types_from_team_p2(dataset[0]))
-    #print(open_type_chart_json())
-    #print(weakness_teams(dataset))
-    #pkmn_weak_database()
-
-    #print(extract_all_pokemon_p1_teams(dataset)['types'][0])
-    #print(extract_all_pokemon_p2(dataset)['types'])
-    #print(open_pkmn_database_csv()['types'][0])
-
-    #print(pd.concat([weakness_teams_opt(dataset),weakness_teams(dataset)],axis=1))
-    #print(weakness_teams(dataset))
-    
-    #print(pd.concat([weakness_teams(dataset),weakness_teams_last(dataset),p1_alive_pkmn(dataset),p2_alive_pkmn(dataset)],axis=1))
-    #print(weakness_teams_last(dataset))
-    
-    #print(pd.concat([advantage_weak_start(dataset),advantage_weak_last(dataset)],axis=1))
-    #print(advantage_weak_last(dataset))
-    #print(mean_hp_difference_start(dataset))
-    #print(p1_alive_pkmn(dataset),p2_alive_pkmn(dataset),alive_pkmn_difference(dataset))
-    #print(mean_crit(dataset))
-    #print(pd.concat([p1_burned_pkmn(dataset),p2_burned_pkmn(dataset)],axis=1).iloc[9549])
-    #print(p1_burned_pkmn(dataset).sum()," \n",p2_burned_pkmn(dataset).sum())
-    #print(pd.concat([p1_psy_pkmn(dataset),p2_psy_pkmn(dataset)],axis=1))
-    #print(pd.concat([p1_pokemon_stab(dataset),p2_pokemon_stab(dataset)],axis=1))
-    #print(pd.concat([p1_reflect_ratio(dataset),p2_reflect_ratio(dataset),p1_lightscreen_ratio(dataset),p2_lightscreen_ratio(dataset)],axis=1))
-    #print(pd.concat([p1_reflect_ratio(dataset).sum(),p2_reflect_ratio(dataset).sum(),p1_lightscreen_ratio(dataset).sum(),p2_lightscreen_ratio(dataset).sum()],axis=1))
-    
-   
-    #reflect active
-    #lightscreen active
-
-    #data=pd.concat([mean_stats_last(dataset).rename(columns={'mean_stats_last_difference':'mean_def_last_difference1'}),mean_stats_last_2(dataset).rename(columns={'mean_stats_last_difference':'mean_def_last_difference2'})],axis=1)
-    #print(data[data['mean_def_last_difference1']!=data['mean_def_last_difference2']])
-    #print(mean_spa_last(dataset))
