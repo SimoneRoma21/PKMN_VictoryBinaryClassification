@@ -17,23 +17,44 @@ def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
-        #----Feature Base Stats Pokemon----#
-<<<<<<< Updated upstream
-=======
-        #Feature.P1_MEAN_HP_START, #*
-        #Feature.P2_MEAN_HP_START, 
-        #Feature.MEAN_HP_DIFFERENCE_START,
-        #Feature.LEAD_SPD,
-        #Feature.MEAN_SPE_START,  
-        #Feature.MEAN_ATK_START,  
-        #Feature.MEAN_DEF_START,  
-        #Feature.MEAN_SPA_START,  
-        #Feature.MEAN_SPD_START,  
-        #Feature.P1_MEAN_SPE_START,
-        #Feature.P2_MEAN_SPE_START,
-        #Feature.MEAN_SPE_DIFFERENCE_START,
-        #Feature.MEAN_STATS_START, 
->>>>>>> Stashed changes
+        Feature.HP_BULK_RATIO,
+        Feature.SPE_ATK_RATIO,
+        Feature.OFF_DEF_RATIO,
+        Feature.OFF_SPAD_RATIO,
+        Feature.CRIT_AGGR_RATIO,
+
+        # Feature.OFFENSE_SPEED_PRODUCT,
+        # --- HP Trend ---
+        # Feature.P1_HP_TREND,
+        # Feature.P2_HP_TREND,
+        Feature.HP_TREND_DIFF,
+
+        # --- ATK Trend ---
+        # Feature.P1_ATK_TREND,
+        # Feature.P2_ATK_TREND,
+        Feature.ATK_TREND_DIFF,
+
+        # --- DEF Trend ---
+        # Feature.P1_DEF_TREND,
+        # Feature.P2_DEF_TREND,
+        #Feature.DEF_TREND_DIFF,
+
+        # --- SPA Trend ---
+        # Feature.P1_SPA_TREND,
+        # Feature.P2_SPA_TREND,
+        Feature.SPA_TREND_DIFF,
+
+        # --- SPD Trend ---
+        # Feature.P1_SPD_TREND,
+        # Feature.P2_SPD_TREND,
+        #Feature.SPD_TREND_DIFF,
+
+        # --- SPE Trend ---
+        # Feature.P1_SPE_TREND,
+        # Feature.P2_SPE_TREND,
+        Feature.SPE_TREND_DIFF,
+
+        
         Feature.MEAN_SPE_LAST, #*
         
         Feature.MEAN_HP_LAST, #*
@@ -42,32 +63,20 @@ def main():
         Feature.P2_FINAL_TEAM_HP, #*
 
         Feature.MEAN_ATK_LAST, #* 
-        Feature.MEAN_DEF_LAST, #*
+        #Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
-        Feature.MEAN_SPD_LAST, #*
+        #Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
 
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
-<<<<<<< Updated upstream
         
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-=======
-        #Feature.ALIVE_PKMN_DIFFERENCE, #*
-        #Feature.P1_PKMN_STAB, 
-        #Feature.P2_PKMN_STAB, 
-        Feature.P1_SWITCHES_COUNT, #*
-        Feature.P2_SWITCHES_COUNT, #*
-        #Feature.SWITCHES_DIFFERENCE, #*
-        #Feature.P1_STATUS_INFLICTED, 
-        #Feature.P2_STATUS_INFLICTED, 
-        #Feature.STATUS_INFLICTED_DIFFERENCE, 
+    
         
-        #Feature.P1_FIRST_FAINT_TURN,
->>>>>>> Stashed changes
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
         Feature.P1_MAX_DEBUFF_RECEIVED,
@@ -110,18 +119,7 @@ def main():
         Feature.P1_PKMN_TOXIC, #*
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
-        Feature.P2_PKMN_FIRESPIN, #*
-        
-        
-
-        #----Feature Weaknesses of Teams / Team Composition----#
-        #Feature.WEAKNESS_TEAMS_START, 
-        #Feature.WEAKNESS_TEAMS_LAST, 
-        #Feature.ADVANTAGE_WEAK_START, 
-        #Feature.ADVANTAGE_WEAK_LAST, 
-        #Feature.P1_PSY_PKMN,
-        #Feature.P2_PSY_PKMN
-       
+        Feature.P2_PKMN_FIRESPIN, #*           
 ]
     feature_pipeline = FeaturePipeline(selected_features)
 
@@ -154,7 +152,7 @@ def main():
     
     # Pipeline with XGBoost
     pipeline = Pipeline([
-    ('classifier', XGBClassifier(eval_metric='logloss', random_state=42, use_label_encoder = False))
+    ('classifier', XGBClassifier(eval_metric='logloss', random_state=42))
     # ('classifier', XGBClassifier(eval_metric='logloss',random_state=42, colsample_bytree= 0.8, gamma = 0, 
     #                       learning_rate=0.05, max_depth=3, min_child_weight=5, n_estimators=600, reg_alpha=0, reg_lambda=2, subsample=0.8)),
     ])
@@ -214,8 +212,8 @@ def main():
     # print(importances)
 
     # print(train_df.corr())
-    # print("Best CV score:", grid.best_score_)
-    # print("Best params:", grid.best_params_)
+    print("Best CV score:", grid.best_score_)
+    print("Best params:", grid.best_params_)
 
     # ------------------ Evaluate on Test Set -----------------
 
@@ -248,5 +246,8 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
 
 if __name__ == "__main__":
     main()
+
+
+    # Best params: {'classifier__colsample_bytree': 1.0, 'classifier__gamma': 0.3, 'classifier__learning_rate': 0.05, 'classifier__max_depth': 3, 'classifier__min_child_weight': 1, 'classifier__n_estimators': 600, 'classifier__reg_alpha': 0.1, 'classifier__reg_lambda': 2, 'classifier__subsample': 0.8}
 
     #Best params: {'classifier__colsample_bytree': 0.8, 'classifier__gamma': 0, 'classifier__learning_rate': 0.05, 'classifier__max_depth': 3, 'classifier__min_child_weight': 5, 'classifier__n_estimators': 600, 'classifier__reg_alpha': 0, 'classifier__reg_lambda': 2, 'classifier__subsample': 0.8}

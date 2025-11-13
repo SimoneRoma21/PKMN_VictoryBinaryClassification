@@ -4,7 +4,7 @@ from dataset.dataset_construction import Feature, FeaturePipeline
 from dataset.csv_utilities import *
 from dataset.extract_utilities import *
 from ModelTrainer import ModelTrainer
-from sklearn.model_selection import train_test_split,GridSearchCV
+from sklearn.model_selection import train_test_split,GridSearchCV, StratifiedKFold
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier, StackingClassifier
 from xgboost import XGBClassifier
@@ -14,6 +14,7 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import RidgeClassifier, SGDClassifier, PassiveAggressiveClassifier, Perceptron
+from sklearn.calibration import CalibratedClassifierCV
 
 
 
@@ -21,6 +22,44 @@ def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
+        Feature.HP_BULK_RATIO,
+        Feature.SPE_ATK_RATIO,
+        Feature.OFF_DEF_RATIO,
+        Feature.OFF_SPAD_RATIO,
+        Feature.CRIT_AGGR_RATIO,
+
+        # Feature.OFFENSE_SPEED_PRODUCT,
+        # --- HP Trend ---
+        # Feature.P1_HP_TREND,
+        # Feature.P2_HP_TREND,
+        Feature.HP_TREND_DIFF,
+
+        # --- ATK Trend ---
+        # Feature.P1_ATK_TREND,
+        # Feature.P2_ATK_TREND,
+        Feature.ATK_TREND_DIFF,
+
+        # --- DEF Trend ---
+        # Feature.P1_DEF_TREND,
+        # Feature.P2_DEF_TREND,
+        #Feature.DEF_TREND_DIFF,
+
+        # --- SPA Trend ---
+        # Feature.P1_SPA_TREND,
+        # Feature.P2_SPA_TREND,
+        Feature.SPA_TREND_DIFF,
+
+        # --- SPD Trend ---
+        # Feature.P1_SPD_TREND,
+        # Feature.P2_SPD_TREND,
+        #Feature.SPD_TREND_DIFF,
+
+        # --- SPE Trend ---
+        # Feature.P1_SPE_TREND,
+        # Feature.P2_SPE_TREND,
+        Feature.SPE_TREND_DIFF,
+
+        
         Feature.MEAN_SPE_LAST, #*
         
         Feature.MEAN_HP_LAST, #*
@@ -29,9 +68,9 @@ def main():
         Feature.P2_FINAL_TEAM_HP, #*
 
         Feature.MEAN_ATK_LAST, #* 
-        Feature.MEAN_DEF_LAST, #*
+        #Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
-        Feature.MEAN_SPD_LAST, #*
+        #Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
 
@@ -41,6 +80,8 @@ def main():
         
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
+    
+        
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
         Feature.P1_MAX_DEBUFF_RECEIVED,
@@ -83,17 +124,7 @@ def main():
         Feature.P1_PKMN_TOXIC, #*
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
-        Feature.P2_PKMN_FIRESPIN, #*
-        
-        
-
-        #----Feature Weaknesses of Teams / Team Composition----#
-        #Feature.WEAKNESS_TEAMS_START, 
-        #Feature.WEAKNESS_TEAMS_LAST, 
-        #Feature.ADVANTAGE_WEAK_START, 
-        #Feature.ADVANTAGE_WEAK_LAST, 
-        #Feature.P1_PSY_PKMN,
-        #Feature.P2_PSY_PKMN
+        Feature.P2_PKMN_FIRESPIN, #*           
 ]
     feature_pipeline = FeaturePipeline(selected_features)
 
@@ -107,12 +138,12 @@ def main():
         for line in f:
             train_data.append(json.loads(line))
 
-    # Estrai le feature train_set
+    # Extract features from train_set
     print("\nExtracting features from training data...")
     train_df = feature_pipeline.extract_features(train_data)
     print("\nTraining features preview:")
     print(train_df.head())
-    # Salva il dataset in un file CSV
+    # Save in a csv file
     train_df.to_csv(train_out_path, index=False)
 
     #---------------Model Training and Evaluation Code------------------------
@@ -127,51 +158,79 @@ def main():
     # X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
     # X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
 
-    #Best models with best hyperparameters
+    # Pipelines: Scaling only the linear models
+    pipe_lr = Pipeline([
+        ('scaler', RobustScaler()),
+        ('lr', LogisticRegression(max_iter=1000,C=1,penalty='l1',solver='liblinear',random_state=42))
+    ])
+
+    pipe_sgd = Pipeline([
+        ('scaler', RobustScaler()),
+        ('sgd', SGDClassifier(
+            loss='modified_huber',
+            penalty='l1',
+            alpha=0.001,
+            learning_rate='adaptive',
+            eta0=0.01,
+            max_iter=1000,
+            tol=0.001,
+            random_state=42
+        ))
+    ])
+
+    # 3) Tree and Boosting
+    xgb = XGBClassifier(
+        eval_metric='logloss',
+        random_state=42,
+        colsample_bytree=1.0,
+        gamma=0.3,
+        learning_rate=0.05,
+        max_depth=3,
+        min_child_weight=1,
+        n_estimators=600,
+        reg_alpha=0.1,
+        reg_lambda=2,
+        subsample=0.8
+    )
+
+    rf = RandomForestClassifier(random_state=42, bootstrap=True,
+                                max_depth=12, max_features='sqrt',
+                                min_samples_leaf=3, min_samples_split=10, n_estimators=400)
+
+    # Base estimators
     base_estimators = [
-    ('lr', LogisticRegression(max_iter=2000,C=1,penalty='l1',solver='saga',random_state=42)),
-    ('xgb', XGBClassifier(eval_metric='logloss',random_state=42, colsample_bytree= 0.8, gamma = 0, 
-                          learning_rate=0.05, max_depth=3, min_child_weight=5, n_estimators=600, reg_alpha=0, reg_lambda=2, subsample=0.8)),
-    ('rf', RandomForestClassifier(random_state=42,bootstrap=False,max_depth=None,max_features='sqrt',min_samples_leaf=2,min_samples_split=5,n_estimators=400)),
-    ('sgd', SGDClassifier(loss='log_loss', penalty='l2', max_iter=2000, random_state=42))
-    # ('svm', SVC(probability=True, kernel='rbf',C=10,gamma=0.001,random_state=42))
+        ('lr', pipe_lr),
+        ('xgb', xgb),
+        ('rf', rf),
+        ('sgd', pipe_sgd)
     ]
 
-    # base_estimators = [
-    # ('lr', LogisticRegression(max_iter=2000,C=1,penalty='l1',solver='saga',random_state=42)),
-    # ('tree', DecisionTreeClassifier(max_depth=None, random_state=42)),
-    # ('svm', SVC(probability=True, kernel='rbf',C=10,gamma=0.001,random_state=42))
-    # ]
+    # Meta model with gridSearchCV for the hyperparameters
+    meta = LogisticRegression(random_state=42)
 
-    
-
-    meta_model = LogisticRegression(max_iter=2000,random_state=42)
-    # meta_model = XGBClassifier(
-    #     n_estimators=200,
-    #     learning_rate=0.05,
-    #     max_depth=3,
-    #     subsample=0.8,
-    #     colsample_bytree=0.8,
-    #     random_state=42,
-    #     eval_metric='logloss'
-    # )
-
-    stacking_model = StackingClassifier(
-    estimators=base_estimators,
-    final_estimator=meta_model,
-    cv=5,                 # cross-validation interna per generare predizioni pulite
-    stack_method='auto',  # usa predict_proba se disponibile
-    n_jobs=-1
+    stack = StackingClassifier(
+        estimators=base_estimators,
+        final_estimator=meta,
+        cv=5,
+        stack_method='predict_proba',   
+        n_jobs=-1,
+        passthrough=False              
     )
-    trainer = ModelTrainer(stacking_model)
+    param_grid = {
+    'final_estimator__C': [0.01, 0.1, 1, 10, 100],
+    'final_estimator__penalty': ['l1', 'l2'],
+    'final_estimator__solver': ['liblinear', 'saga'],
+    'final_estimator__max_iter': [1000, 2000]
+    }
+
+    gs = GridSearchCV(stack, param_grid, cv=5, scoring='roc_auc', n_jobs=-1)
+
+    trainer = ModelTrainer(gs)
     trainer.train(X_tr,y_tr)
     trainer.evaluate(X_val,y_val)
 
-    # scaler = StandardScaler()
-    # X_tr_scal = scaler.fit_transform(X_tr)
-    # X_val_scal = scaler.fit_transform(X_val)
-    # trainer.train(X_tr_scal,y_tr)
-    # trainer.evaluate(X_val_scal,y_val)
+    print("Best CV score:", gs.best_score_)
+    print("Best params:", gs.best_params_)
     
 
     
@@ -220,7 +279,9 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
         'battle_id': test_df['battle_id'],
         'player_won': predictions
     })
-    submission.to_csv('predict_csv/predictions_ModelStacking.csv', index=False)
+    submission.to_csv('predict_csv/predictions_ModelStacking_Submission3.csv', index=False)
+
+# {'final_estimator__C': 0.1, 'final_estimator__max_iter': 1000, 'final_estimator__penalty': 'l1', 'final_estimator__solver': 'saga'}
 
 if __name__ == "__main__":
     main()

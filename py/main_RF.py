@@ -17,6 +17,44 @@ def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
+        Feature.HP_BULK_RATIO,
+        Feature.SPE_ATK_RATIO,
+        Feature.OFF_DEF_RATIO,
+        Feature.OFF_SPAD_RATIO,
+        Feature.CRIT_AGGR_RATIO,
+
+        # Feature.OFFENSE_SPEED_PRODUCT,
+        # --- HP Trend ---
+        # Feature.P1_HP_TREND,
+        # Feature.P2_HP_TREND,
+        Feature.HP_TREND_DIFF,
+
+        # --- ATK Trend ---
+        # Feature.P1_ATK_TREND,
+        # Feature.P2_ATK_TREND,
+        Feature.ATK_TREND_DIFF,
+
+        # --- DEF Trend ---
+        # Feature.P1_DEF_TREND,
+        # Feature.P2_DEF_TREND,
+        #Feature.DEF_TREND_DIFF,
+
+        # --- SPA Trend ---
+        # Feature.P1_SPA_TREND,
+        # Feature.P2_SPA_TREND,
+        Feature.SPA_TREND_DIFF,
+
+        # --- SPD Trend ---
+        # Feature.P1_SPD_TREND,
+        # Feature.P2_SPD_TREND,
+        #Feature.SPD_TREND_DIFF,
+
+        # --- SPE Trend ---
+        # Feature.P1_SPE_TREND,
+        # Feature.P2_SPE_TREND,
+        Feature.SPE_TREND_DIFF,
+
+        
         Feature.MEAN_SPE_LAST, #*
         
         Feature.MEAN_HP_LAST, #*
@@ -25,9 +63,9 @@ def main():
         Feature.P2_FINAL_TEAM_HP, #*
 
         Feature.MEAN_ATK_LAST, #* 
-        Feature.MEAN_DEF_LAST, #*
+        #Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
-        Feature.MEAN_SPD_LAST, #*
+        #Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
 
@@ -38,7 +76,6 @@ def main():
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
     
-        
         
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
@@ -82,7 +119,7 @@ def main():
         Feature.P1_PKMN_TOXIC, #*
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
-        Feature.P2_PKMN_FIRESPIN, #*
+        Feature.P2_PKMN_FIRESPIN, #*           
        
 ]
     feature_pipeline = FeaturePipeline(selected_features)
@@ -124,12 +161,12 @@ def main():
     ])
 
     param_grid = {
-    'classifier__n_estimators': [100, 200, 400],
-    'classifier__max_depth': [None, 5, 10, 20],
-    'classifier__min_samples_split': [2, 5, 10],
-    'classifier__min_samples_leaf': [1, 2, 4],
+    'classifier__n_estimators': [200, 300,400],
+    'classifier__max_depth': [8, 10, 12],
+    'classifier__min_samples_split': [5, 10, 15],
+    'classifier__min_samples_leaf': [3, 5, 10],
     'classifier__max_features': ['sqrt', 'log2'],
-    'classifier__bootstrap': [True, False]
+    'classifier__bootstrap': [True]
 }
 
     
@@ -198,7 +235,6 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
 if __name__ == "__main__":
     main()
 
-    # Best params: {'classifier__bootstrap': False, 'classifier__max_depth': 20, 'classifier__max_features': 'log2', 'classifier__min_samples_leaf': 2, 'classifier__min_samples_split': 5, 'classifier__n_estimators': 400}
+    # Best params: {'classifier__bootstrap': True, 'classifier__max_depth': 12, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 3, 'classifier__min_samples_split': 10, 'classifier__n_estimators': 400}
 
-    #new dataset
-    # Best params: {'classifier__bootstrap': False, 'classifier__max_depth': None, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 2, 'classifier__min_samples_split': 5, 'classifier__n_estimators': 400}
+    # {'classifier__bootstrap': False, 'classifier__max_depth': 20, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 2, 'classifier__min_samples_split': 5, 'classifier__n_estimators': 400}
