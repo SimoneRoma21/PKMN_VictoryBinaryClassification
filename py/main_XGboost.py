@@ -1,9 +1,9 @@
 import json
 import pandas as pd
-from py.dataset.dataset_construction import Feature, FeaturePipeline
-from py.dataset.csv_utilities import *
-from py.dataset.extract_utilities import *
-from py.ModelTrainer import ModelTrainer
+from dataset.dataset_construction import Feature, FeaturePipeline
+from dataset.csv_utilities import *
+from dataset.extract_utilities import *
+from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
@@ -17,94 +17,75 @@ def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
 
+        #------Stats Features---------#
+        Feature.P1_FINAL_TEAM_HP, 
+        Feature.P2_FINAL_TEAM_HP, 
+        Feature.MEAN_SPE_LAST, 
+        Feature.MEAN_HP_LAST, 
+        Feature.MEAN_ATK_LAST, 
+        Feature.MEAN_SPA_LAST, 
+        Feature.MEAN_STATS_LAST, 
+        Feature.MEAN_CRIT,
+
+        #------Ratio on Stats Features--------#
         Feature.HP_BULK_RATIO,
         Feature.SPE_ATK_RATIO,
         Feature.OFF_DEF_RATIO,
         Feature.OFF_SPAD_RATIO,
-        Feature.CRIT_AGGR_RATIO,
 
-        # Feature.OFFENSE_SPEED_PRODUCT,
-        # --- HP Trend ---
-        # Feature.P1_HP_TREND,
-        # Feature.P2_HP_TREND,
+        #-------Differential Features on Stats---#
         Feature.HP_TREND_DIFF,
-
-        # --- ATK Trend ---
-        # Feature.P1_ATK_TREND,
-        # Feature.P2_ATK_TREND,
         Feature.ATK_TREND_DIFF,
-
-        # --- DEF Trend ---
-        # Feature.P1_DEF_TREND,
-        # Feature.P2_DEF_TREND,
-        #Feature.DEF_TREND_DIFF,
-
-        # --- SPA Trend ---
-        # Feature.P1_SPA_TREND,
-        # Feature.P2_SPA_TREND,
         Feature.SPA_TREND_DIFF,
-
-        # --- SPD Trend ---
-        # Feature.P1_SPD_TREND,
-        # Feature.P2_SPD_TREND,
-        #Feature.SPD_TREND_DIFF,
-
-        # --- SPE Trend ---
-        # Feature.P1_SPE_TREND,
-        # Feature.P2_SPE_TREND,
         Feature.SPE_TREND_DIFF,
-
-        
-        Feature.MEAN_SPE_LAST, #*
-        
-        Feature.MEAN_HP_LAST, #*
-       
-        Feature.P1_FINAL_TEAM_HP, #*
-        Feature.P2_FINAL_TEAM_HP, #*
-
-        Feature.MEAN_ATK_LAST, #* 
-        #Feature.MEAN_DEF_LAST, #*
-        Feature.MEAN_SPA_LAST, #*
-        #Feature.MEAN_SPD_LAST, #*
-        Feature.MEAN_STATS_LAST, #*
-        Feature.MEAN_CRIT, #*
-
-        #---Feature Infos During Battle----#
-        Feature.P1_ALIVE_PKMN, #*
-        Feature.P2_ALIVE_PKMN, #*
-        
-        Feature.P1_SWITCHES_COUNT, #*
-        Feature.P2_SWITCHES_COUNT, #*
     
-        
-        Feature.P1_AVG_HP_WHEN_SWITCHING, #*
-        Feature.P2_AVG_HP_WHEN_SWITCHING, #*
+        #---Feature Infos During Battle----#
+        Feature.P1_ALIVE_PKMN, 
+        Feature.P2_ALIVE_PKMN, 
+        Feature.P1_SWITCHES_COUNT, 
+        Feature.P2_SWITCHES_COUNT,
+    
+        Feature.P1_AVG_HP_WHEN_SWITCHING, 
+        Feature.P2_AVG_HP_WHEN_SWITCHING, 
         Feature.P1_MAX_DEBUFF_RECEIVED,
         Feature.P2_MAX_DEBUFF_RECEIVED,
-        Feature.P1_AVG_MOVE_POWER, #*
-        Feature.P2_AVG_MOVE_POWER, #*
-        Feature.AVG_MOVE_POWER_DIFFERENCE, #*
-        Feature.P1_OFFENSIVE_RATIO, #*
-        Feature.P2_OFFENSIVE_RATIO, #*
-        Feature.OFFENSIVE_RATIO_DIFFERENCE, #*
-        Feature.P1_MOVED_FIRST_COUNT, #*
-        Feature.P2_MOVED_FIRST_COUNT, #*
-        Feature.P1_SWITCHES_COUNT, #*
-        Feature.P2_SWITCHES_COUNT, #*
-        Feature.P1_PKMN_REFLECT, #*
-        Feature.P2_PKMN_REFLECT, #*
-        Feature.P1_PKMN_REST, #*
-        Feature.P2_PKMN_REST, #*
-        Feature.P1_PKMN_EXPLOSION, #*
-        Feature.P2_PKMN_EXPLOSION, #*
-        Feature.P1_PKMN_THUNDERWAVE, #*
-        Feature.P2_PKMN_THUNDERWAVE, #*
-        Feature.P1_PKMN_RECOVER, #*
-        Feature.P2_PKMN_RECOVER, #*
-        Feature.P1_PKMN_TOXIC, #*
-        Feature.P2_PKMN_TOXIC, #*
-        Feature.P1_PKMN_FIRESPIN, #*
-        Feature.P2_PKMN_FIRESPIN, #*           
+        Feature.P1_AVG_MOVE_POWER, 
+        Feature.P2_AVG_MOVE_POWER, 
+        Feature.AVG_MOVE_POWER_DIFFERENCE, 
+        Feature.P1_OFFENSIVE_RATIO, 
+        Feature.P2_OFFENSIVE_RATIO, 
+        Feature.OFFENSIVE_RATIO_DIFFERENCE, 
+        Feature.P1_MOVED_FIRST_COUNT, 
+        Feature.P2_MOVED_FIRST_COUNT, 
+        Feature.SPEED_ADVANTAGE_RATIO, 
+
+        #----Feature Status of Pokemons----#
+        Feature.P1_FROZEN_PKMN, 
+        Feature.P2_FROZEN_PKMN, 
+        Feature.P1_PARALIZED_PKMN, 
+        Feature.P2_PARALIZED_PKMN, 
+        Feature.P1_SLEEP_PKMN, 
+        Feature.P2_SLEEP_PKMN, 
+        Feature.P1_POISON_PKMN, 
+        Feature.P2_POISON_PKMN,  
+        Feature.P1_BURNED_PKMN, 
+        Feature.P2_BURNED_PKMN, 
+        
+        #----Feature Pokemon Moves----#
+        Feature.P1_PKMN_REFLECT, 
+        Feature.P2_PKMN_REFLECT, 
+        Feature.P1_PKMN_REST, 
+        Feature.P2_PKMN_REST, 
+        Feature.P1_PKMN_EXPLOSION, 
+        Feature.P2_PKMN_EXPLOSION, 
+        Feature.P1_PKMN_THUNDERWAVE, 
+        Feature.P2_PKMN_THUNDERWAVE, 
+        Feature.P1_PKMN_RECOVER, 
+        Feature.P2_PKMN_RECOVER, 
+        Feature.P1_PKMN_TOXIC, 
+        Feature.P2_PKMN_TOXIC, 
+        Feature.P1_PKMN_FIRESPIN, 
+        Feature.P2_PKMN_FIRESPIN
 ]
     feature_pipeline = FeaturePipeline(selected_features)
 
@@ -232,7 +213,8 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
 if __name__ == "__main__":
     main()
 
-
-    # Best params: {'classifier__colsample_bytree': 1.0, 'classifier__gamma': 0.3, 'classifier__learning_rate': 0.05, 'classifier__max_depth': 3, 'classifier__min_child_weight': 1, 'classifier__n_estimators': 600, 'classifier__reg_alpha': 0.1, 'classifier__reg_lambda': 2, 'classifier__subsample': 0.8}
-
     #Best params: {'classifier__colsample_bytree': 0.8, 'classifier__gamma': 0, 'classifier__learning_rate': 0.05, 'classifier__max_depth': 3, 'classifier__min_child_weight': 5, 'classifier__n_estimators': 600, 'classifier__reg_alpha': 0, 'classifier__reg_lambda': 2, 'classifier__subsample': 0.8}
+
+    # Features def
+    # Best params: {'classifier__colsample_bytree': 0.8, 'classifier__gamma': 0.3, 'classifier__learning_rate': 0.05, 'classifier__max_depth': 3, 'classifier__min_child_weight': 5, 'classifier__n_estimators': 400, 'classifier__reg_alpha': 0, 'classifier__reg_lambda': 2, 'classifier__subsample': 0.8}
+
