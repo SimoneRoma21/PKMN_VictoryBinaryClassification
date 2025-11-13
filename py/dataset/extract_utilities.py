@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-import dataset.csv_utilities as csv_u
+from . import csv_utilities as csv_u
 
 
 def extract_all_pokemon_p1_teams(dataset) -> pd.DataFrame:

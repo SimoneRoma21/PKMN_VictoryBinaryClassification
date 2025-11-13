@@ -1,12 +1,14 @@
 import json
 import pandas as pd
-from dataset.dataset_construction import Feature, FeaturePipeline
-from dataset.csv_utilities import *
-from dataset.extract_utilities import *
-from ModelTrainer import ModelTrainer
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.linear_model import SGDClassifier
-from sklearn.preprocessing import RobustScaler
+from py.dataset.dataset_construction import Feature, FeaturePipeline
+from py.dataset.csv_utilities import *
+from py.dataset.extract_utilities import *
+from py.ModelTrainer import ModelTrainer
+from sklearn.model_selection import train_test_split,GridSearchCV
+from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
+from sklearn.ensemble import RandomForestClassifier
+#from xgboost import XGBClassifier
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 
 def main():

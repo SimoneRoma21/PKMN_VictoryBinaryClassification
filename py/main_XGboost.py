@@ -1,9 +1,9 @@
 import json
 import pandas as pd
-from dataset.dataset_construction import Feature, FeaturePipeline
-from dataset.csv_utilities import *
-from dataset.extract_utilities import *
-from ModelTrainer import ModelTrainer
+from py.dataset.dataset_construction import Feature, FeaturePipeline
+from py.dataset.csv_utilities import *
+from py.dataset.extract_utilities import *
+from py.ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
@@ -89,23 +89,8 @@ def main():
         Feature.OFFENSIVE_RATIO_DIFFERENCE, #*
         Feature.P1_MOVED_FIRST_COUNT, #*
         Feature.P2_MOVED_FIRST_COUNT, #*
-        Feature.SPEED_ADVANTAGE_RATIO, #*
-
-       
-        
-        #----Feature Status of Pokemons----#
-        Feature.P1_FROZEN_PKMN, #*
-        Feature.P2_FROZEN_PKMN, #*
-        Feature.P1_PARALIZED_PKMN, #*
-        Feature.P2_PARALIZED_PKMN, #*
-        Feature.P1_SLEEP_PKMN, #*
-        Feature.P2_SLEEP_PKMN, #*
-        Feature.P1_POISON_PKMN, #*
-        Feature.P2_POISON_PKMN, #* 
-        Feature.P1_BURNED_PKMN, #*
-        Feature.P2_BURNED_PKMN, #*
-        
-        #----Feature Pokemon Moves----#
+        Feature.P1_SWITCHES_COUNT, #*
+        Feature.P2_SWITCHES_COUNT, #*
         Feature.P1_PKMN_REFLECT, #*
         Feature.P2_PKMN_REFLECT, #*
         Feature.P1_PKMN_REST, #*

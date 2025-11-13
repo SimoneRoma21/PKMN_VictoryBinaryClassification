@@ -23,7 +23,7 @@ def main():
         Feature.SPE_ATK_RATIO,
         Feature.OFF_DEF_RATIO,
         Feature.OFF_SPAD_RATIO,
-        Feature.CRIT_AGGR_RATIO,
+        #Feature.CRIT_AGGR_RATIO,
 
         # Feature.OFFENSE_SPEED_PRODUCT,
         # --- HP Trend ---
@@ -156,12 +156,13 @@ def main():
 
     X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
-    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
+    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=210978)
     
     # Pipeline with scaler and model
     print("\nCreating pipeline with StandardScaler and LogisticRegression...")
     pipeline = Pipeline([
-        ('scaler',StandardScaler()), #Better
+        ('scaler',RobustScaler()),
+        #('scaler',StandardScaler()), #Better
         #('scaler',MinMaxScaler()),
         ('classifier', LogisticRegression(random_state=42, max_iter=2000)),
         #('classifier', LogisticRegression(random_state=210978, max_iter=2000))
@@ -221,7 +222,7 @@ def main():
     plt.figure(figsize=(12, 12))
     sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)
     plt.title("Feature Correlation Matrix", fontsize=14)
-    plt.show()
+    #plt.show()
     
 
 def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):

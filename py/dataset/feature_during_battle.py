@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from dataset.csv_utilities import *
+from .csv_utilities import *
 
 
 
