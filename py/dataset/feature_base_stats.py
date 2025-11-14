@@ -121,13 +121,6 @@ def atk_spe_prod(dataset) -> pd.DataFrame:
 
     return df
 
-# def crit_agg_ratio(dataset) -> pd.DataFrame:
-#     critM = mean_crit(dataset)
-    
-
-
-
-
 
 # Feature Trend
 def hp_trend(dataset) -> pd.DataFrame:

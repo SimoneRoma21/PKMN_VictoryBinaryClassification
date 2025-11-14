@@ -18,7 +18,7 @@ def main():
     selected_features = [
 
         #----Feature Base Stats Pokemon----#
-        Feature.P1_MEAN_HP_START, #*
+        Feature.P1_MEAN_HP_START, 
         #Feature.P2_MEAN_HP_START, 
         #Feature.MEAN_HP_DIFFERENCE_START,
         #Feature.LEAD_SPD,
@@ -31,81 +31,81 @@ def main():
         #Feature.P2_MEAN_SPE_START,
         #Feature.MEAN_SPE_DIFFERENCE_START,
         #Feature.MEAN_STATS_START, 
-        Feature.MEAN_SPE_LAST, #*
+        Feature.MEAN_SPE_LAST, 
         #Feature.P1_MEAN_SPE_LAST,
         #Feature.P2_MEAN_SPE_LAST,
         #Feature.MEAN_SPE_DIFFERENCE_LAST,
-        Feature.MEAN_HP_LAST, #*
+        Feature.MEAN_HP_LAST, 
         #Feature.P1_MEAN_HP_LAST,
         #Feature.P2_MEAN_HP_LAST,
         #Feature.MEAN_HP_DIFFERENCE_LAST,
-        Feature.P1_FINAL_TEAM_HP, #*
-        Feature.P2_FINAL_TEAM_HP, #*
-        Feature.FINAL_TEAM_HP_DIFFERENCE, #*
-        Feature.MEAN_ATK_LAST, #* 
-        Feature.MEAN_DEF_LAST, #*
-        Feature.MEAN_SPA_LAST, #*
-        Feature.MEAN_SPD_LAST, #*
-        Feature.MEAN_STATS_LAST, #*
-        Feature.MEAN_CRIT, #*
+        Feature.P1_FINAL_TEAM_HP, 
+        Feature.P2_FINAL_TEAM_HP, 
+        Feature.FINAL_TEAM_HP_DIFFERENCE, 
+        Feature.MEAN_ATK_LAST,  
+        Feature.MEAN_DEF_LAST, 
+        Feature.MEAN_SPA_LAST, 
+        Feature.MEAN_SPD_LAST, 
+        Feature.MEAN_STATS_LAST, 
+        Feature.MEAN_CRIT, 
 
         #---Feature Infos During Battle----#
-        Feature.P1_ALIVE_PKMN, #*
-        Feature.P2_ALIVE_PKMN, #*
-        Feature.ALIVE_PKMN_DIFFERENCE, #*
+        Feature.P1_ALIVE_PKMN, 
+        Feature.P2_ALIVE_PKMN, 
+        Feature.ALIVE_PKMN_DIFFERENCE, 
         #Feature.P1_PKMN_STAB, 
         #Feature.P2_PKMN_STAB, 
-        Feature.P1_SWITCHES_COUNT, #*
-        Feature.P2_SWITCHES_COUNT, #*
-        Feature.SWITCHES_DIFFERENCE, #*
+        Feature.P1_SWITCHES_COUNT, 
+        Feature.P2_SWITCHES_COUNT, 
+        Feature.SWITCHES_DIFFERENCE, 
         #Feature.P1_STATUS_INFLICTED, 
         #Feature.P2_STATUS_INFLICTED, 
         #Feature.STATUS_INFLICTED_DIFFERENCE, 
         
         #Feature.P1_FIRST_FAINT_TURN,
-        Feature.P1_AVG_HP_WHEN_SWITCHING, #*
-        Feature.P2_AVG_HP_WHEN_SWITCHING, #*
+        Feature.P1_AVG_HP_WHEN_SWITCHING, 
+        Feature.P2_AVG_HP_WHEN_SWITCHING, 
         #Feature.P1_MAX_DEBUFF_RECEIVED,
         #Feature.P2_MAX_DEBUFF_RECEIVED,
-        Feature.P1_AVG_MOVE_POWER, #*
-        Feature.P2_AVG_MOVE_POWER, #*
-        Feature.AVG_MOVE_POWER_DIFFERENCE, #*
-        Feature.P1_OFFENSIVE_RATIO, #*
-        Feature.P2_OFFENSIVE_RATIO, #*
-        Feature.OFFENSIVE_RATIO_DIFFERENCE, #*
-        Feature.P1_MOVED_FIRST_COUNT, #*
-        Feature.P2_MOVED_FIRST_COUNT, #*
-        Feature.SPEED_ADVANTAGE_RATIO, #*
+        Feature.P1_AVG_MOVE_POWER, 
+        Feature.P2_AVG_MOVE_POWER, 
+        Feature.AVG_MOVE_POWER_DIFFERENCE, 
+        Feature.P1_OFFENSIVE_RATIO, 
+        Feature.P2_OFFENSIVE_RATIO, 
+        Feature.OFFENSIVE_RATIO_DIFFERENCE, 
+        Feature.P1_MOVED_FIRST_COUNT, 
+        Feature.P2_MOVED_FIRST_COUNT, 
+        Feature.SPEED_ADVANTAGE_RATIO, 
 
        
         
         #----Feature Status of Pokemons----#
-        Feature.P1_FROZEN_PKMN, #*
-        Feature.P2_FROZEN_PKMN, #*
-        Feature.P1_PARALIZED_PKMN, #*
-        Feature.P2_PARALIZED_PKMN, #*
-        Feature.P1_SLEEP_PKMN, #*
-        Feature.P2_SLEEP_PKMN, #*
-        Feature.P1_POISON_PKMN, #*
-        Feature.P2_POISON_PKMN, #* 
-        Feature.P1_BURNED_PKMN, #*
-        Feature.P2_BURNED_PKMN, #*
+        Feature.P1_FROZEN_PKMN, 
+        Feature.P2_FROZEN_PKMN, 
+        Feature.P1_PARALIZED_PKMN, 
+        Feature.P2_PARALIZED_PKMN, 
+        Feature.P1_SLEEP_PKMN, 
+        Feature.P2_SLEEP_PKMN, 
+        Feature.P1_POISON_PKMN, 
+        Feature.P2_POISON_PKMN,  
+        Feature.P1_BURNED_PKMN, 
+        Feature.P2_BURNED_PKMN, 
         
         #----Feature Pokemon Moves----#
-        Feature.P1_PKMN_REFLECT, #*
-        Feature.P2_PKMN_REFLECT, #*
-        Feature.P1_PKMN_REST, #*
-        Feature.P2_PKMN_REST, #*
-        Feature.P1_PKMN_EXPLOSION, #*
-        Feature.P2_PKMN_EXPLOSION, #*
-        Feature.P1_PKMN_THUNDERWAVE, #*
-        Feature.P2_PKMN_THUNDERWAVE, #*
-        Feature.P1_PKMN_RECOVER, #*
-        Feature.P2_PKMN_RECOVER, #*
-        Feature.P1_PKMN_TOXIC, #*
-        Feature.P2_PKMN_TOXIC, #*
-        Feature.P1_PKMN_FIRESPIN, #*
-        Feature.P2_PKMN_FIRESPIN, #*
+        Feature.P1_PKMN_REFLECT, 
+        Feature.P2_PKMN_REFLECT, 
+        Feature.P1_PKMN_REST, 
+        Feature.P2_PKMN_REST, 
+        Feature.P1_PKMN_EXPLOSION, 
+        Feature.P2_PKMN_EXPLOSION, 
+        Feature.P1_PKMN_THUNDERWAVE, 
+        Feature.P2_PKMN_THUNDERWAVE, 
+        Feature.P1_PKMN_RECOVER, 
+        Feature.P2_PKMN_RECOVER, 
+        Feature.P1_PKMN_TOXIC, 
+        Feature.P2_PKMN_TOXIC, 
+        Feature.P1_PKMN_FIRESPIN, 
+        Feature.P2_PKMN_FIRESPIN, 
         #Feature.P1_REFLECT_RATIO,
         #Feature.P2_REFLECT_RATIO,
         #Feature.P1_LIGHTSCREEN_RATIO,
