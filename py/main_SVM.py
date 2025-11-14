@@ -7,78 +7,66 @@ from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
+#from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
-import matplotlib.pyplot as plt
-import seaborn as sns
-
+from sklearn.svm import SVC
 
 def main():
     #---------------Feature Extraction Code------------------------
     selected_features = [
-        
-        #------Ratio on Stats Features--------#
-        Feature.HP_BULK_RATIO,
-        Feature.SPE_ATK_RATIO,
-        Feature.OFF_DEF_RATIO,
-        Feature.OFF_SPAD_RATIO,
-        #Feature.CRIT_AGGR_RATIO,
-        #Feature.OFFENSE_SPEED_PRODUCT,
 
-         #-------Differential Features on Stats---#
-        # Feature.P1_HP_TREND,
-        # Feature.P2_HP_TREND,
-        Feature.HP_TREND_DIFF,
-
-        # Feature.P1_ATK_TREND,
-        # Feature.P2_ATK_TREND,
-        Feature.ATK_TREND_DIFF,
-
-        # Feature.P1_DEF_TREND,
-        # Feature.P2_DEF_TREND,
-        #Feature.DEF_TREND_DIFF,
-
-        # Feature.P1_SPA_TREND,
-        # Feature.P2_SPA_TREND,
-        Feature.SPA_TREND_DIFF,
-
-        # Feature.P1_SPD_TREND,
-        # Feature.P2_SPD_TREND,
-        #Feature.SPD_TREND_DIFF,
-
-        # Feature.P1_SPE_TREND,
-        # Feature.P2_SPE_TREND,
-        Feature.SPE_TREND_DIFF,
-
-        
-        #------Stats Features---------#
+        #----Feature Base Stats Pokemon----#
+        Feature.P1_MEAN_HP_START, #*
+        #Feature.P2_MEAN_HP_START, 
+        #Feature.MEAN_HP_DIFFERENCE_START,
+        #Feature.LEAD_SPD,
+        #Feature.MEAN_SPE_START,  
+        #Feature.MEAN_ATK_START,  
+        #Feature.MEAN_DEF_START,  
+        #Feature.MEAN_SPA_START,  
+        #Feature.MEAN_SPD_START,  
+        #Feature.P1_MEAN_SPE_START,
+        #Feature.P2_MEAN_SPE_START,
+        #Feature.MEAN_SPE_DIFFERENCE_START,
+        #Feature.MEAN_STATS_START, 
         Feature.MEAN_SPE_LAST, #*
-        
+        #Feature.P1_MEAN_SPE_LAST,
+        #Feature.P2_MEAN_SPE_LAST,
+        #Feature.MEAN_SPE_DIFFERENCE_LAST,
         Feature.MEAN_HP_LAST, #*
-       
+        #Feature.P1_MEAN_HP_LAST,
+        #Feature.P2_MEAN_HP_LAST,
+        #Feature.MEAN_HP_DIFFERENCE_LAST,
         Feature.P1_FINAL_TEAM_HP, #*
         Feature.P2_FINAL_TEAM_HP, #*
-
+        Feature.FINAL_TEAM_HP_DIFFERENCE, #*
         Feature.MEAN_ATK_LAST, #* 
-        #Feature.MEAN_DEF_LAST, #*
+        Feature.MEAN_DEF_LAST, #*
         Feature.MEAN_SPA_LAST, #*
-        #Feature.MEAN_SPD_LAST, #*
+        Feature.MEAN_SPD_LAST, #*
         Feature.MEAN_STATS_LAST, #*
         Feature.MEAN_CRIT, #*
 
         #---Feature Infos During Battle----#
         Feature.P1_ALIVE_PKMN, #*
         Feature.P2_ALIVE_PKMN, #*
-        
+        Feature.ALIVE_PKMN_DIFFERENCE, #*
+        #Feature.P1_PKMN_STAB, 
+        #Feature.P2_PKMN_STAB, 
         Feature.P1_SWITCHES_COUNT, #*
         Feature.P2_SWITCHES_COUNT, #*
-    
+        Feature.SWITCHES_DIFFERENCE, #*
+        #Feature.P1_STATUS_INFLICTED, 
+        #Feature.P2_STATUS_INFLICTED, 
+        #Feature.STATUS_INFLICTED_DIFFERENCE, 
         
+        #Feature.P1_FIRST_FAINT_TURN,
         Feature.P1_AVG_HP_WHEN_SWITCHING, #*
         Feature.P2_AVG_HP_WHEN_SWITCHING, #*
-        Feature.P1_MAX_DEBUFF_RECEIVED,
-        Feature.P2_MAX_DEBUFF_RECEIVED,
+        #Feature.P1_MAX_DEBUFF_RECEIVED,
+        #Feature.P2_MAX_DEBUFF_RECEIVED,
         Feature.P1_AVG_MOVE_POWER, #*
         Feature.P2_AVG_MOVE_POWER, #*
         Feature.AVG_MOVE_POWER_DIFFERENCE, #*
@@ -117,10 +105,22 @@ def main():
         Feature.P1_PKMN_TOXIC, #*
         Feature.P2_PKMN_TOXIC, #*
         Feature.P1_PKMN_FIRESPIN, #*
-        Feature.P2_PKMN_FIRESPIN, #*           
-    ]
-    
+        Feature.P2_PKMN_FIRESPIN, #*
+        #Feature.P1_REFLECT_RATIO,
+        #Feature.P2_REFLECT_RATIO,
+        #Feature.P1_LIGHTSCREEN_RATIO,
+        #Feature.P2_LIGHTSCREEN_RATIO,
+        
 
+        #----Feature Weaknesses of Teams / Team Composition----#
+        #Feature.WEAKNESS_TEAMS_START, 
+        #Feature.WEAKNESS_TEAMS_LAST, 
+        #Feature.ADVANTAGE_WEAK_START, 
+        #Feature.ADVANTAGE_WEAK_LAST, 
+        #Feature.P1_PSY_PKMN,
+        #Feature.P2_PSY_PKMN
+       
+]
     feature_pipeline = FeaturePipeline(selected_features)
 
     train_file_path = '../data/train.jsonl'
@@ -133,44 +133,37 @@ def main():
         for line in f:
             train_data.append(json.loads(line))
 
-    # Extract feature train_set
+    # Estrai le feature train_set
     print("\nExtracting features from training data...")
     train_df = feature_pipeline.extract_features(train_data)
     print("\nTraining features preview:")
     print(train_df.head())
-    # Save dataset in CSV
+    # Salva il dataset in un file CSV
     train_df.to_csv(train_out_path, index=False)
 
     #---------------Model Training and Evaluation Code------------------------
     
     # Remove row 4877 from the train dataset
     train_df = train_df.drop(index=4877)
+
     X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
     y_train = train_df['player_won']
 
-
-
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
-    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
-    #X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=210978)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     
     # Pipeline with scaler and model
-    print("\nCreating pipeline with StandardScaler and LogisticRegression...")
+    print("\nCreating pipeline ...")
     pipeline = Pipeline([
-        ('scaler',RobustScaler()),
-        #('scaler',StandardScaler()), 
-        #('scaler',MinMaxScaler()),
-        ('classifier', LogisticRegression(random_state=42, max_iter=2000)),
-        #('classifier', LogisticRegression(random_state=210978, max_iter=2000))
+        ('scaler',StandardScaler()), #Better
+        ('classifier', SVC(probability=True,kernel='rbf')),
     ])
 
-    #Grid Search for Logistic Regression 
-    param_grid={
-         'classifier__C':[0.01,0.1,1,10,100],
-         'classifier__penalty': ['l1','l2'],
-         'classifier__solver':['liblinear','saga'],
-         'classifier__max_iter':[1000,2000]
+    param_grid= {
+        'classifier__C': [0.1, 1, 10, 100],
+        'classifier__gamma': ['scale', 0.1, 0.01, 0.001]
     }
+
+
     
     grid_logreg = GridSearchCV(
         estimator=pipeline,
@@ -194,30 +187,20 @@ def main():
     
 
     # #---------------Feature Utility Code------------------------
-    # Get the coefficients
-    #coefficients = pd.Series(grid_logreg.best_estimator_.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+    # # Get the coefficients
+    # coefficients = pd.Series(grid_logreg.best_estimator_.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
 
-    # Sort by importance
-    #coefficients = coefficients.abs().sort_values(ascending=False)
+    # # Sort by importance
+    # coefficients = coefficients.abs().sort_values(ascending=False)
 
-    #print("Most useful features:")
-    #pd.set_option('display.max_rows', None)
-    #print(coefficients)
+    # #print("Most useful features:")
+    # pd.set_option('display.max_rows', None)
+    # print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------
 
     evaluate_test_set(trainer, selected_features, test_file_path)
 
-    # -------------- Correlation matrix -------------
-    #corr=train_df.corr()
-    
-    #mask = corr.abs() > 0.75
-    #filtered=corr.where(mask).dropna(axis=0,how='all').dropna(axis=1,how='all')
-    #plt.figure(figsize=(12, 12))
-    #sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)
-    #plt.title("Feature Correlation Matrix", fontsize=14)
-    #plt.show()
-    
 
 def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):
 
@@ -242,9 +225,9 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
         'battle_id': test_df['battle_id'],
         'player_won': predictions
     })
-    submission.to_csv('predict_csv/predictions_gridCV.csv', index=False)
+    submission.to_csv('predict_csv/predictions_SVM.csv', index=False)
 
 if __name__ == "__main__":
     main()
 
-    # Best params: {'classifier__C': 1, 'classifier__max_iter': 2000, 'classifier__penalty': 'l1', 'classifier__solver': 'saga'}
+    # Best params: {'classifier__C': 10, 'classifier__gamma': 0.001}

@@ -174,7 +174,7 @@ class Feature(Enum):
     P1_PSY_PKMN= "p1_psy_pkmn"    
     P2_PSY_PKMN= "p2_psy_pkmn"
 
-    #-----------------------------------------------
+    #-------------Ratios of Stats--------------------------#
     HP_BULK_RATIO="hp_bulk_ratio"
     SPE_ATK_RATIO="spe_atk_ratio"
     OFF_DEF_RATIO="off_def_ratio"

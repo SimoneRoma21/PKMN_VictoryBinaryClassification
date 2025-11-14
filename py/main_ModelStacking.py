@@ -109,7 +109,7 @@ def main():
     train_df = feature_pipeline.extract_features(train_data)
     print("\nTraining features preview:")
     print(train_df.head())
-    # Save in a csv file
+    # Save dataset in CSV
     train_df.to_csv(train_out_path, index=False)
 
     #---------------Model Training and Evaluation Code------------------------

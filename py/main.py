@@ -9,7 +9,6 @@ from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
-#from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel

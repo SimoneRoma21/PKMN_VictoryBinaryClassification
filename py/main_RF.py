@@ -100,12 +100,12 @@ def main():
         for line in f:
             train_data.append(json.loads(line))
 
-    # Estrai le feature train_set
+    # Extract features train
     print("\nExtracting features from training data...")
     train_df = feature_pipeline.extract_features(train_data)
     print("\nTraining features preview:")
     print(train_df.head())
-    # Salva il dataset in un file CSV
+    # Save dataset 
     train_df.to_csv(train_out_path, index=False)
 
     #---------------Model Training and Evaluation Code------------------------
