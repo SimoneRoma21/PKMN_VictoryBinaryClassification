@@ -5,14 +5,8 @@ from dataset.csv_utilities import *
 from dataset.extract_utilities import *
 from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV, SGDClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import (
-    StandardScaler,
-    MinMaxScaler,
-    RobustScaler,
-    PolynomialFeatures,
-)
+from sklearn.linear_model import SGDClassifier
+from sklearn.preprocessing import RobustScaler
 from sklearn.pipeline import Pipeline
 
 
@@ -96,7 +90,7 @@ def main():
         for line in f:
             train_data.append(json.loads(line))
 
-    # Estrai le feature train_set
+    # Extract features from train_set
     print("\nExtracting features from training data...")
     train_df = feature_pipeline.extract_features(train_data)
     print("\nTraining features preview:")
@@ -105,9 +99,8 @@ def main():
 
     # ---------------Model Training and Evaluation Code------------------------
 
-    # Rimuovi la riga 4877 se presente
-    if 4877 in train_df.index:
-        train_df = train_df.drop(index=4877)
+    # Remove row 4877 from the train dataset
+    train_df = train_df.drop(index=4877)
 
     X_train = train_df.drop(["battle_id", "player_won"], axis=1)
     y_train = train_df["player_won"]
@@ -116,13 +109,13 @@ def main():
         X_train, y_train, test_size=0.2, random_state=42
     )
 
-    # Pipeline con scaler e modello SGDClassifier
+    # Pipeline with scaler and model
     print("\nCreating pipeline ...")
     pipeline = Pipeline(
         [("scaler", RobustScaler()), ("classifier", SGDClassifier(random_state=42))]
     )
 
-    # Griglia di iperparametri per SGDClassifier
+    # Grid Search for SGDClassifier
     param_grid = {
         "classifier__loss": ["log_loss", "hinge", "modified_huber"],
         "classifier__alpha": [1e-4, 1e-3, 1e-2],
@@ -149,6 +142,17 @@ def main():
 
     print("Best CV score:", grid_sgd.best_score_)
     print("Best params:", grid_sgd.best_params_)
+
+    # #---------------Feature Utility Code------------------------
+    # Get the coefficients
+    coefficients = pd.Series(grid_sgd.best_estimator_.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+
+    # Sort by importance
+    coefficients = coefficients.abs().sort_values(ascending=False)
+
+    print("Most useful features:")
+    pd.set_option('display.max_rows', None)
+    print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------
     evaluate_test_set(trainer, selected_features, test_file_path)
@@ -181,4 +185,4 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
 if __name__ == "__main__":
     main()
 
-# Best params: {'classifier__alpha': 0.001, 'classifier__eta0': 0.01, 'classifier__learning_rate': 'adaptive', 'classifier__loss': 'modified_huber', 'classifier__max_iter': 1000, 'classifier__penalty': 'l1', 'classifier__tol': 0.0001}
+# Best params obtained : {'classifier__alpha': 0.001, 'classifier__eta0': 0.01, 'classifier__learning_rate': 'adaptive', 'classifier__loss': 'modified_huber', 'classifier__max_iter': 1000, 'classifier__penalty': 'l1', 'classifier__tol': 0.0001}

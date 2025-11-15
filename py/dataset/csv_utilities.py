@@ -13,17 +13,6 @@ def open_pkmn_database_csv() -> pd.DataFrame:
     return pkmn_db
 
 
-def open_pkmn_database_weak_csv() -> pd.DataFrame:
-    """
-    Opens the pokemon database (with weakness included)
-    calculated from the train json and returns
-    the opened json as a pandas dataframe
-    """
-
-    pkmn_db_weak = pd.read_csv("../data/pkmn_database_weaknesses.csv")
-    return pkmn_db_weak
-
-
 def open_train_json() -> list:
     """
     Opens the train dataset json and returns the list

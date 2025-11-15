@@ -5,18 +5,8 @@ from dataset.csv_utilities import *
 from dataset.extract_utilities import *
 from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
-
-# from xgboost import XGBClassifier
-from sklearn.preprocessing import (
-    StandardScaler,
-    MinMaxScaler,
-    RobustScaler,
-    PolynomialFeatures,
-)
 from sklearn.pipeline import Pipeline
-from sklearn.feature_selection import SelectFromModel
 
 
 def main():
@@ -98,7 +88,7 @@ def main():
         for line in f:
             train_data.append(json.loads(line))
 
-    # Extract features train
+    # Extract features train_set
     print("\nExtracting features from training data...")
     train_df = feature_pipeline.extract_features(train_data)
     print("\nTraining features preview:")
@@ -118,16 +108,15 @@ def main():
         X_train, y_train, test_size=0.2, random_state=42
     )
 
-    # Pipeline with scaler and model
+    # Pipeline 
     print("\nCreating pipeline ...")
     pipeline = Pipeline(
         [
-            # ('scaler',StandardScaler()), #Better
             ("classifier", RandomForestClassifier(random_state=42)),
-            # ('classifier', RandomForestClassifier(random_state=42,bootstrap=False,max_depth=20,max_features='log2',min_samples_leaf=2,min_samples_split=5,n_estimators=400)),
         ]
     )
 
+    # GridSearch for RandomForest
     param_grid = {
         "classifier__n_estimators": [200, 300, 400],
         "classifier__max_depth": [8, 10, 12],
@@ -141,31 +130,28 @@ def main():
         estimator=pipeline,
         param_grid=param_grid,
         scoring="roc_auc",
-        # scoring='accuracy',
         n_jobs=-1,
-        cv=5,  # 5-fold cross-validation, more on this later
-        refit=True,  # retrain the best model on the full training set
+        cv=5, 
+        refit=True,
         return_train_score=True,
     )
 
     trainer = ModelTrainer(grid_logreg)
-    # trainer = ModelTrainer(pipeline)
     trainer.train(X_tr, y_tr)
     trainer.evaluate(X_val, y_val)
 
     print("Best CV score:", grid_logreg.best_score_)
     print("Best params:", grid_logreg.best_params_)
 
-    # # #---------------Feature Utility Code------------------------
-    # # Get the coefficients
-    # coefficients = pd.Series(grid_logreg.best_estimator_.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+    # #---------------Feature Utility Code------------------------
+    # Get the coefficients
+    coefficients = pd.Series(
+        grid_logreg.best_estimator_.named_steps['classifier'].feature_importances_,
+        index=train_df.drop(["battle_id", "player_won"], axis=1).columns
+    ).sort_values(ascending=False)
 
-    # # Sort by importance
-    # coefficients = coefficients.abs().sort_values(ascending=False)
-
-    # #print("Most useful features:")
-    # pd.set_option('display.max_rows', None)
-    # print(coefficients)
+    pd.set_option('display.max_rows', None)
+    print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------
 
@@ -202,7 +188,4 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
 if __name__ == "__main__":
     main()
 
-    # Best params: {'classifier__bootstrap': True, 'classifier__max_depth': 12, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 3, 'classifier__min_samples_split': 10, 'classifier__n_estimators': 400}
-
-    # With the def features:
-    # Best params: {'classifier__bootstrap': True, 'classifier__max_depth': 12, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 3, 'classifier__min_samples_split': 5, 'classifier__n_estimators': 300}
+    # Best params obtained: {'classifier__bootstrap': True, 'classifier__max_depth': 12, 'classifier__max_features': 'sqrt', 'classifier__min_samples_leaf': 3, 'classifier__min_samples_split': 5, 'classifier__n_estimators': 300}

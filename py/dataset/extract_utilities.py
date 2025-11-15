@@ -280,36 +280,6 @@ def extract_types_from_team_p2_last(game) -> pd.DataFrame:
         return p2_team_types
     return pd.DataFrame()
 
-
-def calc_weakness(type_1, type_2) -> pd.DataFrame:
-    """
-    Calculates the weakness for the two types matching
-    given in input. If dual type, the weakness is calculated
-    multiplying the weakness multipliers, otherwise is the one
-    of the single tipes. A type is a weakness if the multipliers
-    is >2.
-    """
-    type_chart = csv_u.open_type_chart_json()
-    weaknesses = pd.DataFrame([])
-
-    if type_1 == "notype" and type_2 != "notype":
-        type_col = type_chart[type_2].copy()
-        weaknesses = type_col[type_col >= 2]
-
-    elif type_1 != "notype" and type_2 == "notype":
-        type_col = type_chart[type_1].copy()
-        weaknesses = type_col[type_col >= 2]
-
-    elif type_1 != "notype" and type_2 != "notype":
-        type_col = type_chart[[type_1, type_2]].copy()
-        type_col["total"] = type_col.prod(axis=1)
-        # type=[elem for elem in type if elem[1]>=2]
-        weaknesses = type_col[type_col["total"] >= 2]
-        weaknesses = weaknesses["total"]
-
-    return weaknesses
-
-
 def pkmn_database(dataset):
     """
     Creates the database of pokemons from all species seen
@@ -327,34 +297,6 @@ def pkmn_database(dataset):
 
     # saving to csv
     pd.DataFrame.to_csv(db_pkmn, "../data/pkmn_database.csv")
-
-
-def pkmn_weak_database():
-    """
-    Creates the database of pokemons (including weaknesses) from all species seen
-    in the train, then it saves it in csv format
-    """
-    db_pkmn = csv_u.open_pkmn_database_csv()
-    weaknesses = []
-    for (
-        index,
-        row,
-    ) in (
-        db_pkmn.iterrows()
-    ):  # for every pokemon (row) calc the weaknesses and then append into a list
-        weak = (
-            calc_weakness(row["type_1"], row["type_2"])
-            .reset_index()
-            .rename(columns={"index": "type"})["type"]
-            .to_list()
-        )
-        weaknesses.append(weak)
-
-    # creating the dataframe and saving it as csv
-    db_weak = pd.DataFrame({"weaknesses": weaknesses})
-    db_pkmn_weak = pd.concat([db_pkmn, db_weak], axis=1)
-    pd.DataFrame.to_csv(db_pkmn_weak, "../data/pkmn_database_weaknesses.csv")
-
 
 def mean_hp_database(pkmn_database) -> float:
     return np.mean(pkmn_database["base_hp"])

@@ -5,26 +5,12 @@ from dataset.csv_utilities import *
 from dataset.extract_utilities import *
 from ModelTrainer import ModelTrainer
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, StackingClassifier
 from xgboost import XGBClassifier
-from sklearn.preprocessing import (
-    StandardScaler,
-    MinMaxScaler,
-    RobustScaler,
-    PolynomialFeatures,
-)
+from sklearn.preprocessing import RobustScaler
 from sklearn.pipeline import Pipeline
-from sklearn.feature_selection import SelectFromModel
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import (
-    RidgeClassifier,
-    SGDClassifier,
-    PassiveAggressiveClassifier,
-    Perceptron,
-)
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.linear_model import SGDClassifier
 
 
 def main():
@@ -125,8 +111,7 @@ def main():
     X_tr, X_val, y_tr, y_val = train_test_split(
         X_train, y_train, test_size=0.2, random_state=42
     )
-    # X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=210978)
-    # X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+
 
     # Pipelines: Scaling only the linear models
     pipe_lr = Pipeline(
@@ -219,26 +204,9 @@ def main():
     print("Best CV score:", gs.best_score_)
     print("Best params:", gs.best_params_)
 
-    # # #---------------Feature Utility Code------------------------
-    # # Get the coefficients
-    # coefficients = pd.Series(stacking_model.best_estimator_.coef_[0], index=train_df.columns[2::])
-
-    # # Sort by importance
-    # coefficients = coefficients.abs().sort_values(ascending=False)
-
-    # #print("Most useful features:")
-    # pd.set_option('display.max_rows', None)
-    # print(coefficients)
-
     # ------------------ Evaluate on Test Set -----------------
 
     evaluate_test_set(trainer, selected_features, test_file_path)
-
-    # for name, model in base_estimators:
-    #     print(f"Model: {name}")
-    #     model.fit(X_tr, y_tr)
-    #     trainer = ModelTrainer(model)
-    #     trainer.evaluate(X_val, y_val)
 
 
 def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):
@@ -268,9 +236,6 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
     submission.to_csv(
         "predict_csv/predictions_ModelStacking_Submission3.csv", index=False
     )
-
-
-# {'final_estimator__C': 0.1, 'final_estimator__max_iter': 1000, 'final_estimator__penalty': 'l1', 'final_estimator__solver': 'saga'}
 
 if __name__ == "__main__":
     main()
