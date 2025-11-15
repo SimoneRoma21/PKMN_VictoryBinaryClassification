@@ -4,96 +4,95 @@ from dataset.dataset_construction import Feature, FeaturePipeline
 from dataset.csv_utilities import *
 from dataset.extract_utilities import *
 from ModelTrainer import ModelTrainer
-from sklearn.model_selection import train_test_split,GridSearchCV
-from sklearn.linear_model import LogisticRegression,LogisticRegressionCV, SGDClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV, SGDClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
+from sklearn.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    RobustScaler,
+    PolynomialFeatures,
+)
 from sklearn.pipeline import Pipeline
 
+
 def main():
-    #---------------Feature Extraction Code------------------------
+    # ---------------Feature Extraction Code------------------------
     selected_features = [
-
-        #------Stats Features---------#
-        Feature.P1_FINAL_TEAM_HP, 
-        Feature.P2_FINAL_TEAM_HP, 
-        Feature.MEAN_SPE_LAST, 
-        Feature.MEAN_HP_LAST, 
-        Feature.MEAN_ATK_LAST, 
-        Feature.MEAN_SPA_LAST, 
-        Feature.MEAN_STATS_LAST, 
+        # ------Stats Features---------#
+        Feature.P1_FINAL_TEAM_HP,
+        Feature.P2_FINAL_TEAM_HP,
+        Feature.MEAN_SPE_LAST,
+        Feature.MEAN_HP_LAST,
+        Feature.MEAN_ATK_LAST,
+        Feature.MEAN_SPA_LAST,
+        Feature.MEAN_STATS_LAST,
         Feature.MEAN_CRIT,
-
-        #------Ratio on Stats Features--------#
+        # ------Ratio on Stats Features--------#
         Feature.HP_BULK_RATIO,
         Feature.SPE_ATK_RATIO,
         Feature.OFF_DEF_RATIO,
         Feature.OFF_SPAD_RATIO,
-
-        #-------Differential Features on Stats---#
+        # -------Differential Features on Stats---#
         Feature.HP_TREND_DIFF,
         Feature.ATK_TREND_DIFF,
         Feature.SPA_TREND_DIFF,
         Feature.SPE_TREND_DIFF,
-    
-        #---Feature Infos During Battle----#
-        Feature.P1_ALIVE_PKMN, 
-        Feature.P2_ALIVE_PKMN, 
-        Feature.P1_SWITCHES_COUNT, 
+        # ---Feature Infos During Battle----#
+        Feature.P1_ALIVE_PKMN,
+        Feature.P2_ALIVE_PKMN,
+        Feature.P1_SWITCHES_COUNT,
         Feature.P2_SWITCHES_COUNT,
-    
-        Feature.P1_AVG_HP_WHEN_SWITCHING, 
-        Feature.P2_AVG_HP_WHEN_SWITCHING, 
+        Feature.P1_AVG_HP_WHEN_SWITCHING,
+        Feature.P2_AVG_HP_WHEN_SWITCHING,
         Feature.P1_MAX_DEBUFF_RECEIVED,
         Feature.P2_MAX_DEBUFF_RECEIVED,
-        Feature.P1_AVG_MOVE_POWER, 
-        Feature.P2_AVG_MOVE_POWER, 
-        Feature.AVG_MOVE_POWER_DIFFERENCE, 
-        Feature.P1_OFFENSIVE_RATIO, 
-        Feature.P2_OFFENSIVE_RATIO, 
-        Feature.OFFENSIVE_RATIO_DIFFERENCE, 
-        Feature.P1_MOVED_FIRST_COUNT, 
-        Feature.P2_MOVED_FIRST_COUNT, 
-        Feature.SPEED_ADVANTAGE_RATIO, 
-
-        #----Feature Status of Pokemons----#
-        Feature.P1_FROZEN_PKMN, 
-        Feature.P2_FROZEN_PKMN, 
-        Feature.P1_PARALIZED_PKMN, 
-        Feature.P2_PARALIZED_PKMN, 
-        Feature.P1_SLEEP_PKMN, 
-        Feature.P2_SLEEP_PKMN, 
-        Feature.P1_POISON_PKMN, 
-        Feature.P2_POISON_PKMN,  
-        Feature.P1_BURNED_PKMN, 
-        Feature.P2_BURNED_PKMN, 
-        
-        #----Feature Pokemon Moves----#
-        Feature.P1_PKMN_REFLECT, 
-        Feature.P2_PKMN_REFLECT, 
-        Feature.P1_PKMN_REST, 
-        Feature.P2_PKMN_REST, 
-        Feature.P1_PKMN_EXPLOSION, 
-        Feature.P2_PKMN_EXPLOSION, 
-        Feature.P1_PKMN_THUNDERWAVE, 
-        Feature.P2_PKMN_THUNDERWAVE, 
-        Feature.P1_PKMN_RECOVER, 
-        Feature.P2_PKMN_RECOVER, 
-        Feature.P1_PKMN_TOXIC, 
-        Feature.P2_PKMN_TOXIC, 
-        Feature.P1_PKMN_FIRESPIN, 
-        Feature.P2_PKMN_FIRESPIN,          
+        Feature.P1_AVG_MOVE_POWER,
+        Feature.P2_AVG_MOVE_POWER,
+        Feature.AVG_MOVE_POWER_DIFFERENCE,
+        Feature.P1_OFFENSIVE_RATIO,
+        Feature.P2_OFFENSIVE_RATIO,
+        Feature.OFFENSIVE_RATIO_DIFFERENCE,
+        Feature.P1_MOVED_FIRST_COUNT,
+        Feature.P2_MOVED_FIRST_COUNT,
+        Feature.SPEED_ADVANTAGE_RATIO,
+        # ----Feature Status of Pokemons----#
+        Feature.P1_FROZEN_PKMN,
+        Feature.P2_FROZEN_PKMN,
+        Feature.P1_PARALIZED_PKMN,
+        Feature.P2_PARALIZED_PKMN,
+        Feature.P1_SLEEP_PKMN,
+        Feature.P2_SLEEP_PKMN,
+        Feature.P1_POISON_PKMN,
+        Feature.P2_POISON_PKMN,
+        Feature.P1_BURNED_PKMN,
+        Feature.P2_BURNED_PKMN,
+        # ----Feature Pokemon Moves----#
+        Feature.P1_PKMN_REFLECT,
+        Feature.P2_PKMN_REFLECT,
+        Feature.P1_PKMN_REST,
+        Feature.P2_PKMN_REST,
+        Feature.P1_PKMN_EXPLOSION,
+        Feature.P2_PKMN_EXPLOSION,
+        Feature.P1_PKMN_THUNDERWAVE,
+        Feature.P2_PKMN_THUNDERWAVE,
+        Feature.P1_PKMN_RECOVER,
+        Feature.P2_PKMN_RECOVER,
+        Feature.P1_PKMN_TOXIC,
+        Feature.P2_PKMN_TOXIC,
+        Feature.P1_PKMN_FIRESPIN,
+        Feature.P2_PKMN_FIRESPIN,
     ]
 
     feature_pipeline = FeaturePipeline(selected_features)
 
-    train_file_path = '../data/train.jsonl'
-    test_file_path = '../data/test.jsonl'
+    train_file_path = "../data/train.jsonl"
+    test_file_path = "../data/test.jsonl"
     train_out_path = "predict_csv/train_features_extracted.csv"
 
     print("Loading training data...")
     train_data = []
-    with open(train_file_path, 'r') as f:
+    with open(train_file_path, "r") as f:
         for line in f:
             train_data.append(json.loads(line))
 
@@ -104,43 +103,44 @@ def main():
     print(train_df.head())
     train_df.to_csv(train_out_path, index=False)
 
-    #---------------Model Training and Evaluation Code------------------------
+    # ---------------Model Training and Evaluation Code------------------------
 
     # Rimuovi la riga 4877 se presente
     if 4877 in train_df.index:
         train_df = train_df.drop(index=4877)
 
-    X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
-    y_train = train_df['player_won']
+    X_train = train_df.drop(["battle_id", "player_won"], axis=1)
+    y_train = train_df["player_won"]
 
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    X_tr, X_val, y_tr, y_val = train_test_split(
+        X_train, y_train, test_size=0.2, random_state=42
+    )
 
     # Pipeline con scaler e modello SGDClassifier
     print("\nCreating pipeline ...")
-    pipeline = Pipeline([
-        ('scaler', RobustScaler()),
-        ('classifier', SGDClassifier(random_state=42))
-    ])
+    pipeline = Pipeline(
+        [("scaler", RobustScaler()), ("classifier", SGDClassifier(random_state=42))]
+    )
 
     # Griglia di iperparametri per SGDClassifier
     param_grid = {
-        'classifier__loss': ['log_loss', 'hinge', 'modified_huber'],
-        'classifier__alpha': [1e-4, 1e-3, 1e-2],
-        'classifier__penalty': ['l2', 'l1'],
-        'classifier__learning_rate': ['optimal', 'adaptive'],
-        'classifier__eta0': [0.001, 0.01, 0.1],
-        'classifier__max_iter': [1000, 2000, 4000],
-        'classifier__tol': [1e-2, 1e-3, 1e-4]
+        "classifier__loss": ["log_loss", "hinge", "modified_huber"],
+        "classifier__alpha": [1e-4, 1e-3, 1e-2],
+        "classifier__penalty": ["l2", "l1"],
+        "classifier__learning_rate": ["optimal", "adaptive"],
+        "classifier__eta0": [0.001, 0.01, 0.1],
+        "classifier__max_iter": [1000, 2000, 4000],
+        "classifier__tol": [1e-2, 1e-3, 1e-4],
     }
 
     grid_sgd = GridSearchCV(
         estimator=pipeline,
         param_grid=param_grid,
-        scoring='roc_auc',
+        scoring="roc_auc",
         n_jobs=-1,
         cv=5,
         refit=True,
-        return_train_score=True
+        return_train_score=True,
     )
 
     trainer = ModelTrainer(grid_sgd)
@@ -155,26 +155,27 @@ def main():
 
 
 def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):
-    feature_pipeline = FeaturePipeline(feature_list, cache_dir="../data/test_feature_cache")
+    feature_pipeline = FeaturePipeline(
+        feature_list, cache_dir="../data/test_feature_cache"
+    )
 
     print("\nLoading test data...")
     test_data = []
-    with open(test_file_path, 'r') as f:
+    with open(test_file_path, "r") as f:
         for line in f:
             test_data.append(json.loads(line))
 
     print("\nExtracting features from test data...")
     test_df = feature_pipeline.extract_features(test_data, show_progress=True)
 
-    X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
+    X_test = test_df.drop(["battle_id"], axis=1, errors="ignore")
 
     predictions = trainer.predict(X_test)
 
-    submission = pd.DataFrame({
-        'battle_id': test_df['battle_id'],
-        'player_won': predictions
-    })
-    submission.to_csv('predict_csv/predictions_SGD.csv', index=False)
+    submission = pd.DataFrame(
+        {"battle_id": test_df["battle_id"], "player_won": predictions}
+    )
+    submission.to_csv("predict_csv/predictions_SGD.csv", index=False)
 
 
 if __name__ == "__main__":

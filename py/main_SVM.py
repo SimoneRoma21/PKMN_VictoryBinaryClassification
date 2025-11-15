@@ -4,132 +4,129 @@ from dataset.dataset_construction import Feature, FeaturePipeline
 from dataset.csv_utilities import *
 from dataset.extract_utilities import *
 from ModelTrainer import ModelTrainer
-from sklearn.model_selection import train_test_split,GridSearchCV
-from sklearn.linear_model import LogisticRegression,LogisticRegressionCV
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier
-#from xgboost import XGBClassifier
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, PolynomialFeatures
+
+# from xgboost import XGBClassifier
+from sklearn.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    RobustScaler,
+    PolynomialFeatures,
+)
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
 from sklearn.svm import SVC
 
+
 def main():
-    #---------------Feature Extraction Code------------------------
+    # ---------------Feature Extraction Code------------------------
     selected_features = [
-
-        #----Feature Base Stats Pokemon----#
-        Feature.P1_MEAN_HP_START, 
-        #Feature.P2_MEAN_HP_START, 
-        #Feature.MEAN_HP_DIFFERENCE_START,
-        #Feature.LEAD_SPD,
-        #Feature.MEAN_SPE_START,  
-        #Feature.MEAN_ATK_START,  
-        #Feature.MEAN_DEF_START,  
-        #Feature.MEAN_SPA_START,  
-        #Feature.MEAN_SPD_START,  
-        #Feature.P1_MEAN_SPE_START,
-        #Feature.P2_MEAN_SPE_START,
-        #Feature.MEAN_SPE_DIFFERENCE_START,
-        #Feature.MEAN_STATS_START, 
-        Feature.MEAN_SPE_LAST, 
-        #Feature.P1_MEAN_SPE_LAST,
-        #Feature.P2_MEAN_SPE_LAST,
-        #Feature.MEAN_SPE_DIFFERENCE_LAST,
-        Feature.MEAN_HP_LAST, 
-        #Feature.P1_MEAN_HP_LAST,
-        #Feature.P2_MEAN_HP_LAST,
-        #Feature.MEAN_HP_DIFFERENCE_LAST,
-        Feature.P1_FINAL_TEAM_HP, 
-        Feature.P2_FINAL_TEAM_HP, 
-        Feature.FINAL_TEAM_HP_DIFFERENCE, 
-        Feature.MEAN_ATK_LAST,  
-        Feature.MEAN_DEF_LAST, 
-        Feature.MEAN_SPA_LAST, 
-        Feature.MEAN_SPD_LAST, 
-        Feature.MEAN_STATS_LAST, 
-        Feature.MEAN_CRIT, 
-
-        #---Feature Infos During Battle----#
-        Feature.P1_ALIVE_PKMN, 
-        Feature.P2_ALIVE_PKMN, 
-        Feature.ALIVE_PKMN_DIFFERENCE, 
-        #Feature.P1_PKMN_STAB, 
-        #Feature.P2_PKMN_STAB, 
-        Feature.P1_SWITCHES_COUNT, 
-        Feature.P2_SWITCHES_COUNT, 
-        Feature.SWITCHES_DIFFERENCE, 
-        #Feature.P1_STATUS_INFLICTED, 
-        #Feature.P2_STATUS_INFLICTED, 
-        #Feature.STATUS_INFLICTED_DIFFERENCE, 
-        
-        #Feature.P1_FIRST_FAINT_TURN,
-        Feature.P1_AVG_HP_WHEN_SWITCHING, 
-        Feature.P2_AVG_HP_WHEN_SWITCHING, 
-        #Feature.P1_MAX_DEBUFF_RECEIVED,
-        #Feature.P2_MAX_DEBUFF_RECEIVED,
-        Feature.P1_AVG_MOVE_POWER, 
-        Feature.P2_AVG_MOVE_POWER, 
-        Feature.AVG_MOVE_POWER_DIFFERENCE, 
-        Feature.P1_OFFENSIVE_RATIO, 
-        Feature.P2_OFFENSIVE_RATIO, 
-        Feature.OFFENSIVE_RATIO_DIFFERENCE, 
-        Feature.P1_MOVED_FIRST_COUNT, 
-        Feature.P2_MOVED_FIRST_COUNT, 
-        Feature.SPEED_ADVANTAGE_RATIO, 
-
-       
-        
-        #----Feature Status of Pokemons----#
-        Feature.P1_FROZEN_PKMN, 
-        Feature.P2_FROZEN_PKMN, 
-        Feature.P1_PARALIZED_PKMN, 
-        Feature.P2_PARALIZED_PKMN, 
-        Feature.P1_SLEEP_PKMN, 
-        Feature.P2_SLEEP_PKMN, 
-        Feature.P1_POISON_PKMN, 
-        Feature.P2_POISON_PKMN,  
-        Feature.P1_BURNED_PKMN, 
-        Feature.P2_BURNED_PKMN, 
-        
-        #----Feature Pokemon Moves----#
-        Feature.P1_PKMN_REFLECT, 
-        Feature.P2_PKMN_REFLECT, 
-        Feature.P1_PKMN_REST, 
-        Feature.P2_PKMN_REST, 
-        Feature.P1_PKMN_EXPLOSION, 
-        Feature.P2_PKMN_EXPLOSION, 
-        Feature.P1_PKMN_THUNDERWAVE, 
-        Feature.P2_PKMN_THUNDERWAVE, 
-        Feature.P1_PKMN_RECOVER, 
-        Feature.P2_PKMN_RECOVER, 
-        Feature.P1_PKMN_TOXIC, 
-        Feature.P2_PKMN_TOXIC, 
-        Feature.P1_PKMN_FIRESPIN, 
-        Feature.P2_PKMN_FIRESPIN, 
-        #Feature.P1_REFLECT_RATIO,
-        #Feature.P2_REFLECT_RATIO,
-        #Feature.P1_LIGHTSCREEN_RATIO,
-        #Feature.P2_LIGHTSCREEN_RATIO,
-        
-
-        #----Feature Weaknesses of Teams / Team Composition----#
-        #Feature.WEAKNESS_TEAMS_START, 
-        #Feature.WEAKNESS_TEAMS_LAST, 
-        #Feature.ADVANTAGE_WEAK_START, 
-        #Feature.ADVANTAGE_WEAK_LAST, 
-        #Feature.P1_PSY_PKMN,
-        #Feature.P2_PSY_PKMN
-       
-]
+        # ----Feature Base Stats Pokemon----#
+        Feature.P1_MEAN_HP_START,
+        # Feature.P2_MEAN_HP_START,
+        # Feature.MEAN_HP_DIFFERENCE_START,
+        # Feature.LEAD_SPD,
+        # Feature.MEAN_SPE_START,
+        # Feature.MEAN_ATK_START,
+        # Feature.MEAN_DEF_START,
+        # Feature.MEAN_SPA_START,
+        # Feature.MEAN_SPD_START,
+        # Feature.P1_MEAN_SPE_START,
+        # Feature.P2_MEAN_SPE_START,
+        # Feature.MEAN_SPE_DIFFERENCE_START,
+        # Feature.MEAN_STATS_START,
+        Feature.MEAN_SPE_LAST,
+        # Feature.P1_MEAN_SPE_LAST,
+        # Feature.P2_MEAN_SPE_LAST,
+        # Feature.MEAN_SPE_DIFFERENCE_LAST,
+        Feature.MEAN_HP_LAST,
+        # Feature.P1_MEAN_HP_LAST,
+        # Feature.P2_MEAN_HP_LAST,
+        # Feature.MEAN_HP_DIFFERENCE_LAST,
+        Feature.P1_FINAL_TEAM_HP,
+        Feature.P2_FINAL_TEAM_HP,
+        Feature.FINAL_TEAM_HP_DIFFERENCE,
+        Feature.MEAN_ATK_LAST,
+        Feature.MEAN_DEF_LAST,
+        Feature.MEAN_SPA_LAST,
+        Feature.MEAN_SPD_LAST,
+        Feature.MEAN_STATS_LAST,
+        Feature.MEAN_CRIT,
+        # ---Feature Infos During Battle----#
+        Feature.P1_ALIVE_PKMN,
+        Feature.P2_ALIVE_PKMN,
+        Feature.ALIVE_PKMN_DIFFERENCE,
+        # Feature.P1_PKMN_STAB,
+        # Feature.P2_PKMN_STAB,
+        Feature.P1_SWITCHES_COUNT,
+        Feature.P2_SWITCHES_COUNT,
+        Feature.SWITCHES_DIFFERENCE,
+        # Feature.P1_STATUS_INFLICTED,
+        # Feature.P2_STATUS_INFLICTED,
+        # Feature.STATUS_INFLICTED_DIFFERENCE,
+        # Feature.P1_FIRST_FAINT_TURN,
+        Feature.P1_AVG_HP_WHEN_SWITCHING,
+        Feature.P2_AVG_HP_WHEN_SWITCHING,
+        # Feature.P1_MAX_DEBUFF_RECEIVED,
+        # Feature.P2_MAX_DEBUFF_RECEIVED,
+        Feature.P1_AVG_MOVE_POWER,
+        Feature.P2_AVG_MOVE_POWER,
+        Feature.AVG_MOVE_POWER_DIFFERENCE,
+        Feature.P1_OFFENSIVE_RATIO,
+        Feature.P2_OFFENSIVE_RATIO,
+        Feature.OFFENSIVE_RATIO_DIFFERENCE,
+        Feature.P1_MOVED_FIRST_COUNT,
+        Feature.P2_MOVED_FIRST_COUNT,
+        Feature.SPEED_ADVANTAGE_RATIO,
+        # ----Feature Status of Pokemons----#
+        Feature.P1_FROZEN_PKMN,
+        Feature.P2_FROZEN_PKMN,
+        Feature.P1_PARALIZED_PKMN,
+        Feature.P2_PARALIZED_PKMN,
+        Feature.P1_SLEEP_PKMN,
+        Feature.P2_SLEEP_PKMN,
+        Feature.P1_POISON_PKMN,
+        Feature.P2_POISON_PKMN,
+        Feature.P1_BURNED_PKMN,
+        Feature.P2_BURNED_PKMN,
+        # ----Feature Pokemon Moves----#
+        Feature.P1_PKMN_REFLECT,
+        Feature.P2_PKMN_REFLECT,
+        Feature.P1_PKMN_REST,
+        Feature.P2_PKMN_REST,
+        Feature.P1_PKMN_EXPLOSION,
+        Feature.P2_PKMN_EXPLOSION,
+        Feature.P1_PKMN_THUNDERWAVE,
+        Feature.P2_PKMN_THUNDERWAVE,
+        Feature.P1_PKMN_RECOVER,
+        Feature.P2_PKMN_RECOVER,
+        Feature.P1_PKMN_TOXIC,
+        Feature.P2_PKMN_TOXIC,
+        Feature.P1_PKMN_FIRESPIN,
+        Feature.P2_PKMN_FIRESPIN,
+        # Feature.P1_REFLECT_RATIO,
+        # Feature.P2_REFLECT_RATIO,
+        # Feature.P1_LIGHTSCREEN_RATIO,
+        # Feature.P2_LIGHTSCREEN_RATIO,
+        # ----Feature Weaknesses of Teams / Team Composition----#
+        # Feature.WEAKNESS_TEAMS_START,
+        # Feature.WEAKNESS_TEAMS_LAST,
+        # Feature.ADVANTAGE_WEAK_START,
+        # Feature.ADVANTAGE_WEAK_LAST,
+        # Feature.P1_PSY_PKMN,
+        # Feature.P2_PSY_PKMN
+    ]
     feature_pipeline = FeaturePipeline(selected_features)
 
-    train_file_path = '../data/train.jsonl'
-    test_file_path = '../data/test.jsonl'
-    train_out_path="predict_csv/train_features_extracted.csv"
+    train_file_path = "../data/train.jsonl"
+    test_file_path = "../data/test.jsonl"
+    train_out_path = "predict_csv/train_features_extracted.csv"
 
     print("Loading training data...")
     train_data = []
-    with open(train_file_path, 'r') as f:
+    with open(train_file_path, "r") as f:
         for line in f:
             train_data.append(json.loads(line))
 
@@ -141,42 +138,42 @@ def main():
     # Salva il dataset in un file CSV
     train_df.to_csv(train_out_path, index=False)
 
-    #---------------Model Training and Evaluation Code------------------------
-    
+    # ---------------Model Training and Evaluation Code------------------------
+
     # Remove row 4877 from the train dataset
     train_df = train_df.drop(index=4877)
 
-    X_train = train_df.drop(['battle_id', 'player_won'], axis=1)
-    y_train = train_df['player_won']
+    X_train = train_df.drop(["battle_id", "player_won"], axis=1)
+    y_train = train_df["player_won"]
 
-    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-    
+    X_tr, X_val, y_tr, y_val = train_test_split(
+        X_train, y_train, test_size=0.2, random_state=42
+    )
+
     # Pipeline with scaler and model
     print("\nCreating pipeline ...")
-    pipeline = Pipeline([
-        ('scaler',StandardScaler()), #Better
-        ('classifier', SVC(probability=True,kernel='rbf')),
-    ])
+    pipeline = Pipeline(
+        [
+            ("scaler", StandardScaler()),  # Better
+            ("classifier", SVC(probability=True, kernel="rbf")),
+        ]
+    )
 
-    param_grid= {
-        'classifier__C': [0.1, 1, 10, 100],
-        'classifier__gamma': ['scale', 0.1, 0.01, 0.001]
+    param_grid = {
+        "classifier__C": [0.1, 1, 10, 100],
+        "classifier__gamma": ["scale", 0.1, 0.01, 0.001],
     }
 
-
-    
     grid_logreg = GridSearchCV(
         estimator=pipeline,
         param_grid=param_grid,
-        scoring='roc_auc',
+        scoring="roc_auc",
         # scoring='accuracy',
-        n_jobs=-1,  
-        cv=5,            # 5-fold cross-validation, more on this later
-        refit=True,      # retrain the best model on the full training set
-        return_train_score=True
+        n_jobs=-1,
+        cv=5,  # 5-fold cross-validation, more on this later
+        refit=True,  # retrain the best model on the full training set
+        return_train_score=True,
     )
-
-
 
     trainer = ModelTrainer(grid_logreg)
     trainer.train(X_tr, y_tr)
@@ -184,7 +181,6 @@ def main():
 
     print("Best CV score:", grid_logreg.best_score_)
     print("Best params:", grid_logreg.best_params_)
-    
 
     # #---------------Feature Utility Code------------------------
     # # Get the coefficients
@@ -204,11 +200,13 @@ def main():
 
 def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path: str):
 
-    feature_pipeline = FeaturePipeline(feature_list, cache_dir="../data/test_feature_cache")
+    feature_pipeline = FeaturePipeline(
+        feature_list, cache_dir="../data/test_feature_cache"
+    )
 
     print("\nLoading test data...")
     test_data = []
-    with open(test_file_path, 'r') as f:
+    with open(test_file_path, "r") as f:
         for line in f:
             test_data.append(json.loads(line))
 
@@ -216,16 +214,16 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
     print("\nExtracting features from test data...")
     test_df = feature_pipeline.extract_features(test_data, show_progress=True)
 
-    X_test = test_df.drop(['battle_id'], axis=1, errors='ignore')
+    X_test = test_df.drop(["battle_id"], axis=1, errors="ignore")
 
     # Predict on test set
     predictions = trainer.predict(X_test)
 
-    submission = pd.DataFrame({
-        'battle_id': test_df['battle_id'],
-        'player_won': predictions
-    })
-    submission.to_csv('predict_csv/predictions_SVM.csv', index=False)
+    submission = pd.DataFrame(
+        {"battle_id": test_df["battle_id"], "player_won": predictions}
+    )
+    submission.to_csv("predict_csv/predictions_SVM.csv", index=False)
+
 
 if __name__ == "__main__":
     main()
