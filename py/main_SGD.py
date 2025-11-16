@@ -145,13 +145,16 @@ def main():
 
     # #---------------Feature Utility Code------------------------
     # Get the coefficients
-    coefficients = pd.Series(grid_sgd.best_estimator_.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+    coefficients = pd.Series(
+        grid_sgd.best_estimator_.named_steps["classifier"].coef_[0],
+        index=train_df.columns[2::],
+    )
 
     # Sort by importance
     coefficients = coefficients.abs().sort_values(ascending=False)
 
     print("Most useful features:")
-    pd.set_option('display.max_rows', None)
+    pd.set_option("display.max_rows", None)
     print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------

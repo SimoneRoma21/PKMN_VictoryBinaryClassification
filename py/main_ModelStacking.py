@@ -112,7 +112,6 @@ def main():
         X_train, y_train, test_size=0.2, random_state=42
     )
 
-
     # Pipelines: Scaling only the linear models
     pipe_lr = Pipeline(
         [
@@ -236,6 +235,7 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
     submission.to_csv(
         "predict_csv/predictions_ModelStacking_Submission3.csv", index=False
     )
+
 
 if __name__ == "__main__":
     main()

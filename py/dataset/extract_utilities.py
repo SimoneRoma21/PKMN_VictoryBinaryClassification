@@ -280,6 +280,7 @@ def extract_types_from_team_p2_last(game) -> pd.DataFrame:
         return p2_team_types
     return pd.DataFrame()
 
+
 def pkmn_database(dataset):
     """
     Creates the database of pokemons from all species seen
@@ -297,6 +298,7 @@ def pkmn_database(dataset):
 
     # saving to csv
     pd.DataFrame.to_csv(db_pkmn, "../data/pkmn_database.csv")
+
 
 def mean_hp_database(pkmn_database) -> float:
     return np.mean(pkmn_database["base_hp"])

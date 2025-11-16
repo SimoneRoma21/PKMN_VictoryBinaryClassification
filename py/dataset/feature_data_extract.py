@@ -126,13 +126,13 @@ class FeatureRegistry:
         self._extractors[Feature.ATK_TREND_DIFF] = fbs.atk_trend
 
         # --- DEF Trend ---
-        self._extractors[Feature.DEF_TREND_DIFF] = fbs.def_trend # NOT USED
+        self._extractors[Feature.DEF_TREND_DIFF] = fbs.def_trend  # NOT USED
 
         # --- SPA Trend ---
         self._extractors[Feature.SPA_TREND_DIFF] = fbs.spa_trend
 
         # --- SPD Trend ---
-        self._extractors[Feature.SPD_TREND_DIFF] = fbs.spd_trend # NOT USED
+        self._extractors[Feature.SPD_TREND_DIFF] = fbs.spd_trend  # NOT USED
 
         # --- SPE Trend ---
         self._extractors[Feature.SPE_TREND_DIFF] = fbs.spe_trend
@@ -204,9 +204,13 @@ class FeatureRegistry:
         self._extractors[Feature.P1_PKMN_FIRESPIN] = fm.p1_pokemon_firespin
         self._extractors[Feature.P2_PKMN_FIRESPIN] = fm.p2_pokemon_firespin
         self._extractors[Feature.P1_REFLECT_RATIO] = fm.p1_reflect_ratio  # NOT USED
-        self._extractors[Feature.P2_REFLECT_RATIO] = fm.p2_reflect_ratio # NOT USED
-        self._extractors[Feature.P1_LIGHTSCREEN_RATIO] = fm.p1_lightscreen_ratio # NOT USED
-        self._extractors[Feature.P2_LIGHTSCREEN_RATIO] = fm.p2_lightscreen_ratio # NOT USED
+        self._extractors[Feature.P2_REFLECT_RATIO] = fm.p2_reflect_ratio  # NOT USED
+        self._extractors[Feature.P1_LIGHTSCREEN_RATIO] = (
+            fm.p1_lightscreen_ratio
+        )  # NOT USED
+        self._extractors[Feature.P2_LIGHTSCREEN_RATIO] = (
+            fm.p2_lightscreen_ratio
+        )  # NOT USED
 
         # --------------------------------------
         self._extractors[Feature.HP_BULK_RATIO] = fbs.hp_bulk_ratio

@@ -15,75 +15,69 @@ import seaborn as sns
 def main():
     # ---------------Feature Extraction Code------------------------
     selected_features = [
-        #------Stats Features---------#
-        Feature.P1_FINAL_TEAM_HP, 
-        Feature.P2_FINAL_TEAM_HP, 
-        Feature.MEAN_SPE_LAST, 
-        Feature.MEAN_HP_LAST, 
-        Feature.MEAN_ATK_LAST, 
-        Feature.MEAN_SPA_LAST, 
-        Feature.MEAN_STATS_LAST, 
+        # ------Stats Features---------#
+        Feature.P1_FINAL_TEAM_HP,
+        Feature.P2_FINAL_TEAM_HP,
+        Feature.MEAN_SPE_LAST,
+        Feature.MEAN_HP_LAST,
+        Feature.MEAN_ATK_LAST,
+        Feature.MEAN_SPA_LAST,
+        Feature.MEAN_STATS_LAST,
         Feature.MEAN_CRIT,
-
-        #------Ratio on Stats Features--------#
+        # ------Ratio on Stats Features--------#
         Feature.HP_BULK_RATIO,
         Feature.SPE_ATK_RATIO,
         Feature.OFF_DEF_RATIO,
         Feature.OFF_SPAD_RATIO,
-
-        #-------Differential Features on Stats---#
+        # -------Differential Features on Stats---#
         Feature.HP_TREND_DIFF,
         Feature.ATK_TREND_DIFF,
         Feature.SPA_TREND_DIFF,
         Feature.SPE_TREND_DIFF,
-    
-        #---Feature Infos During Battle----#
-        Feature.P1_ALIVE_PKMN, 
-        Feature.P2_ALIVE_PKMN, 
-        Feature.P1_SWITCHES_COUNT, 
+        # ---Feature Infos During Battle----#
+        Feature.P1_ALIVE_PKMN,
+        Feature.P2_ALIVE_PKMN,
+        Feature.P1_SWITCHES_COUNT,
         Feature.P2_SWITCHES_COUNT,
-    
-        Feature.P1_AVG_HP_WHEN_SWITCHING, 
-        Feature.P2_AVG_HP_WHEN_SWITCHING, 
+        Feature.P1_AVG_HP_WHEN_SWITCHING,
+        Feature.P2_AVG_HP_WHEN_SWITCHING,
         Feature.P1_MAX_DEBUFF_RECEIVED,
         Feature.P2_MAX_DEBUFF_RECEIVED,
-        Feature.P1_AVG_MOVE_POWER, 
-        Feature.P2_AVG_MOVE_POWER, 
-        Feature.AVG_MOVE_POWER_DIFFERENCE, 
-        Feature.P1_OFFENSIVE_RATIO, 
-        Feature.P2_OFFENSIVE_RATIO, 
-        Feature.OFFENSIVE_RATIO_DIFFERENCE, 
-        Feature.P1_MOVED_FIRST_COUNT, 
-        Feature.P2_MOVED_FIRST_COUNT, 
-        Feature.SPEED_ADVANTAGE_RATIO, 
-
-        #----Feature Status of Pokemons----#
-        Feature.P1_FROZEN_PKMN, 
-        Feature.P2_FROZEN_PKMN, 
-        Feature.P1_PARALIZED_PKMN, 
-        Feature.P2_PARALIZED_PKMN, 
-        Feature.P1_SLEEP_PKMN, 
-        Feature.P2_SLEEP_PKMN, 
-        Feature.P1_POISON_PKMN, 
-        Feature.P2_POISON_PKMN,  
-        Feature.P1_BURNED_PKMN, 
-        Feature.P2_BURNED_PKMN, 
-        
-        #----Feature Pokemon Moves----#
-        Feature.P1_PKMN_REFLECT, 
-        Feature.P2_PKMN_REFLECT, 
-        Feature.P1_PKMN_REST, 
-        Feature.P2_PKMN_REST, 
-        Feature.P1_PKMN_EXPLOSION, 
-        Feature.P2_PKMN_EXPLOSION, 
-        Feature.P1_PKMN_THUNDERWAVE, 
-        Feature.P2_PKMN_THUNDERWAVE, 
-        Feature.P1_PKMN_RECOVER, 
-        Feature.P2_PKMN_RECOVER, 
-        Feature.P1_PKMN_TOXIC, 
-        Feature.P2_PKMN_TOXIC, 
-        Feature.P1_PKMN_FIRESPIN, 
-        Feature.P2_PKMN_FIRESPIN
+        Feature.P1_AVG_MOVE_POWER,
+        Feature.P2_AVG_MOVE_POWER,
+        Feature.AVG_MOVE_POWER_DIFFERENCE,
+        Feature.P1_OFFENSIVE_RATIO,
+        Feature.P2_OFFENSIVE_RATIO,
+        Feature.OFFENSIVE_RATIO_DIFFERENCE,
+        Feature.P1_MOVED_FIRST_COUNT,
+        Feature.P2_MOVED_FIRST_COUNT,
+        Feature.SPEED_ADVANTAGE_RATIO,
+        # ----Feature Status of Pokemons----#
+        Feature.P1_FROZEN_PKMN,
+        Feature.P2_FROZEN_PKMN,
+        Feature.P1_PARALIZED_PKMN,
+        Feature.P2_PARALIZED_PKMN,
+        Feature.P1_SLEEP_PKMN,
+        Feature.P2_SLEEP_PKMN,
+        Feature.P1_POISON_PKMN,
+        Feature.P2_POISON_PKMN,
+        Feature.P1_BURNED_PKMN,
+        Feature.P2_BURNED_PKMN,
+        # ----Feature Pokemon Moves----#
+        Feature.P1_PKMN_REFLECT,
+        Feature.P2_PKMN_REFLECT,
+        Feature.P1_PKMN_REST,
+        Feature.P2_PKMN_REST,
+        Feature.P1_PKMN_EXPLOSION,
+        Feature.P2_PKMN_EXPLOSION,
+        Feature.P1_PKMN_THUNDERWAVE,
+        Feature.P2_PKMN_THUNDERWAVE,
+        Feature.P1_PKMN_RECOVER,
+        Feature.P2_PKMN_RECOVER,
+        Feature.P1_PKMN_TOXIC,
+        Feature.P2_PKMN_TOXIC,
+        Feature.P1_PKMN_FIRESPIN,
+        Feature.P2_PKMN_FIRESPIN,
     ]
 
     feature_pipeline = FeaturePipeline(selected_features)
@@ -140,7 +134,7 @@ def main():
         scoring="roc_auc",
         n_jobs=-1,
         cv=5,  # 5-fold cross-validation
-        refit=True,  
+        refit=True,
         return_train_score=True,
     )
 
@@ -153,13 +147,16 @@ def main():
 
     # #---------------Feature Utility Code------------------------
     # Get the coefficients
-    coefficients = pd.Series(grid_logreg.best_estimator_.named_steps['classifier'].coef_[0], index=train_df.columns[2::])
+    coefficients = pd.Series(
+        grid_logreg.best_estimator_.named_steps["classifier"].coef_[0],
+        index=train_df.columns[2::],
+    )
 
     # Sort by importance
     coefficients = coefficients.abs().sort_values(ascending=False)
 
     print("Most useful features:")
-    pd.set_option('display.max_rows', None)
+    pd.set_option("display.max_rows", None)
     print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------
@@ -167,10 +164,10 @@ def main():
     evaluate_test_set(trainer, selected_features, test_file_path)
 
     # -------------- Correlation matrix -------------
-    corr=train_df.corr()
+    corr = train_df.corr()
 
     mask = corr.abs() > 0.75
-    filtered=corr.where(mask).dropna(axis=0,how='all').dropna(axis=1,how='all')
+    filtered = corr.where(mask).dropna(axis=0, how="all").dropna(axis=1, how="all")
     plt.figure(figsize=(12, 12))
     sns.heatmap(filtered, cmap="coolwarm", center=0, annot=True)
     plt.title("Feature Correlation Matrix", fontsize=14)

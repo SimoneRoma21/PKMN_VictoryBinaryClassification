@@ -109,9 +109,7 @@ def main():
 
     # Pipeline with XGBoost
     pipeline = Pipeline(
-        [
-            ("classifier", XGBClassifier(eval_metric="logloss", random_state=42))
-        ]
+        [("classifier", XGBClassifier(eval_metric="logloss", random_state=42))]
     )
     # Grid Search for XGBoost
     param_grid = {
@@ -143,15 +141,15 @@ def main():
 
     # Get the coefficients
     coefficients = pd.Series(
-        grid.best_estimator_.named_steps['classifier'].feature_importances_,
-        index=train_df.drop(["battle_id", "player_won"], axis=1).columns
+        grid.best_estimator_.named_steps["classifier"].feature_importances_,
+        index=train_df.drop(["battle_id", "player_won"], axis=1).columns,
     ).sort_values(ascending=False)
 
     # Sort by importance
     coefficients = coefficients.sort_values(ascending=False)
 
     print("Most useful features:")
-    pd.set_option('display.max_rows', None)
+    pd.set_option("display.max_rows", None)
     print(coefficients)
 
     # print(train_df.corr())
@@ -187,9 +185,7 @@ def evaluate_test_set(trainer: ModelTrainer, feature_list: list, test_file_path:
     submission = pd.DataFrame(
         {"battle_id": test_df["battle_id"], "player_won": predictions}
     )
-    submission.to_csv(
-        "predict_csv/predictions_XGBoost.csv", index=False
-    )
+    submission.to_csv("predict_csv/predictions_XGBoost.csv", index=False)
 
 
 if __name__ == "__main__":

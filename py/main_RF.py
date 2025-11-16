@@ -108,7 +108,7 @@ def main():
         X_train, y_train, test_size=0.2, random_state=42
     )
 
-    # Pipeline 
+    # Pipeline
     print("\nCreating pipeline ...")
     pipeline = Pipeline(
         [
@@ -131,7 +131,7 @@ def main():
         param_grid=param_grid,
         scoring="roc_auc",
         n_jobs=-1,
-        cv=5, 
+        cv=5,
         refit=True,
         return_train_score=True,
     )
@@ -146,11 +146,11 @@ def main():
     # #---------------Feature Utility Code------------------------
     # Get the coefficients
     coefficients = pd.Series(
-        grid_logreg.best_estimator_.named_steps['classifier'].feature_importances_,
-        index=train_df.drop(["battle_id", "player_won"], axis=1).columns
+        grid_logreg.best_estimator_.named_steps["classifier"].feature_importances_,
+        index=train_df.drop(["battle_id", "player_won"], axis=1).columns,
     ).sort_values(ascending=False)
 
-    pd.set_option('display.max_rows', None)
+    pd.set_option("display.max_rows", None)
     print(coefficients)
 
     # ------------------ Evaluate on Test Set -----------------

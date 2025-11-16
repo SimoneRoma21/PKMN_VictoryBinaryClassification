@@ -91,6 +91,7 @@ def p2_switches_count(dataset) -> pd.DataFrame:  # feature
 
     return pd.DataFrame({"p2_switches_count": switches})
 
+
 def p1_avg_hp_when_switching(dataset) -> pd.DataFrame:  # feature
     """
     Calculate the average/mean HP percentage of P1 Pokémon when switching.

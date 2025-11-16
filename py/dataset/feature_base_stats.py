@@ -681,7 +681,6 @@ def p2_mean_hp_start(dataset) -> pd.DataFrame:  # feature
     return mean_hp_start
 
 
-
 def mean_hp_last(dataset):  # feature
     """
     Calculate the mean base hp for the team of p1 and p2, and the difference
@@ -745,6 +744,7 @@ def mean_hp_last_difference(dataset) -> pd.DataFrame:  # feature
     after the 30 turns. Result are returned in a Dataframe.
     """
     return mean_hp_last(dataset)["mean_hp_last_difference"]
+
 
 def p1_final_team_hp(dataset) -> pd.DataFrame:  # feature
     """
@@ -1169,6 +1169,7 @@ def sum_spe_last(dataset) -> pd.DataFrame:  # feature
     sum_spe_last = sum_spe_last.fillna(value=0)
     return sum_spe_last
 
+
 def mean_atk_last(dataset):  # feature
     """
     Calculate the mean attack and the difference between them for the team of
@@ -1388,6 +1389,7 @@ def sum_atk_last(dataset):  # feature
     )
     sum_atk_last = sum_atk_last.fillna(value=0)
     return sum_atk_last
+
 
 def mean_def_last(dataset):  # feature
     """
@@ -1777,6 +1779,7 @@ def sum_spa_last(dataset):  # feature
     )
     sum_spa_last = sum_spa_last.fillna(value=0)
     return sum_spa_last
+
 
 def mean_spd_last(dataset):  # feature
     """
@@ -2268,6 +2271,7 @@ def sum_stats_last(dataset) -> pd.DataFrame:  # feature
         {"p1_sum_stats_last": p1_sum_stats, "p2_sum_stats_last": p2_sum_stats}
     )
     return sum_stats
+
 
 # ----Feature Crit----#
 def mean_crit_2(dataset) -> pd.DataFrame:  # feature
